@@ -106,7 +106,33 @@ function renderSOS(){sosLayer.clearLayers();let all=reqForEvent().filter(x=>["ח
 async function setSOS(st){if(!activeSOS)return;let r=await cloud.from("worker_requests").update({status:st}).eq("id",activeSOS.id);if(r.error)alert(r.error.message);else live()}
 $("dangerProgress").onclick=()=>setSOS("בטיפול");$("dangerDone").onclick=()=>setSOS("טופל");$("dangerDelete").onclick=()=>setSOS("נמחק");$("dangerShare").onclick=async()=>{if(!activeSOS)return;let c=coordsFor(activeSOS);if(!c)return alert("אין עדיין מיקום לעובד");let maps=`https://www.google.com/maps?q=${c[0]},${c[1]}`,nav=`https://www.google.com/maps/dir/?api=1&destination=${c[0]},${c[1]}`,t=`SOS - ${activeSOS.worker_name||'עובד'}\nמיקום: ${maps}\nניווט: ${nav}`;try{if(navigator.share)await navigator.share({title:'מיקום עובד בסכנה',text:t,url:maps});else{await navigator.clipboard.writeText(t);alert('המיקום הועתק')}}catch{prompt('העתק ושלח:',t)}};
 function renderReq(){let a=reqForEvent().filter(x=>x.request_type!=="תמונה מהשטח");$("requests").innerHTML=a.length?a.slice(0,40).map(x=>`<div class="req ${["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)?"urgent":""}"><b>${esc(x.worker_name||"עובד")}</b> — ${esc(x.request_type)} ${x.details&&!String(x.details).startsWith("LOC|")?"• "+esc(x.details):""}<br>${esc(x.status||"חדש")}<div class="row"><button onclick="v7r('${x.id}','קיבלתי')">קיבלתי</button><button onclick="v7r('${x.id}','בטיפול')">בטיפול</button><button class="green" onclick="v7r('${x.id}','טופל')">טופל</button><button class="red" onclick="v7r('${x.id}','לא טופל')">לא טופל</button></div></div>`).join(""):"אין בקשות.";let mini=$("fieldReqMini");if(mini)mini.innerHTML='<h3>🆘 בקשות מהשטח</h3>'+a.slice(0,5).map(x=>`<div class="mini">${esc(x.worker_name||'עובד')} • ${esc(x.request_type)} — <b>${esc(x.status||'חדש')}</b></div>`).join('')}
-window.v7r=async(id,s)=>{let r=await cloud.from("worker_requests").update({status:s}).eq("id",id);if(r.error)alert(r.error.message);else live()};
+window.v7r=async(id,s)=>{
+  try{
+    const r=await cloud
+      .from("worker_requests")
+      .update({status:s})
+      .eq("id",id);
+
+    if(r.error) throw r.error;
+
+    await live();
+
+    if(activeSOS && String(activeSOS.id)===String(id)){
+      if(s==="טופל" || s==="נמחק"){
+        activeSOS=null;
+        sosLayer.clearLayers();
+        $("dangerBanner").style.display="none";
+      }else{
+        activeSOS.status=s;
+        renderSOS();
+      }
+    }
+
+  }catch(e){
+    alert("שגיאה בעדכון: "+e.message);
+    console.error(e);
+  }
+};
 async function live(){let a=await cloud.from("workers").select("*").order("location_updated_at",{ascending:false});if(!a.error){workers=(a.data||[]).filter(w=>!ev||String(w.event_id||"")===String(ev.id));renderWorkers()}let b=await cloud.from("worker_requests").select("*").order("created_at",{ascending:false}).limit(100);if(!b.error){requests=b.data||[];renderReq();renderPhotos();renderSOS()}}
 function beep(u){try{let C=AudioContext||webkitAudioContext,c=new C,o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=u?900:680;g.gain.value=.12;o.start();setTimeout(()=>{o.stop();c.close()},350)}catch{}}
 function rt(){if(chan)cloud.removeChannel(chan);chan=cloud.channel("command-v7").on("postgres_changes",{event:"*",schema:"public",table:"workers"},live).on("postgres_changes",{event:"*",schema:"public",table:"worker_requests"},p=>{beep(["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes((p.new||{}).request_type));live()}).subscribe()}
