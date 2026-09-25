@@ -1,22 +1,690 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>עובד בשטח LIVE</title><style>
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#12334b,#03101a 45%,#01070c);color:#f5fbff;font-family:Arial;min-height:100vh}.wrap{max-width:560px;margin:auto;padding:18px}.head{padding:18px;border:1px solid #1c5274;border-radius:18px;background:#061b2bcc;box-shadow:0 20px 60px #0008}.live{color:#42e6a4;font-weight:900}.card{margin-top:12px;background:#071b2bdd;border:1px solid #174a69;border-radius:16px;padding:14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}input,select,textarea,button{width:100%;border-radius:12px;border:1px solid #285a78;background:#0a2639;color:white;padding:13px;font-size:16px}button{font-weight:900}.blue{background:#0b69ad}.green{background:#08754f}.amber{background:#8a5a05}.sos{background:linear-gradient(180deg,#ff3542,#9e0914);font-size:23px;padding:20px;border-color:#ff6972;box-shadow:0 0 28px #ff273c55}.photo{background:#104f7e}.status{font-size:13px;color:#a9c8da;margin-top:8px}.ok{color:#53e9ad}.bad{color:#ff7780}.preview{width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:9px;display:none}.small{font-size:12px;color:#9bb8c8}h1{margin:0 0 5px;font-size:24px}h3{margin:0 0 10px}.grid button.sent{outline:2px solid #22c55e;box-shadow:0 0 18px rgba(34,197,94,.35)}
-</style></head><body><div class="wrap">
-<div class="head"><div class="live">● LIVE</div><h1>🔥 צוות שטח — אירוע שריפה</h1><div class="small" id="eventTxt">מתחבר לאירוע...</div></div>
-<div class="card"><h3>👤 כניסה לעובד</h3><input id="name" placeholder="שם העובד"><div class="grid" style="margin-top:9px"><select id="status"><option>בדרך</option><option>הגיע</option><option>עובד בשריפה</option><option>בהפסקה</option></select><input id="sector" placeholder="גזרה (אופציונלי)"></div><button class="green" id="join" style="margin-top:9px">📍 התחבר ושתף מיקום LIVE</button><div id="loc" class="status">המיקום עדיין לא משותף</div></div>
-<div class="card"><h3>📸 תמונה מהשטח</h3><input id="photo" type="file" accept="image/*" capture="environment"><img id="preview" class="preview"><textarea id="note" rows="2" placeholder="הערה קצרה לתמונה"></textarea><button class="photo" id="sendPhoto" style="margin-top:8px">📤 שלח תמונה לחפ״ק</button><div id="photoMsg" class="status"></div></div>
-<div class="card"><h3>🧰 בקשה מהחפ״ק</h3><div class="grid"><button data-r="💧 מים">💧 מים</button><button data-r="⛽ דלק למשאבה">⛽ דלק</button><button data-r="🍴 אוכל">🍴 אוכל</button><button data-r="🧰 ציוד / עזרה">🧰 ציוד / עזרה</button><button data-r="פציעה / רפואי">🩹 רפואי</button><button data-r="🚒 תגבור">🚒 תגבור</button></div></div>
-<div class="card"><button class="sos" id="sos">🆘 אני בסכנה — SOS</button><div class="small" style="margin-top:9px">בלחיצה נשלח לחפ״ק שמך והמיקום האחרון שלך ומופיעה התראה אדומה על המפה.</div></div>
-</div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-(()=>{"use strict";const $=x=>document.getElementById(x),URL="https://jvubjwzzikfwsektifzi.supabase.co",KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW",cloud=supabase.createClient(URL,KEY),eventId=new URLSearchParams(location.search).get("event");let worker=null,lastLoc=null,watch=null;const msg=(id,t,bad=false)=>{$(id).textContent=t;$(id).className='status '+(bad?'bad':'ok')};
-async function eventInfo(){if(!eventId){$('eventTxt').textContent='⚠ קישור ללא מספר אירוע';return}let r=await cloud.from('fire_events').select('*').eq('id',eventId).maybeSingle();$('eventTxt').textContent=r.data?`אירוע: ${r.data.name||'שריפה'}`:'אירוע פעיל'}eventInfo();
-async function ensureWorker(){let n=$('name').value.trim();if(!n)throw Error('כתוב שם עובד קודם');if(worker)return worker;let row={event_id:eventId,name:n,status:$('status').value,sector:$('sector').value.trim()||null,location_updated_at:new Date().toISOString()};let r=await cloud.from('workers').insert(row).select().single();if(r.error)throw r.error;worker=r.data;localStorage.setItem('fireWorkerName',n);return worker}
-async function pushLoc(pos){lastLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};let w=await ensureWorker(),patch={latitude:lastLoc.lat,longitude:lastLoc.lng,location_updated_at:new Date().toISOString(),status:$('status').value,sector:$('sector').value.trim()||null};let r=await cloud.from('workers').update(patch).eq('id',w.id);if(r.error)throw r.error;msg('loc',`🟢 LIVE • ${lastLoc.lat.toFixed(5)}, ${lastLoc.lng.toFixed(5)} • דיוק ${Math.round(pos.coords.accuracy)} מ׳`)}
-$('name').value=localStorage.getItem('fireWorkerName')||'';$('join').onclick=async()=>{try{await ensureWorker();if(!navigator.geolocation)throw Error('אין GPS במכשיר');if(watch!=null)navigator.geolocation.clearWatch(watch);watch=navigator.geolocation.watchPosition(p=>pushLoc(p).catch(e=>msg('loc','❌ '+e.message,true)),e=>msg('loc','❌ צריך לאשר גישה למיקום',true),{enableHighAccuracy:true,maximumAge:5000,timeout:15000});msg('loc','⏳ מתחבר ל-GPS...')}catch(e){msg('loc','❌ '+e.message,true)}};
-$('status').onchange=async()=>{if(worker)await cloud.from('workers').update({status:$('status').value}).eq('id',worker.id)};
-async function request(type,details=''){let w=await ensureWorker(),d=details;if(lastLoc&&!d.startsWith('PHOTO|'))d=`LOC|${lastLoc.lat}|${lastLoc.lng}|${details}`;let r=await cloud.from('worker_requests').insert({event_id:eventId,worker_name:w.name,request_type:type,details:d,status:'חדש'});if(r.error)throw r.error;return r}
-document.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;const old=b.innerHTML;b.disabled=true;b.innerHTML='⏳ נשלח...';try{await request(b.dataset.r);b.innerHTML='✅ נשלח';b.classList.add('sent');setTimeout(()=>{b.innerHTML=old;b.classList.remove('sent');b.disabled=false},1400)}catch(e){b.innerHTML='❌ נסה שוב';setTimeout(()=>{b.innerHTML=old;b.disabled=false},1800)}});
-$('sos').onclick=async()=>{try{if(navigator.geolocation)await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>{lastLoc={lat:p.coords.latitude,lng:p.coords.longitude};res()},()=>res(),{enableHighAccuracy:true,timeout:8000}));await request('SOS / סכנה','');alert('🆘 SOS נשלח לחפ״ק עם המיקום האחרון שלך')}catch(e){alert('❌ '+e.message)}};
-$('photo').onchange=()=>{let f=$('photo').files[0];if(!f)return;$('preview').src=URL.createObjectURL(f);$('preview').style.display='block'};
-async function compress(file){let bmp=await createImageBitmap(file),max=900,sc=Math.min(1,max/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.62)}
-$('sendPhoto').onclick=async()=>{try{let f=$('photo').files[0];if(!f)throw Error('בחר תמונה קודם');msg('photoMsg','⏳ שולח תמונה...');let data=await compress(f),note=$('note').value.trim();await request('תמונה מהשטח',`PHOTO|${data}|${note}`);msg('photoMsg','✅ התמונה נשלחה ומופיעה בחפ״ק');$('photo').value='';$('note').value=''}catch(e){msg('photoMsg','❌ '+e.message,true)}};
-})();</script></body></html>
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>עובד בשטח LIVE</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:radial-gradient(circle at top,#12334b,#03101a 45%,#01070c);
+ color:#f5fbff;
+ font-family:Arial;
+ min-height:100vh
+}
+.wrap{max-width:560px;margin:auto;padding:18px}
+.head{
+ padding:18px;border:1px solid #1c5274;border-radius:18px;
+ background:#061b2bcc;box-shadow:0 20px 60px #0008
+}
+.live{color:#42e6a4;font-weight:900}
+.card{
+ margin-top:12px;background:#071b2bdd;border:1px solid #174a69;
+ border-radius:16px;padding:14px
+}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input,select,textarea,button{
+ width:100%;border-radius:12px;border:1px solid #285a78;
+ background:#0a2639;color:white;padding:13px;font-size:16px
+}
+button{font-weight:900;cursor:pointer}
+button:disabled{opacity:.65}
+.green{background:#08754f}
+.sos{
+ background:linear-gradient(180deg,#ff3542,#9e0914);
+ font-size:23px;padding:20px;border-color:#ff6972;
+ box-shadow:0 0 28px #ff273c55
+}
+.photo{background:#104f7e}
+.status{font-size:13px;color:#a9c8da;margin-top:8px}
+.ok{color:#53e9ad}
+.bad{color:#ff7780}
+.preview{
+ width:100%;max-height:240px;object-fit:cover;
+ border-radius:12px;margin-top:9px;display:none
+}
+.small{font-size:12px;color:#9bb8c8}
+h1{margin:0 0 5px;font-size:24px}
+h3{margin:0 0 10px}
+.grid button.sent{
+ outline:2px solid #22c55e;
+ box-shadow:0 0 18px rgba(34,197,94,.35)
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="head">
+ <div class="live">● LIVE</div>
+ <h1>🔥 צוות שטח — אירוע שריפה</h1>
+ <div class="small" id="eventTxt">מתחבר לאירוע...</div>
+</div>
+
+<div class="card">
+ <h3>👤 כניסה לעובד</h3>
+
+ <input id="name" placeholder="שם העובד">
+
+ <div class="grid" style="margin-top:9px">
+  <select id="status">
+   <option>בדרך</option>
+   <option>הגיע</option>
+   <option>עובד בשריפה</option>
+   <option>בהפסקה</option>
+  </select>
+
+  <input id="sector" placeholder="גזרה (אופציונלי)">
+ </div>
+
+ <button class="green" id="join" style="margin-top:9px">
+ 📍 התחבר ושתף מיקום LIVE
+ </button>
+
+ <div id="loc" class="status">המיקום עדיין לא משותף</div>
+</div>
+
+<div class="card">
+ <h3>📸 תמונה מהשטח</h3>
+
+ <input id="photo" type="file" accept="image/*" capture="environment">
+
+ <img id="preview" class="preview">
+
+ <textarea id="note" rows="2" placeholder="הערה קצרה לתמונה"></textarea>
+
+ <button class="photo" id="sendPhoto" style="margin-top:8px">
+ 📤 שלח תמונה לחפ״ק
+ </button>
+
+ <div id="photoMsg" class="status"></div>
+</div>
+
+<div class="card">
+ <h3>🧰 בקשה מהחפ״ק</h3>
+
+ <div class="grid">
+  <button data-r="💧 מים">💧 מים</button>
+  <button data-r="⛽ דלק למשאבה">⛽ דלק</button>
+  <button data-r="🍴 אוכל">🍴 אוכל</button>
+  <button data-r="🧰 ציוד / עזרה">🧰 ציוד / עזרה</button>
+  <button data-r="פציעה / רפואי">🩹 רפואי</button>
+  <button data-r="🚒 תגבור">🚒 תגבור</button>
+ </div>
+</div>
+
+<div class="card">
+ <button class="sos" id="sos">
+ 🆘 אני בסכנה — SOS
+ </button>
+
+ <div class="small" style="margin-top:9px">
+ בלחיצה נשלח לחפ״ק שמך והמיקום האחרון שלך ומופיעה התראה אדומה על המפה.
+ </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+(()=>{
+"use strict";
+
+const $=x=>document.getElementById(x);
+
+const URL="https://jvubjwzzikfwsektifzi.supabase.co";
+const KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW";
+
+const cloud=supabase.createClient(URL,KEY);
+
+const eventId=new URLSearchParams(location.search).get("event");
+
+let worker=null;
+let lastLoc=null;
+let watch=null;
+
+
+/* ===== הודעות ===== */
+
+const msg=(id,t,bad=false)=>{
+ const el=$(id);
+ el.textContent=t;
+ el.className="status "+(bad?"bad":"ok");
+};
+
+
+/* ===== פרטי אירוע ===== */
+
+async function eventInfo(){
+
+ if(!eventId){
+  $("eventTxt").textContent="⚠ קישור ללא מספר אירוע";
+  return;
+ }
+
+ try{
+  const r=await cloud
+   .from("fire_events")
+   .select("*")
+   .eq("id",eventId)
+   .maybeSingle();
+
+  $("eventTxt").textContent=
+   r.data
+   ? `אירוע: ${r.data.name||"שריפה"}`
+   : "אירוע פעיל";
+
+ }catch(e){
+  $("eventTxt").textContent="אירוע פעיל";
+ }
+}
+
+eventInfo();
+
+
+/* ===== עובד - ללא כפילויות ===== */
+
+async function ensureWorker(){
+
+ const n=$("name").value.trim();
+
+ if(!n)
+  throw Error("כתוב שם עובד קודם");
+
+ if(!eventId)
+  throw Error("קישור האירוע אינו תקין");
+
+ if(worker)
+  return worker;
+
+
+ /*
+  קודם מחפשים עובד פעיל שכבר קיים
+  באותו אירוע ובאותו שם.
+  כך רענון הדף לא יוצר עובד כפול.
+ */
+
+ const old=await cloud
+  .from("workers")
+  .select("*")
+  .eq("event_id",eventId)
+  .eq("name",n)
+  .neq("status","סיים")
+  .order("created_at",{ascending:false})
+  .limit(1)
+  .maybeSingle();
+
+ if(old.error)
+  throw old.error;
+
+ if(old.data){
+  worker=old.data;
+  localStorage.setItem("fireWorkerName",n);
+  return worker;
+ }
+
+
+ /* אין עובד קיים — יוצרים חדש */
+
+ const row={
+  event_id:eventId,
+  name:n,
+  status:$("status").value,
+  sector:$("sector").value.trim()||null,
+  location_updated_at:new Date().toISOString()
+ };
+
+ const r=await cloud
+  .from("workers")
+  .insert(row)
+  .select()
+  .single();
+
+ if(r.error)
+  throw r.error;
+
+ worker=r.data;
+
+ localStorage.setItem("fireWorkerName",n);
+
+ return worker;
+}
+
+
+/* ===== GPS ===== */
+
+async function pushLoc(pos){
+
+ lastLoc={
+  lat:pos.coords.latitude,
+  lng:pos.coords.longitude
+ };
+
+ const w=await ensureWorker();
+
+ const patch={
+  latitude:lastLoc.lat,
+  longitude:lastLoc.lng,
+  location_updated_at:new Date().toISOString(),
+  status:$("status").value,
+  sector:$("sector").value.trim()||null
+ };
+
+ const r=await cloud
+  .from("workers")
+  .update(patch)
+  .eq("id",w.id);
+
+ if(r.error)
+  throw r.error;
+
+ msg(
+  "loc",
+  `🟢 LIVE • ${lastLoc.lat.toFixed(5)}, ${lastLoc.lng.toFixed(5)} • דיוק ${Math.round(pos.coords.accuracy)} מ׳`
+ );
+}
+
+
+$("name").value=
+ localStorage.getItem("fireWorkerName")||"";
+
+
+$("join").onclick=async()=>{
+
+ try{
+
+  await ensureWorker();
+
+  if(!navigator.geolocation)
+   throw Error("אין GPS במכשיר");
+
+  if(watch!==null)
+   navigator.geolocation.clearWatch(watch);
+
+  watch=navigator.geolocation.watchPosition(
+
+   p=>{
+    pushLoc(p).catch(e=>
+     msg("loc","❌ "+e.message,true)
+    );
+   },
+
+   ()=>{
+    msg(
+     "loc",
+     "❌ צריך לאשר גישה למיקום",
+     true
+    );
+   },
+
+   {
+    enableHighAccuracy:true,
+    maximumAge:5000,
+    timeout:15000
+   }
+  );
+
+  msg("loc","⏳ מתחבר ל-GPS...");
+
+ }catch(e){
+
+  msg("loc","❌ "+e.message,true);
+
+ }
+};
+
+
+/* ===== שינוי סטטוס ===== */
+
+$("status").onchange=async()=>{
+
+ if(!worker)
+  return;
+
+ const r=await cloud
+  .from("workers")
+  .update({
+   status:$("status").value,
+   sector:$("sector").value.trim()||null
+  })
+  .eq("id",worker.id);
+
+ if(r.error)
+  msg("loc","❌ "+r.error.message,true);
+};
+
+
+$("sector").onchange=async()=>{
+
+ if(!worker)
+  return;
+
+ await cloud
+  .from("workers")
+  .update({
+   sector:$("sector").value.trim()||null
+  })
+  .eq("id",worker.id);
+};
+
+
+/* ===== בקשות ===== */
+
+async function request(type,details=""){
+
+ const w=await ensureWorker();
+
+ let d=details;
+
+ if(lastLoc && !d.startsWith("PHOTO|")){
+  d=`LOC|${lastLoc.lat}|${lastLoc.lng}|${details}`;
+ }
+
+ const r=await cloud
+  .from("worker_requests")
+  .insert({
+   event_id:eventId,
+   worker_name:w.name,
+   request_type:type,
+   details:d,
+   status:"חדש"
+  });
+
+ if(r.error)
+  throw r.error;
+
+ return r;
+}
+
+
+/* ===== כפתורי בקשות ===== */
+
+document
+.querySelectorAll("[data-r]")
+.forEach(b=>{
+
+ b.onclick=async()=>{
+
+  if(b.disabled)
+   return;
+
+  const old=b.innerHTML;
+
+  b.disabled=true;
+  b.innerHTML="⏳ נשלח...";
+
+  try{
+
+   await request(b.dataset.r);
+
+   b.innerHTML="✅ נשלח";
+   b.classList.add("sent");
+
+   setTimeout(()=>{
+    b.innerHTML=old;
+    b.classList.remove("sent");
+    b.disabled=false;
+   },1400);
+
+  }catch(e){
+
+   b.innerHTML="❌ נסה שוב";
+
+   setTimeout(()=>{
+    b.innerHTML=old;
+    b.disabled=false;
+   },1800);
+
+  }
+ };
+});
+
+
+/* ===== SOS ===== */
+
+$("sos").onclick=async()=>{
+
+ const btn=$("sos");
+
+ if(btn.disabled)
+  return;
+
+ btn.disabled=true;
+
+ const old=btn.innerHTML;
+
+ btn.innerHTML="🆘 שולח SOS...";
+
+ try{
+
+  /*
+   מנסים לקבל מיקום עדכני לפני SOS.
+   אם GPS לא מצליח — עדיין שולחים
+   עם המיקום האחרון שקיים.
+  */
+
+  if(navigator.geolocation){
+
+   await new Promise(res=>{
+
+    navigator.geolocation.getCurrentPosition(
+
+     p=>{
+      lastLoc={
+       lat:p.coords.latitude,
+       lng:p.coords.longitude
+      };
+      res();
+     },
+
+     ()=>res(),
+
+     {
+      enableHighAccuracy:true,
+      timeout:8000,
+      maximumAge:3000
+     }
+    );
+
+   });
+  }
+
+  await request("SOS / סכנה","");
+
+  btn.innerHTML="✅ SOS נשלח";
+
+  alert(
+   "🆘 SOS נשלח לחפ״ק עם המיקום האחרון שלך"
+  );
+
+  setTimeout(()=>{
+   btn.innerHTML=old;
+   btn.disabled=false;
+  },2500);
+
+ }catch(e){
+
+  alert("❌ "+e.message);
+
+  btn.innerHTML=old;
+  btn.disabled=false;
+ }
+};
+
+
+/* ===== תצוגת תמונה ===== */
+
+$("photo").onchange=()=>{
+
+ const f=$("photo").files[0];
+
+ if(!f)
+  return;
+
+ $("preview").src=URL.createObjectURL(f);
+ $("preview").style.display="block";
+};
+
+
+/* ===== כיווץ תמונה - מתאים יותר לטלפונים ===== */
+
+async function compress(file){
+
+ if(!file.type.startsWith("image/"))
+  throw Error("הקובץ אינו תמונה");
+
+ const img=await new Promise((resolve,reject)=>{
+
+  const i=new Image();
+  const u=URL.createObjectURL(file);
+
+  i.onload=()=>{
+   URL.revokeObjectURL(u);
+   resolve(i);
+  };
+
+  i.onerror=()=>{
+   URL.revokeObjectURL(u);
+   reject(Error("לא ניתן לקרוא את התמונה"));
+  };
+
+  i.src=u;
+ });
+
+
+ const max=720;
+
+ const scale=Math.min(
+  1,
+  max/Math.max(img.naturalWidth,img.naturalHeight)
+ );
+
+ const canvas=document.createElement("canvas");
+
+ canvas.width=Math.max(
+  1,
+  Math.round(img.naturalWidth*scale)
+ );
+
+ canvas.height=Math.max(
+  1,
+  Math.round(img.naturalHeight*scale)
+ );
+
+ const ctx=canvas.getContext("2d");
+
+ ctx.drawImage(
+  img,
+  0,
+  0,
+  canvas.width,
+  canvas.height
+ );
+
+
+ /*
+  מתחילים באיכות 55%.
+  אם התמונה עדיין כבדה,
+  מורידים איכות בהדרגה.
+ */
+
+ let quality=.55;
+
+ let data=canvas.toDataURL(
+  "image/jpeg",
+  quality
+ );
+
+ while(
+  data.length>650000 &&
+  quality>.28
+ ){
+  quality-=.08;
+
+  data=canvas.toDataURL(
+   "image/jpeg",
+   quality
+  );
+ }
+
+ if(data.length>850000)
+  throw Error(
+   "התמונה גדולה מדי, נסה תמונה אחרת"
+  );
+
+ return data;
+}
+
+
+/* ===== שליחת תמונה ===== */
+
+$("sendPhoto").onclick=async()=>{
+
+ const btn=$("sendPhoto");
+
+ if(btn.disabled)
+  return;
+
+ try{
+
+  const f=$("photo").files[0];
+
+  if(!f)
+   throw Error("בחר תמונה קודם");
+
+  btn.disabled=true;
+
+  msg(
+   "photoMsg",
+   "⏳ מכווץ ושולח תמונה..."
+  );
+
+  const data=await compress(f);
+
+  const note=$("note").value.trim();
+
+  await request(
+   "תמונה מהשטח",
+   `PHOTO|${data}|${note}`
+  );
+
+  msg(
+   "photoMsg",
+   "✅ התמונה נשלחה ומופיעה בחפ״ק"
+  );
+
+  $("photo").value="";
+  $("note").value="";
+  $("preview").style.display="none";
+  $("preview").src="";
+
+ }catch(e){
+
+  msg(
+   "photoMsg",
+   "❌ "+e.message,
+   true
+  );
+
+ }finally{
+
+  btn.disabled=false;
+ }
+};
+
+
+/* ===== שגיאות כלליות ===== */
+
+window.addEventListener("unhandledrejection",e=>{
+ console.error("Worker page error:",e.reason);
+});
+
+})();
+</script>
+
+</body>
+</html>
