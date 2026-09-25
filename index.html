@@ -25,6 +25,26 @@ button,input,select{background:#0a2132!important;border:1px solid #1c4e6b!import
 #fieldReqMini .mini{padding:7px;border-bottom:1px solid #14364b;font-size:12px}#fieldReqMini b{color:#ffcf67}.eventMini{font-size:12px;line-height:1.9}.eventMini span{display:block;border-bottom:1px solid #14364b}
 @media(max-width:1200px){body{min-width:900px}main{padding-right:285px!important;padding-left:165px!important}.#panel{}#panel{width:275px!important}#premiumLeft{width:145px!important}#premiumLeft button{font-size:11px;padding:8px}#premiumBottom{left:165px;right:285px}#dangerBanner{left:165px;right:285px}}
 </style>
+
+<style id="mobile-fix">
+@media(max-width:760px){
+ html,body{overflow:auto!important;width:100%!important;min-width:0!important}
+ body{min-width:0!important}
+ header{height:72px!important;padding:8px 10px!important}
+ header h1{font-size:15px!important}
+ header .sub{font-size:9px!important}
+ main{height:calc(100vh - 72px)!important;min-height:620px!important;padding:8px!important;display:block!important}
+ #map{height:58vh!important;min-height:420px!important;width:100%!important;border-radius:12px!important}
+ #premiumLeft{display:none!important}
+ #panel{position:relative!important;display:block!important;right:auto!important;left:auto!important;top:auto!important;width:100%!important;max-height:none!important;margin-top:8px!important}
+ #premiumBottom{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;height:auto!important;display:grid!important;grid-template-columns:1fr!important;margin-top:8px!important}
+ #dangerBanner{position:fixed!important;left:8px!important;right:8px!important;top:76px!important;height:auto!important;flex-wrap:wrap!important}
+ #top{display:none!important}
+ #count{position:absolute!important;left:14px!important;top:14px!important}
+ .photos{overflow-x:auto!important}
+ .photoCard{min-width:150px!important}
+}
+</style>
 </head><body><header><div><h1>🔥 מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V7 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><b>🟢 LIVE • חפ״ק</b></header><main>
 <div id="premiumLeft" dir="rtl"><div class="ptitle">🗺️ כלי חפ״ק</div>
 <button class="primary" id="plDraw">✏️ ציור / סימון</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🛡️ קו הגנה</button><button data-l="escape">🏃 מסלול בריחה</button><button data-p="assembly">👥 נקודת כינוס</button><button data-p="water">💧 מקור מים</button><button data-p="engine">🚒 רכב שטח</button><button data-p="hazard" class="danger">⚠️ אזור סכנה</button><button id="plArea">📐 מדידת שטח</button><button id="plDist">📏 מדידת מרחק</button><button id="plUndo">↩️ בטל צעד</button><button id="plErase">🧽 מחיקה</button><button id="plLocate">📍 המיקום שלי</button></div>
@@ -100,10 +120,13 @@ document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>pMode(b.dataset.p
 $("base").onchange=()=>{map.removeLayer(bt);bt=tiles[$("base").value];bt.addTo(map);bt.bringToBack?.()};setInterval(()=>{if(started){let s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60),h=Math.floor(m/60);$("time").textContent=`${String(h).padStart(2,"0")}:${String(m%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}},1000);
 (async()=>{try{let {data}=await cloud.auth.getSession();if(data.session){$("auth").textContent="✅ חפ״ק מחובר";await restore();await live();rt()}else $("auth").textContent="נדרשת כניסה לעדכוני LIVE."}catch(e){$("auth").textContent="❌ "+e.message}})();
 })();
-</script><script>
+
+
 window.addEventListener('DOMContentLoaded',()=>{
  const q=id=>document.getElementById(id), click=id=>q(id)?.click();
  q('plDraw')?.addEventListener('click',()=>click('freeDraw')); q('plArea')?.addEventListener('click',()=>click('measureArea')); q('plDist')?.addEventListener('click',()=>click('measureDist')); q('plUndo')?.addEventListener('click',()=>click('undo')); q('plErase')?.addEventListener('click',()=>click('erase')); q('plLocate')?.addEventListener('click',()=>click('locate'));
 });
+
+
 </script>
 </body></html>
