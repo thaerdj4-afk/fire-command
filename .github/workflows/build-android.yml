@@ -62,8 +62,8 @@ jobs:
                   applicationId 'com.firecommand.worker'
                   minSdk 26
                   targetSdk 34
-                  versionCode 1
-                  versionName '1.0'
+                  versionCode 2
+                  versionName '2.0'
               }
 
               compileOptions {
@@ -86,6 +86,7 @@ jobs:
 
               <application
                   android:allowBackup="true"
+                  android:usesCleartextTraffic="false"
                   android:label="חפ״ק שריפה - עובד"
                   android:supportsRtl="true"
                   android:theme="@android:style/Theme.Material.Light.NoActionBar">
@@ -117,10 +118,15 @@ jobs:
           import android.app.Activity;
           import android.content.Intent;
           import android.content.pm.PackageManager;
+          import android.graphics.Color;
+          import android.net.Uri;
           import android.os.Build;
           import android.os.Bundle;
           import android.view.Gravity;
           import android.view.View;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
           import android.widget.Button;
           import android.widget.EditText;
           import android.widget.LinearLayout;
@@ -131,7 +137,11 @@ jobs:
 
               private EditText eventField;
               private EditText nameField;
-              private TextView status;
+              private LinearLayout login;
+              private WebView web;
+
+              private String eventId = "";
+              private String workerName = "";
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -139,73 +149,130 @@ jobs:
 
                   LinearLayout root = new LinearLayout(this);
                   root.setOrientation(LinearLayout.VERTICAL);
-                  root.setPadding(45, 60, 45, 45);
-                  root.setGravity(Gravity.CENTER_HORIZONTAL);
                   root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+                  root.setBackgroundColor(Color.rgb(245, 246, 248));
+
+                  login = new LinearLayout(this);
+                  login.setOrientation(LinearLayout.VERTICAL);
+                  login.setPadding(40, 55, 40, 35);
 
                   TextView title = new TextView(this);
-                  title.setText("🔥 חפ״ק שריפה – עובד");
-                  title.setTextSize(27);
+                  title.setText("🔥 חפ״ק שריפה – אפליקציית עובד");
+                  title.setTextSize(25);
                   title.setGravity(Gravity.CENTER);
-                  root.addView(title);
+                  login.addView(title);
+
+                  TextView sub = new TextView(this);
+                  sub.setText(
+                      "\nהתחברות לאירוע ושיתוף מיקום חי עם החפ״ק\n"
+                  );
+                  sub.setTextSize(16);
+                  sub.setGravity(Gravity.CENTER);
+                  login.addView(sub);
 
                   eventField = new EditText(this);
-                  eventField.setHint("מזהה אירוע");
-                  root.addView(eventField);
+                  eventField.setHint(
+                      "הדבק קישור עובד או מזהה אירוע"
+                  );
+                  login.addView(eventField);
 
                   nameField = new EditText(this);
                   nameField.setHint("שם העובד");
-                  root.addView(nameField);
+                  login.addView(nameField);
 
-                  Button start = new Button(this);
-                  start.setText("📍 התחל שיתוף מיקום");
-                  root.addView(start);
+                  Button enter = new Button(this);
+                  enter.setText("🔥 כניסה לאירוע");
+                  login.addView(enter);
 
-                  Button stop = new Button(this);
-                  stop.setText("⛔ הפסק שיתוף");
-                  root.addView(stop);
+                  root.addView(login);
 
-                  status = new TextView(this);
-                  status.setText("\nהמיקום אינו משותף");
-                  status.setTextSize(18);
-                  status.setGravity(Gravity.CENTER);
-                  root.addView(status);
+                  web = new WebView(this);
+                  web.setVisibility(View.GONE);
+
+                  root.addView(
+                      web,
+                      new LinearLayout.LayoutParams(
+                          -1,
+                          0,
+                          1
+                      )
+                  );
 
                   setContentView(root);
 
-                  start.setOnClickListener(v -> prepareStart());
-
-                  stop.setOnClickListener(v -> {
-                      stopService(
-                          new Intent(this, LocationService.class)
-                      );
-                      status.setText("⚫ שיתוף המיקום הופסק");
-                  });
+                  enter.setOnClickListener(
+                      v -> prepare()
+                  );
               }
 
-              private void prepareStart() {
+              private String parseEvent(String raw) {
 
-                  if (eventField.getText().toString().trim().isEmpty()
-                          || nameField.getText().toString().trim().isEmpty()) {
+                  raw = raw.trim();
+
+                  try {
+
+                      Uri uri = Uri.parse(raw);
+
+                      String e =
+                          uri.getQueryParameter("event");
+
+                      if (
+                          e != null &&
+                          !e.trim().isEmpty()
+                      ) {
+                          return e.trim();
+                      }
+
+                  } catch (Exception ignored) {}
+
+                  return raw;
+              }
+
+              private void prepare() {
+
+                  eventId =
+                      parseEvent(
+                          eventField
+                              .getText()
+                              .toString()
+                      );
+
+                  workerName =
+                      nameField
+                          .getText()
+                          .toString()
+                          .trim();
+
+                  if (
+                      eventId.isEmpty() ||
+                      workerName.isEmpty()
+                  ) {
 
                       Toast.makeText(
                           this,
-                          "יש להזין מזהה אירוע ושם עובד",
+                          "יש להזין אירוע ושם עובד",
                           Toast.LENGTH_SHORT
                       ).show();
 
                       return;
                   }
 
-                  if (Build.VERSION.SDK_INT >= 23 &&
+                  if (
+                      Build.VERSION.SDK_INT >= 23 &&
                       checkSelfPermission(
-                          Manifest.permission.ACCESS_FINE_LOCATION
-                      ) != PackageManager.PERMISSION_GRANTED) {
+                          Manifest.permission
+                              .ACCESS_FINE_LOCATION
+                      )
+                      !=
+                      PackageManager.PERMISSION_GRANTED
+                  ) {
 
                       requestPermissions(
                           new String[]{
-                              Manifest.permission.ACCESS_FINE_LOCATION,
-                              Manifest.permission.ACCESS_COARSE_LOCATION
+                              Manifest.permission
+                                  .ACCESS_FINE_LOCATION,
+                              Manifest.permission
+                                  .ACCESS_COARSE_LOCATION
                           },
                           100
                       );
@@ -213,35 +280,44 @@ jobs:
                       return;
                   }
 
-                  startTracking();
+                  startEverything();
               }
 
-              private void startTracking() {
+              private void startEverything() {
 
-                  if (Build.VERSION.SDK_INT >= 33 &&
+                  if (
+                      Build.VERSION.SDK_INT >= 33 &&
                       checkSelfPermission(
-                          Manifest.permission.POST_NOTIFICATIONS
-                      ) != PackageManager.PERMISSION_GRANTED) {
+                          Manifest.permission
+                              .POST_NOTIFICATIONS
+                      )
+                      !=
+                      PackageManager.PERMISSION_GRANTED
+                  ) {
 
                       requestPermissions(
                           new String[]{
-                              Manifest.permission.POST_NOTIFICATIONS
+                              Manifest.permission
+                                  .POST_NOTIFICATIONS
                           },
                           101
                       );
                   }
 
                   Intent service =
-                      new Intent(this, LocationService.class);
+                      new Intent(
+                          this,
+                          LocationService.class
+                      );
 
                   service.putExtra(
                       "event",
-                      eventField.getText().toString().trim()
+                      eventId
                   );
 
                   service.putExtra(
                       "name",
-                      nameField.getText().toString().trim()
+                      workerName
                   );
 
                   if (Build.VERSION.SDK_INT >= 26) {
@@ -250,9 +326,27 @@ jobs:
                       startService(service);
                   }
 
-                  status.setText(
-                      "🟢 שיתוף המיקום פעיל"
+                  login.setVisibility(View.GONE);
+                  web.setVisibility(View.VISIBLE);
+
+                  WebSettings settings =
+                      web.getSettings();
+
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setGeolocationEnabled(true);
+
+                  web.setWebViewClient(
+                      new WebViewClient()
                   );
+
+                  String url =
+                      "https://thaerdj4-afk.github.io/fire-command/worker.html?event="
+                      + Uri.encode(eventId)
+                      + "&name="
+                      + Uri.encode(workerName);
+
+                  web.loadUrl(url);
               }
 
               @Override
@@ -261,18 +355,40 @@ jobs:
                   String[] permissions,
                   int[] results
               ) {
+
                   super.onRequestPermissionsResult(
                       requestCode,
                       permissions,
                       results
                   );
 
-                  if (requestCode == 100 &&
+                  if (
+                      requestCode == 100 &&
                       results.length > 0 &&
-                      results[0] ==
-                          PackageManager.PERMISSION_GRANTED) {
+                      results[0]
+                      ==
+                      PackageManager.PERMISSION_GRANTED
+                  ) {
 
-                      startTracking();
+                      startEverything();
+                  }
+              }
+
+              @Override
+              public void onBackPressed() {
+
+                  if (
+                      web != null &&
+                      web.getVisibility()
+                          == View.VISIBLE &&
+                      web.canGoBack()
+                  ) {
+
+                      web.goBack();
+
+                  } else {
+
+                      super.onBackPressed();
                   }
               }
           }
@@ -305,6 +421,9 @@ jobs:
           import java.net.URL;
           import java.net.URLEncoder;
           import java.nio.charset.StandardCharsets;
+          import java.text.SimpleDateFormat;
+          import java.util.Date;
+          import java.util.Locale;
           import java.util.concurrent.ExecutorService;
           import java.util.concurrent.Executors;
 
@@ -332,7 +451,9 @@ jobs:
 
               @Override
               public void onCreate() {
+
                   super.onCreate();
+
                   createChannel();
               }
 
@@ -346,18 +467,66 @@ jobs:
                   if (intent != null) {
 
                       String e =
-                          intent.getStringExtra("event");
+                          intent.getStringExtra(
+                              "event"
+                          );
 
                       String n =
-                          intent.getStringExtra("name");
+                          intent.getStringExtra(
+                              "name"
+                          );
 
-                      if (e != null) eventId = e.trim();
-                      if (n != null) workerName = n.trim();
+                      if (e != null) {
+                          eventId = e.trim();
+                      }
+
+                      if (n != null) {
+                          workerName = n.trim();
+                      }
+
+                      getSharedPreferences(
+                          "worker",
+                          MODE_PRIVATE
+                      )
+                      .edit()
+                      .putString(
+                          "event",
+                          eventId
+                      )
+                      .putString(
+                          "name",
+                          workerName
+                      )
+                      .apply();
+
+                  } else {
+
+                      eventId =
+                          getSharedPreferences(
+                              "worker",
+                              MODE_PRIVATE
+                          )
+                          .getString(
+                              "event",
+                              ""
+                          );
+
+                      workerName =
+                          getSharedPreferences(
+                              "worker",
+                              MODE_PRIVATE
+                          )
+                          .getString(
+                              "name",
+                              ""
+                          );
                   }
 
                   startForeground(
                       7001,
-                      notification("מתחבר ל-GPS...")
+                      notification(
+                          "מתחבר ל-GPS..."
+                      )
                   );
 
                   executor.execute(
@@ -371,13 +540,21 @@ jobs:
 
               private void startGps() {
 
-                  if (checkSelfPermission(
-                      Manifest.permission.ACCESS_FINE_LOCATION
-                  ) != PackageManager.PERMISSION_GRANTED
-                  &&
-                  checkSelfPermission(
-                      Manifest.permission.ACCESS_COARSE_LOCATION
-                  ) != PackageManager.PERMISSION_GRANTED) {
+                  if (
+                      checkSelfPermission(
+                          Manifest.permission
+                              .ACCESS_FINE_LOCATION
+                      )
+                      !=
+                      PackageManager.PERMISSION_GRANTED
+                      &&
+                      checkSelfPermission(
+                          Manifest.permission
+                              .ACCESS_COARSE_LOCATION
+                      )
+                      !=
+                      PackageManager.PERMISSION_GRANTED
+                  ) {
 
                       stopSelf();
                       return;
@@ -385,16 +562,22 @@ jobs:
 
                   manager =
                       (LocationManager)
-                          getSystemService(LOCATION_SERVICE);
+                          getSystemService(
+                              LOCATION_SERVICE
+                          );
 
                   try {
 
-                      if (manager.isProviderEnabled(
-                          LocationManager.GPS_PROVIDER
-                      )) {
+                      if (
+                          manager.isProviderEnabled(
+                              LocationManager
+                                  .GPS_PROVIDER
+                          )
+                      ) {
 
                           manager.requestLocationUpdates(
-                              LocationManager.GPS_PROVIDER,
+                              LocationManager
+                                  .GPS_PROVIDER,
                               5000,
                               2,
                               this
@@ -405,12 +588,16 @@ jobs:
 
                   try {
 
-                      if (manager.isProviderEnabled(
-                          LocationManager.NETWORK_PROVIDER
-                      )) {
+                      if (
+                          manager.isProviderEnabled(
+                              LocationManager
+                                  .NETWORK_PROVIDER
+                          )
+                      ) {
 
                           manager.requestLocationUpdates(
-                              LocationManager.NETWORK_PROVIDER,
+                              LocationManager
+                                  .NETWORK_PROVIDER,
                               7000,
                               3,
                               this
@@ -438,71 +625,60 @@ jobs:
                       }
 
                       if (workerId != null) {
-                          updateLocation(lat, lng);
+                          updateLocation(
+                              lat,
+                              lng
+                          );
                       }
                   });
               }
 
               private void findOrCreateWorker() {
 
-                  if (eventId.isEmpty()
-                      || workerName.isEmpty()) {
+                  if (
+                      eventId.isEmpty() ||
+                      workerName.isEmpty()
+                  ) {
                       return;
                   }
+
+                  HttpURLConnection c = null;
 
                   try {
 
                       String endpoint =
-                          SUPABASE +
-                          "/rest/v1/workers" +
-                          "?event_id=eq." +
-                          URLEncoder.encode(
+                          SUPABASE
+                          + "/rest/v1/workers"
+                          + "?event_id=eq."
+                          + URLEncoder.encode(
                               eventId,
                               "UTF-8"
-                          ) +
-                          "&name=eq." +
-                          URLEncoder.encode(
+                          )
+                          + "&name=eq."
+                          + URLEncoder.encode(
                               workerName,
                               "UTF-8"
-                          ) +
-                          "&select=id,status" +
-                          "&order=created_at.desc" +
-                          "&limit=10";
+                          )
+                          + "&select=id,status"
+                          + "&order=created_at.desc"
+                          + "&limit=10";
 
-                      HttpURLConnection c =
-                          connection(
-                              endpoint,
-                              "GET"
-                          );
+                      c = connection(
+                          endpoint,
+                          "GET"
+                      );
 
                       int code =
                           c.getResponseCode();
 
-                      if (code >= 200 && code < 300) {
-
-                          BufferedReader reader =
-                              new BufferedReader(
-                                  new InputStreamReader(
-                                      c.getInputStream(),
-                                      StandardCharsets.UTF_8
-                                  )
-                              );
-
-                          StringBuilder data =
-                              new StringBuilder();
-
-                          String line;
-
-                          while (
-                              (line = reader.readLine())
-                              != null
-                          ) {
-                              data.append(line);
-                          }
+                      if (
+                          code >= 200 &&
+                          code < 300
+                      ) {
 
                           JSONArray rows =
                               new JSONArray(
-                                  data.toString()
+                                  read(c)
                               );
 
                           for (
@@ -514,11 +690,13 @@ jobs:
                               JSONObject row =
                                   rows.getJSONObject(i);
 
-                              if (!"סיים".equals(
-                                  row.optString(
-                                      "status"
+                              if (
+                                  !"סיים".equals(
+                                      row.optString(
+                                          "status"
+                                      )
                                   )
-                              )) {
+                              ) {
 
                                   workerId =
                                       row.optString(
@@ -531,13 +709,18 @@ jobs:
                           }
                       }
 
-                      c.disconnect();
+                  } catch (Exception ignored) {
 
-                      if (workerId == null) {
-                          createWorker();
+                  } finally {
+
+                      if (c != null) {
+                          c.disconnect();
                       }
+                  }
 
-                  } catch (Exception ignored) {}
+                  if (workerId == null) {
+                      createWorker();
+                  }
               }
 
               private void createWorker() {
@@ -547,8 +730,8 @@ jobs:
                   try {
 
                       c = connection(
-                          SUPABASE +
-                          "/rest/v1/workers",
+                          SUPABASE
+                          + "/rest/v1/workers",
                           "POST"
                       );
 
@@ -575,49 +758,27 @@ jobs:
                           "פעיל"
                       );
 
-                      byte[] bytes =
-                          body.toString().getBytes(
-                              StandardCharsets.UTF_8
-                          );
-
-                      try (
-                          OutputStream out =
-                              c.getOutputStream()
-                      ) {
-                          out.write(bytes);
-                      }
+                      write(
+                          c,
+                          body.toString()
+                      );
 
                       int code =
                           c.getResponseCode();
 
-                      if (code >= 200 && code < 300) {
-
-                          BufferedReader reader =
-                              new BufferedReader(
-                                  new InputStreamReader(
-                                      c.getInputStream(),
-                                      StandardCharsets.UTF_8
-                                  )
-                              );
-
-                          StringBuilder data =
-                              new StringBuilder();
-
-                          String line;
-
-                          while (
-                              (line = reader.readLine())
-                              != null
-                          ) {
-                              data.append(line);
-                          }
+                      if (
+                          code >= 200 &&
+                          code < 300
+                      ) {
 
                           JSONArray rows =
                               new JSONArray(
-                                  data.toString()
+                                  read(c)
                               );
 
-                          if (rows.length() > 0) {
+                          if (
+                              rows.length() > 0
+                          ) {
 
                               workerId =
                                   rows
@@ -649,9 +810,9 @@ jobs:
                   try {
 
                       String endpoint =
-                          SUPABASE +
-                          "/rest/v1/workers?id=eq." +
-                          URLEncoder.encode(
+                          SUPABASE
+                          + "/rest/v1/workers?id=eq."
+                          + URLEncoder.encode(
                               workerId,
                               "UTF-8"
                           );
@@ -681,30 +842,27 @@ jobs:
 
                       body.put(
                           "location_updated_at",
-                          new java.text.SimpleDateFormat(
+                          new SimpleDateFormat(
                               "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-                              java.util.Locale.US
+                              Locale.US
                           ).format(
-                              new java.util.Date()
+                              new Date()
                           )
                       );
 
-                      byte[] bytes =
-                          body.toString().getBytes(
-                              StandardCharsets.UTF_8
-                          );
-
-                      try (
-                          OutputStream out =
-                              c.getOutputStream()
-                      ) {
-                          out.write(bytes);
-                      }
+                      write(
+                          c,
+                          body.toString()
+                      );
 
                       int code =
                           c.getResponseCode();
 
-                      if (code >= 200 && code < 300) {
+                      if (
+                          code >= 200 &&
+                          code < 300
+                      ) {
+
                           updateNotification(
                               "🟢 מיקום חי מחובר לחפ״ק"
                           );
@@ -731,6 +889,7 @@ jobs:
                               .openConnection();
 
                   c.setRequestMethod(method);
+
                   c.setConnectTimeout(15000);
                   c.setReadTimeout(15000);
 
@@ -750,18 +909,67 @@ jobs:
                   );
 
                   if (
-                      "POST".equals(method)
-                      || "PATCH".equals(method)
+                      "POST".equals(method) ||
+                      "PATCH".equals(method)
                   ) {
+
                       c.setDoOutput(true);
                   }
 
                   return c;
               }
 
+              private void write(
+                  HttpURLConnection c,
+                  String data
+              ) throws Exception {
+
+                  try (
+                      OutputStream out =
+                          c.getOutputStream()
+                  ) {
+
+                      out.write(
+                          data.getBytes(
+                              StandardCharsets.UTF_8
+                          )
+                      );
+                  }
+              }
+
+              private String read(
+                  HttpURLConnection c
+              ) throws Exception {
+
+                  BufferedReader reader =
+                      new BufferedReader(
+                          new InputStreamReader(
+                              c.getInputStream(),
+                              StandardCharsets.UTF_8
+                          )
+                      );
+
+                  StringBuilder data =
+                      new StringBuilder();
+
+                  String line;
+
+                  while (
+                      (line = reader.readLine())
+                      != null
+                  ) {
+
+                      data.append(line);
+                  }
+
+                  return data.toString();
+              }
+
               private void createChannel() {
 
-                  if (Build.VERSION.SDK_INT >= 26) {
+                  if (
+                      Build.VERSION.SDK_INT >= 26
+                  ) {
 
                       NotificationChannel channel =
                           new NotificationChannel(
@@ -777,6 +985,7 @@ jobs:
                           );
 
                       if (nm != null) {
+
                           nm.createNotificationChannel(
                               channel
                           );
@@ -799,25 +1008,34 @@ jobs:
                           this,
                           0,
                           open,
-                          PendingIntent.FLAG_UPDATE_CURRENT
+                          PendingIntent
+                              .FLAG_UPDATE_CURRENT
                           |
-                          PendingIntent.FLAG_IMMUTABLE
+                          PendingIntent
+                              .FLAG_IMMUTABLE
                       );
 
-                  Notification.Builder b;
+                  Notification.Builder builder;
 
-                  if (Build.VERSION.SDK_INT >= 26) {
-                      b = new Notification.Builder(
-                          this,
-                          CHANNEL
-                      );
+                  if (
+                      Build.VERSION.SDK_INT >= 26
+                  ) {
+
+                      builder =
+                          new Notification.Builder(
+                              this,
+                              CHANNEL
+                          );
+
                   } else {
-                      b = new Notification.Builder(
-                          this
-                      );
+
+                      builder =
+                          new Notification.Builder(
+                              this
+                          );
                   }
 
-                  return b
+                  return builder
                       .setContentTitle(
                           "🔥 חפ״ק שריפה – "
                           + workerName
@@ -844,6 +1062,7 @@ jobs:
                           );
 
                   if (nm != null) {
+
                       nm.notify(
                           7001,
                           notification(text)
@@ -857,8 +1076,14 @@ jobs:
                   if (manager != null) {
 
                       try {
-                          manager.removeUpdates(this);
-                      } catch (Exception ignored) {}
+
+                          manager.removeUpdates(
+                              this
+                          );
+
+                      } catch (
+                          Exception ignored
+                      ) {}
                   }
 
                   executor.shutdown();
@@ -870,6 +1095,7 @@ jobs:
               public IBinder onBind(
                   Intent intent
               ) {
+
                   return null;
               }
           }
@@ -887,6 +1113,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK
+          name: Fire-Command-Worker-APK-v2
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
