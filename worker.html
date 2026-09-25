@@ -24,7 +24,22 @@ async function upsertWorker(pos){
  }catch(e){$('loc').className='status bad';$('loc').textContent='🔴 לא נשלח לחפ״ק: '+(e?.message||'שגיאת חיבור');}
 }
 function startLocation(){if(!currentEvent){alert('אין כרגע אירוע פעיל בחפ״ק');return}if(!worker()){alert('יש להזין שם עובד');return}if(!navigator.geolocation){alert('המכשיר לא תומך בשיתוף מיקום');return}navigator.geolocation.getCurrentPosition(upsertWorker,()=>alert('יש לאשר הרשאת מיקום בדפדפן'),{enableHighAccuracy:true});watch=navigator.geolocation.watchPosition(upsertWorker,()=>{}, {enableHighAccuracy:true,maximumAge:10000,timeout:20000})}
-function stopLocation(){if(watch!==null)navigator.geolocation.clearWatch(watch);watch=null;$('loc').className='status bad';$('loc').textContent='🔴 שיתוף המיקום הופסק'}
+async function stopLocation(){
+  if(watch!==null) navigator.geolocation.clearWatch(watch);
+  watch=null;
+
+  if(workerId){
+    await db.from('workers').update({
+      latitude:null,
+      longitude:null,
+      location_updated_at:new Date().toISOString()
+    }).eq('id',workerId);
+  }
+
+  lastPos=null;
+  $('loc').className='status bad';
+  $('loc').textContent='🔴 שיתוף המיקום הופסק';
+} 
 async function sendHelp(typeOverride){if(!currentEvent){alert('אין אירוע פעיל בחפ״ק');return false}if(!worker()){alert('יש להזין שם עובד');return false}let pos=lastPos;const row={worker_id:workerId||null,worker_name:worker(),request_type:typeOverride||$('help').value,details:$('qty').value||null,status:'חדש',latitude:pos?.coords?.latitude||null,longitude:pos?.coords?.longitude||null};try{let r=await db.from('worker_requests').insert(row);if(r.error)throw r.error;$('helpMsg').className='status ok';$('helpMsg').textContent='✅ הבקשה נשלחה לחפ״ק: '+row.request_type;return true}catch(e){$('helpMsg').className='status bad';$('helpMsg').textContent='🔴 לא נשלח לחפ״ק: '+(e?.message||e?.details||e?.hint||String(e));return false}}
 async function sos(){const ok=await sendHelp('חירום / סכנה');$('sosMsg').className=ok?'status bad':'status bad';$('sosMsg').textContent=ok?'🆘 אות המצוקה נשלח לחפ״ק.':'🔴 אות המצוקה לא נמסר לחפ״ק. התקשר/פעל לפי נוהל החירום.';try{navigator.vibrate&&navigator.vibrate([250,100,250])}catch(e){}}
 const b=$('sos');['pointerdown','touchstart'].forEach(e=>b.addEventListener(e,()=>{clearTimeout(timer);timer=setTimeout(sos,3000)}));['pointerup','pointerleave','touchend','touchcancel'].forEach(e=>b.addEventListener(e,()=>clearTimeout(timer)));
