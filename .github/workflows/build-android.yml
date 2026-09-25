@@ -2,12 +2,6 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "android-app/**"
-      - ".github/workflows/build-android.yml"
 
 jobs:
   build:
@@ -17,25 +11,882 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Create Android project
+        shell: bash
+        run: |
+          mkdir -p android-app/app/src/main/java/com/firecommand/worker
+
+          cat > android-app/settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.name = "FireCommandWorker"
+          include(":app")
+          EOF
+
+          cat > android-app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
+
+          cat > android-app/app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.firecommand.worker'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId 'com.firecommand.worker'
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          cat > android-app/app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+              <application
+                  android:allowBackup="true"
+                  android:label="חפ״ק שריפה - עובד"
+                  android:supportsRtl="true"
+                  android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+
+                  </activity>
+
+                  <service
+                      android:name=".LocationService"
+                      android:exported="false"
+                      android:foregroundServiceType="location"/>
+
+              </application>
+          </manifest>
+          EOF
+
+          cat > android-app/app/src/main/java/com/firecommand/worker/MainActivity.java <<'EOF'
+          package com.firecommand.worker;
+
+          import android.Manifest;
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.widget.Button;
+          import android.widget.EditText;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          import android.widget.Toast;
+
+          public class MainActivity extends Activity {
+
+              private EditText eventField;
+              private EditText nameField;
+              private TextView status;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  LinearLayout root = new LinearLayout(this);
+                  root.setOrientation(LinearLayout.VERTICAL);
+                  root.setPadding(45, 60, 45, 45);
+                  root.setGravity(Gravity.CENTER_HORIZONTAL);
+                  root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+
+                  TextView title = new TextView(this);
+                  title.setText("🔥 חפ״ק שריפה – עובד");
+                  title.setTextSize(27);
+                  title.setGravity(Gravity.CENTER);
+                  root.addView(title);
+
+                  eventField = new EditText(this);
+                  eventField.setHint("מזהה אירוע");
+                  root.addView(eventField);
+
+                  nameField = new EditText(this);
+                  nameField.setHint("שם העובד");
+                  root.addView(nameField);
+
+                  Button start = new Button(this);
+                  start.setText("📍 התחל שיתוף מיקום");
+                  root.addView(start);
+
+                  Button stop = new Button(this);
+                  stop.setText("⛔ הפסק שיתוף");
+                  root.addView(stop);
+
+                  status = new TextView(this);
+                  status.setText("\nהמיקום אינו משותף");
+                  status.setTextSize(18);
+                  status.setGravity(Gravity.CENTER);
+                  root.addView(status);
+
+                  setContentView(root);
+
+                  start.setOnClickListener(v -> prepareStart());
+
+                  stop.setOnClickListener(v -> {
+                      stopService(
+                          new Intent(this, LocationService.class)
+                      );
+                      status.setText("⚫ שיתוף המיקום הופסק");
+                  });
+              }
+
+              private void prepareStart() {
+
+                  if (eventField.getText().toString().trim().isEmpty()
+                          || nameField.getText().toString().trim().isEmpty()) {
+
+                      Toast.makeText(
+                          this,
+                          "יש להזין מזהה אירוע ושם עובד",
+                          Toast.LENGTH_SHORT
+                      ).show();
+
+                      return;
+                  }
+
+                  if (Build.VERSION.SDK_INT >= 23 &&
+                      checkSelfPermission(
+                          Manifest.permission.ACCESS_FINE_LOCATION
+                      ) != PackageManager.PERMISSION_GRANTED) {
+
+                      requestPermissions(
+                          new String[]{
+                              Manifest.permission.ACCESS_FINE_LOCATION,
+                              Manifest.permission.ACCESS_COARSE_LOCATION
+                          },
+                          100
+                      );
+
+                      return;
+                  }
+
+                  startTracking();
+              }
+
+              private void startTracking() {
+
+                  if (Build.VERSION.SDK_INT >= 33 &&
+                      checkSelfPermission(
+                          Manifest.permission.POST_NOTIFICATIONS
+                      ) != PackageManager.PERMISSION_GRANTED) {
+
+                      requestPermissions(
+                          new String[]{
+                              Manifest.permission.POST_NOTIFICATIONS
+                          },
+                          101
+                      );
+                  }
+
+                  Intent service =
+                      new Intent(this, LocationService.class);
+
+                  service.putExtra(
+                      "event",
+                      eventField.getText().toString().trim()
+                  );
+
+                  service.putExtra(
+                      "name",
+                      nameField.getText().toString().trim()
+                  );
+
+                  if (Build.VERSION.SDK_INT >= 26) {
+                      startForegroundService(service);
+                  } else {
+                      startService(service);
+                  }
+
+                  status.setText(
+                      "🟢 שיתוף המיקום פעיל"
+                  );
+              }
+
+              @Override
+              public void onRequestPermissionsResult(
+                  int requestCode,
+                  String[] permissions,
+                  int[] results
+              ) {
+                  super.onRequestPermissionsResult(
+                      requestCode,
+                      permissions,
+                      results
+                  );
+
+                  if (requestCode == 100 &&
+                      results.length > 0 &&
+                      results[0] ==
+                          PackageManager.PERMISSION_GRANTED) {
+
+                      startTracking();
+                  }
+              }
+          }
+          EOF
+
+          cat > android-app/app/src/main/java/com/firecommand/worker/LocationService.java <<'EOF'
+          package com.firecommand.worker;
+
+          import android.Manifest;
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.app.Service;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.location.Location;
+          import android.location.LocationListener;
+          import android.location.LocationManager;
+          import android.os.Build;
+          import android.os.IBinder;
+
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+
+          import java.io.BufferedReader;
+          import java.io.InputStreamReader;
+          import java.io.OutputStream;
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+          import java.net.URLEncoder;
+          import java.nio.charset.StandardCharsets;
+          import java.util.concurrent.ExecutorService;
+          import java.util.concurrent.Executors;
+
+          public class LocationService
+              extends Service
+              implements LocationListener {
+
+              private static final String CHANNEL =
+                  "fire_worker_location";
+
+              private static final String SUPABASE =
+                  "https://jvubjwzzikfwsektifzi.supabase.co";
+
+              private static final String KEY =
+                  "sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW";
+
+              private LocationManager manager;
+
+              private final ExecutorService executor =
+                  Executors.newSingleThreadExecutor();
+
+              private String eventId = "";
+              private String workerName = "";
+              private String workerId = null;
+
+              @Override
+              public void onCreate() {
+                  super.onCreate();
+                  createChannel();
+              }
+
+              @Override
+              public int onStartCommand(
+                  Intent intent,
+                  int flags,
+                  int startId
+              ) {
+
+                  if (intent != null) {
+
+                      String e =
+                          intent.getStringExtra("event");
+
+                      String n =
+                          intent.getStringExtra("name");
+
+                      if (e != null) eventId = e.trim();
+                      if (n != null) workerName = n.trim();
+                  }
+
+                  startForeground(
+                      7001,
+                      notification("מתחבר ל-GPS...")
+                  );
+
+                  executor.execute(
+                      this::findOrCreateWorker
+                  );
+
+                  startGps();
+
+                  return START_STICKY;
+              }
+
+              private void startGps() {
+
+                  if (checkSelfPermission(
+                      Manifest.permission.ACCESS_FINE_LOCATION
+                  ) != PackageManager.PERMISSION_GRANTED
+                  &&
+                  checkSelfPermission(
+                      Manifest.permission.ACCESS_COARSE_LOCATION
+                  ) != PackageManager.PERMISSION_GRANTED) {
+
+                      stopSelf();
+                      return;
+                  }
+
+                  manager =
+                      (LocationManager)
+                          getSystemService(LOCATION_SERVICE);
+
+                  try {
+
+                      if (manager.isProviderEnabled(
+                          LocationManager.GPS_PROVIDER
+                      )) {
+
+                          manager.requestLocationUpdates(
+                              LocationManager.GPS_PROVIDER,
+                              5000,
+                              2,
+                              this
+                          );
+                      }
+
+                  } catch (Exception ignored) {}
+
+                  try {
+
+                      if (manager.isProviderEnabled(
+                          LocationManager.NETWORK_PROVIDER
+                      )) {
+
+                          manager.requestLocationUpdates(
+                              LocationManager.NETWORK_PROVIDER,
+                              7000,
+                              3,
+                              this
+                          );
+                      }
+
+                  } catch (Exception ignored) {}
+              }
+
+              @Override
+              public void onLocationChanged(
+                  Location location
+              ) {
+
+                  double lat =
+                      location.getLatitude();
+
+                  double lng =
+                      location.getLongitude();
+
+                  executor.execute(() -> {
+
+                      if (workerId == null) {
+                          findOrCreateWorker();
+                      }
+
+                      if (workerId != null) {
+                          updateLocation(lat, lng);
+                      }
+                  });
+              }
+
+              private void findOrCreateWorker() {
+
+                  if (eventId.isEmpty()
+                      || workerName.isEmpty()) {
+                      return;
+                  }
+
+                  try {
+
+                      String endpoint =
+                          SUPABASE +
+                          "/rest/v1/workers" +
+                          "?event_id=eq." +
+                          URLEncoder.encode(
+                              eventId,
+                              "UTF-8"
+                          ) +
+                          "&name=eq." +
+                          URLEncoder.encode(
+                              workerName,
+                              "UTF-8"
+                          ) +
+                          "&select=id,status" +
+                          "&order=created_at.desc" +
+                          "&limit=10";
+
+                      HttpURLConnection c =
+                          connection(
+                              endpoint,
+                              "GET"
+                          );
+
+                      int code =
+                          c.getResponseCode();
+
+                      if (code >= 200 && code < 300) {
+
+                          BufferedReader reader =
+                              new BufferedReader(
+                                  new InputStreamReader(
+                                      c.getInputStream(),
+                                      StandardCharsets.UTF_8
+                                  )
+                              );
+
+                          StringBuilder data =
+                              new StringBuilder();
+
+                          String line;
+
+                          while (
+                              (line = reader.readLine())
+                              != null
+                          ) {
+                              data.append(line);
+                          }
+
+                          JSONArray rows =
+                              new JSONArray(
+                                  data.toString()
+                              );
+
+                          for (
+                              int i = 0;
+                              i < rows.length();
+                              i++
+                          ) {
+
+                              JSONObject row =
+                                  rows.getJSONObject(i);
+
+                              if (!"סיים".equals(
+                                  row.optString(
+                                      "status"
+                                  )
+                              )) {
+
+                                  workerId =
+                                      row.optString(
+                                          "id",
+                                          null
+                                      );
+
+                                  break;
+                              }
+                          }
+                      }
+
+                      c.disconnect();
+
+                      if (workerId == null) {
+                          createWorker();
+                      }
+
+                  } catch (Exception ignored) {}
+              }
+
+              private void createWorker() {
+
+                  HttpURLConnection c = null;
+
+                  try {
+
+                      c = connection(
+                          SUPABASE +
+                          "/rest/v1/workers",
+                          "POST"
+                      );
+
+                      c.setRequestProperty(
+                          "Prefer",
+                          "return=representation"
+                      );
+
+                      JSONObject body =
+                          new JSONObject();
+
+                      body.put(
+                          "event_id",
+                          eventId
+                      );
+
+                      body.put(
+                          "name",
+                          workerName
+                      );
+
+                      body.put(
+                          "status",
+                          "פעיל"
+                      );
+
+                      byte[] bytes =
+                          body.toString().getBytes(
+                              StandardCharsets.UTF_8
+                          );
+
+                      try (
+                          OutputStream out =
+                              c.getOutputStream()
+                      ) {
+                          out.write(bytes);
+                      }
+
+                      int code =
+                          c.getResponseCode();
+
+                      if (code >= 200 && code < 300) {
+
+                          BufferedReader reader =
+                              new BufferedReader(
+                                  new InputStreamReader(
+                                      c.getInputStream(),
+                                      StandardCharsets.UTF_8
+                                  )
+                              );
+
+                          StringBuilder data =
+                              new StringBuilder();
+
+                          String line;
+
+                          while (
+                              (line = reader.readLine())
+                              != null
+                          ) {
+                              data.append(line);
+                          }
+
+                          JSONArray rows =
+                              new JSONArray(
+                                  data.toString()
+                              );
+
+                          if (rows.length() > 0) {
+
+                              workerId =
+                                  rows
+                                      .getJSONObject(0)
+                                      .optString(
+                                          "id",
+                                          null
+                                      );
+                          }
+                      }
+
+                  } catch (Exception ignored) {
+
+                  } finally {
+
+                      if (c != null) {
+                          c.disconnect();
+                      }
+                  }
+              }
+
+              private void updateLocation(
+                  double lat,
+                  double lng
+              ) {
+
+                  HttpURLConnection c = null;
+
+                  try {
+
+                      String endpoint =
+                          SUPABASE +
+                          "/rest/v1/workers?id=eq." +
+                          URLEncoder.encode(
+                              workerId,
+                              "UTF-8"
+                          );
+
+                      c = connection(
+                          endpoint,
+                          "PATCH"
+                      );
+
+                      c.setRequestProperty(
+                          "Prefer",
+                          "return=minimal"
+                      );
+
+                      JSONObject body =
+                          new JSONObject();
+
+                      body.put(
+                          "latitude",
+                          lat
+                      );
+
+                      body.put(
+                          "longitude",
+                          lng
+                      );
+
+                      body.put(
+                          "location_updated_at",
+                          new java.text.SimpleDateFormat(
+                              "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                              java.util.Locale.US
+                          ).format(
+                              new java.util.Date()
+                          )
+                      );
+
+                      byte[] bytes =
+                          body.toString().getBytes(
+                              StandardCharsets.UTF_8
+                          );
+
+                      try (
+                          OutputStream out =
+                              c.getOutputStream()
+                      ) {
+                          out.write(bytes);
+                      }
+
+                      int code =
+                          c.getResponseCode();
+
+                      if (code >= 200 && code < 300) {
+                          updateNotification(
+                              "🟢 מיקום חי מחובר לחפ״ק"
+                          );
+                      }
+
+                  } catch (Exception ignored) {
+
+                  } finally {
+
+                      if (c != null) {
+                          c.disconnect();
+                      }
+                  }
+              }
+
+              private HttpURLConnection connection(
+                  String address,
+                  String method
+              ) throws Exception {
+
+                  HttpURLConnection c =
+                      (HttpURLConnection)
+                          new URL(address)
+                              .openConnection();
+
+                  c.setRequestMethod(method);
+                  c.setConnectTimeout(15000);
+                  c.setReadTimeout(15000);
+
+                  c.setRequestProperty(
+                      "apikey",
+                      KEY
+                  );
+
+                  c.setRequestProperty(
+                      "Authorization",
+                      "Bearer " + KEY
+                  );
+
+                  c.setRequestProperty(
+                      "Content-Type",
+                      "application/json"
+                  );
+
+                  if (
+                      "POST".equals(method)
+                      || "PATCH".equals(method)
+                  ) {
+                      c.setDoOutput(true);
+                  }
+
+                  return c;
+              }
+
+              private void createChannel() {
+
+                  if (Build.VERSION.SDK_INT >= 26) {
+
+                      NotificationChannel channel =
+                          new NotificationChannel(
+                              CHANNEL,
+                              "מיקום חפ״ק",
+                              NotificationManager
+                                  .IMPORTANCE_LOW
+                          );
+
+                      NotificationManager nm =
+                          getSystemService(
+                              NotificationManager.class
+                          );
+
+                      if (nm != null) {
+                          nm.createNotificationChannel(
+                              channel
+                          );
+                      }
+                  }
+              }
+
+              private Notification notification(
+                  String text
+              ) {
+
+                  Intent open =
+                      new Intent(
+                          this,
+                          MainActivity.class
+                      );
+
+                  PendingIntent pi =
+                      PendingIntent.getActivity(
+                          this,
+                          0,
+                          open,
+                          PendingIntent.FLAG_UPDATE_CURRENT
+                          |
+                          PendingIntent.FLAG_IMMUTABLE
+                      );
+
+                  Notification.Builder b;
+
+                  if (Build.VERSION.SDK_INT >= 26) {
+                      b = new Notification.Builder(
+                          this,
+                          CHANNEL
+                      );
+                  } else {
+                      b = new Notification.Builder(
+                          this
+                      );
+                  }
+
+                  return b
+                      .setContentTitle(
+                          "🔥 חפ״ק שריפה – "
+                          + workerName
+                      )
+                      .setContentText(text)
+                      .setSmallIcon(
+                          android.R.drawable
+                              .ic_menu_mylocation
+                      )
+                      .setContentIntent(pi)
+                      .setOngoing(true)
+                      .setOnlyAlertOnce(true)
+                      .build();
+              }
+
+              private void updateNotification(
+                  String text
+              ) {
+
+                  NotificationManager nm =
+                      (NotificationManager)
+                          getSystemService(
+                              NOTIFICATION_SERVICE
+                          );
+
+                  if (nm != null) {
+                      nm.notify(
+                          7001,
+                          notification(text)
+                      );
+                  }
+              }
+
+              @Override
+              public void onDestroy() {
+
+                  if (manager != null) {
+
+                      try {
+                          manager.removeUpdates(this);
+                      } catch (Exception ignored) {}
+                  }
+
+                  executor.shutdown();
+
+                  super.onDestroy();
+              }
+
+              @Override
+              public IBinder onBind(
+                  Intent intent
+              ) {
+                  return null;
+              }
+          }
+          EOF
 
       - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
 
-      - name: Build Android APK
+      - name: Build APK
         working-directory: android-app
         run: gradle --no-daemon assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fire-command-worker-apk
+          name: Fire-Command-Worker-APK
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 30
