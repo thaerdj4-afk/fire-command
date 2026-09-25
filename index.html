@@ -1,0 +1,195 @@
+<!doctype html><html lang="he" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>מערכת ניהול אירועי שריפה</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#eaf0ec;color:#14221a;overflow:hidden}
+header{height:72px;background:#123c2e;color:white;display:flex;align-items:center;justify-content:space-between;padding:7px 14px}
+h1{font-size:18px;margin:0}.sub,.credit{font-size:12px;margin-top:3px}.credit a{color:white;font-weight:bold;text-decoration:none}
+main{height:calc(100vh - 72px);position:relative}#map{height:100%;width:100%}
+#panel{position:absolute;z-index:1000;right:12px;top:76px;width:360px;max-height:calc(100vh - 165px);overflow:auto;background:#fff;border-radius:14px;padding:10px;box-shadow:0 6px 28px #0004}
+.card{border:1px solid #d9e1dc;border-radius:11px;padding:9px;margin-bottom:8px}.card h3{font-size:14px;margin:0 0 7px}
+.row{display:flex;flex-wrap:wrap;gap:4px}button,select,input{padding:8px;border:1px solid #d2dad5;border-radius:8px;background:#f7f9f8}button{font-weight:bold;cursor:pointer}.fire{background:#b52222;color:#fff}.danger{background:#ffe4e1}
+#toolsBtn{display:none;position:absolute;z-index:1200;right:10px;top:82px;background:#123c2e;color:#fff;border:0;box-shadow:0 3px 12px #0004}
+#status{position:absolute;z-index:1050;left:50%;top:8px;transform:translateX(-50%);background:#12251dcc;color:white;border-radius:12px;padding:8px 12px;display:flex;gap:12px;align-items:center;white-space:nowrap;box-shadow:0 3px 12px #0004;font-size:13px}
+#windAlert{position:absolute;z-index:1300;left:50%;top:58px;transform:translateX(-50%);display:none;background:#ffdc64;color:#382800;padding:10px 15px;border-radius:10px;font-weight:900;box-shadow:0 4px 18px #0005;max-width:92vw}
+.small{font-size:11px;color:#68766e}.log{max-height:120px;overflow:auto;font-size:11px}.log div{padding:4px;border-bottom:1px solid #eee}
+.toolFloat{position:absolute;z-index:1000;left:10px;bottom:25px;display:flex;flex-direction:column;gap:5px}.toolFloat button{background:white;box-shadow:0 2px 9px #0003;font-size:18px}
+.workerPin{background:#fff;border:2px solid #123c2e;border-radius:12px;padding:3px 6px;box-shadow:0 2px 8px #0005;font-size:12px;font-weight:800;white-space:nowrap}.workerPin .dot{font-size:13px}.workerPin .st{font-size:10px;font-weight:600;color:#445}.workerRow{padding:5px 0;border-bottom:1px solid #eee;line-height:1.45}#workerBtn{position:absolute;z-index:1200;right:12px;bottom:18px;background:#fff;border:2px solid #123c2e;box-shadow:0 3px 12px #0004}#workerSheet{display:none;position:absolute;z-index:1500;right:12px;bottom:65px;width:340px;max-width:calc(100vw - 24px);background:#fff;border-radius:14px;padding:12px;box-shadow:0 8px 30px #0006}#workerSheet.open{display:block}.ok{background:#e4f5e9}.warn{background:#fff2cc}.bad{background:#ffd9d9}.counter{position:absolute;z-index:1000;left:10px;top:62px;background:#fff;padding:7px 9px;border-radius:10px;box-shadow:0 2px 10px #0003;font-size:12px}
+#summaryModal{display:none;position:absolute;z-index:3000;inset:10px;background:#f7faf8;border-radius:16px;box-shadow:0 10px 40px #0007;overflow:auto;padding:18px}#summaryModal.open{display:block}.summaryGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.metric{background:white;border:1px solid #dbe3dd;border-radius:12px;padding:12px;text-align:center}.metric b{font-size:22px;display:block}.govBtn{background:#e8f0ff;border-color:#8ba7d9}.endedBanner{background:#ffe3e3;color:#7d1111;padding:10px;border-radius:10px;font-weight:bold}
+@media(max-width:760px){
+header{height:76px;padding:6px 9px}h1{font-size:14px}.sub,.credit{font-size:10px}main{height:calc(100vh - 76px)}
+#panel{display:none;top:48px;right:7px;left:7px;width:auto;max-height:62vh}#panel.open{display:block}#toolsBtn{display:block}
+#status{top:5px;left:7px;right:7px;transform:none;justify-content:space-around;gap:4px;font-size:11px;padding:7px 4px}
+#windAlert{top:48px}.counter{top:48px;left:7px}.toolFloat{bottom:22px}
+}
+</style></head><body>
+<header><div><h1>🔥 מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • מפת שליטה ארצית • V4</div>
+<div class="credit">פותח על ידי <b>תאיר אבו זיד</b> • לכל שאלה: <a href="tel:0524477147">052-4477147</a></div></div><b>ישראל</b></header>
+<main>
+<button id="toolsBtn" onclick="togglePanel()">☰ כלים</button>
+<div id="status"><span>🌬 <b id="sDir">—</b></span><span>מהירות <b id="sSpeed">—</b></span><span>משבים <b id="sGust">—</b></span><span>⏱ <b id="elapsed">00:00</b></span></div>
+<div id="windAlert"></div><div id="counter" class="counter">🚒 0 | 👥 0 | 💨 0 | 💧 0</div>
+<div class="toolFloat"><button onclick="freeDraw()">✏️</button><button onclick="undoLast()">↩️</button><button onclick="eraseMode()">🧽</button><button onclick="locateMe()">📍</button></div>
+<button id="workerBtn" onclick="toggleWorker()">👤 ממשק עובד</button><div id="workerSheet"><div class="card"><h3>👤 ממשק עובד</h3><input id="wName" placeholder="שם העובד"><select id="wStatus"><option>בדרך</option><option>הגיע</option><option>עובד בשריפה</option><option>בהפסקה</option><option>סיים</option></select><select id="wSector"><option value="">ללא גזרה</option><option>א</option><option>ב</option><option>ג</option><option>ד</option></select><div class="row"><button onclick="shareWorkerLocation()">📍 שתף מיקום</button><button onclick="stopWorkerLocation()">⏹ הפסק שיתוף</button></div><div id="wFresh" class="small">המיקום לא שותף עדיין</div></div><div class="card"><h3>בקשת סיוע</h3><select id="helpType"><option>מים לשתייה</option><option>מזון</option><option>דלק למפוח</option><option>מים לכיבוי</option><option>ציוד</option><option>תקלה בציוד</option><option>תגבור</option><option>רכב / כבאית</option><option>פציעה / רפואי</option><option>חירום / סכנה</option><option>אחר</option></select><button onclick="sendHelp()">שלח בקשה</button></div><div class="card"><h3>בטיחות</h3><label><input type="checkbox"> ציוד מגן אש</label><br><label><input type="checkbox"> נעלי בטיחות</label><br><label><input type="checkbox"> כפפות</label><br><label><input type="checkbox"> פנס</label><br><label><input type="checkbox"> מים לשתייה</label><div class="small">אין להיכנס לשטח מסוכן ללא ציוד המגן הנדרש ובהתאם להנחיות מנהל האירוע/גורמי החירום.</div></div><button class="fire" style="width:100%" onpointerdown="sosDown()" onpointerup="sosUp()" onpointerleave="sosUp()">🆘 לחיצה 3 שניות למצוקה</button><button onclick="toggleWorker()" style="width:100%;margin-top:6px">סגור</button></div><div id="panel">
+<div class="card"><h3>מפה ואירוע</h3><select id="baseSel"><option value="street">🗺️ רחובות – ברור</option><option value="satellite">🛰️ לוויין</option><option value="hybrid">🛰️ לוויין + שמות</option><option value="topo">⛰️ טופוגרפית</option><option value="light">⚪ מבצעית בהירה</option><option value="dark">🌙 מבצעית כהה</option></select>
+<input id="eventName" placeholder="שם אירוע"><button onclick="startEvent()">▶ פתיחת אירוע חדש</button><button class="govBtn" onclick="window.open('https://www.govmap.gov.il/','_blank')">🇮🇱 GovMap רשמי</button><button onclick="showPreviousEvents()">📚 אירועים קודמים</button></div>
+<div class="card"><h3>אש ושטח</h3><div class="row"><button class="fire" onclick="pointMode('fire')">🔥 מוקד</button><button onclick="drawLine('fireline')">קו אש</button><button onclick="drawPoly('burned')">שטח שרוף</button><button onclick="drawLine('firebreak')">פס אש</button><button onclick="drawLine('access')">דרך כניסה</button><button onclick="drawPoly('danger')">⚠ שטח מסוכן</button><button onclick="drawLine('escape')">🏃 נתיב מילוט</button><button onclick="pointMode('assembly')">נקודת כינוס</button></div></div>
+<div class="card"><h3>כוחות וציוד</h3><input id="worker" placeholder="שם עובד / צוות"><select id="unitStatus"><option>זמין</option><option>בדרך</option><option>בפעולה</option><option>סיים</option></select>
+<div class="row"><button onclick="pointMode('person')">👤 עובד + נ״צ</button><button onclick="pointMode('blower')">💨 מפוח</button><button onclick="pointMode('backpack')">🎒 דבשת</button><button onclick="pointMode('engine')">🚒 כבאית</button><button onclick="pointMode('floatpump')">משאבה צפה</button><button onclick="pointMode('subpump')">משאבה טבולה</button><button onclick="pointMode('hydrant')">🚰 הידרנט</button><button onclick="pointMode('fill')">💧 מים למילוי</button><button onclick="pointMode('cmd')">📍 חפ״ק</button><button onclick="pointMode('hazard')">⚠ מפגע</button></div></div>
+<div class="card" id="authCard"><h3>🔐 כניסת חפ״ק</h3><input id="adminEmail" type="email" placeholder="אימייל מנהל"><input id="adminPass" type="password" placeholder="סיסמה"><button onclick="adminLogin()">התחבר</button><div id="authMsg" class="small">נדרשת כניסה כדי לקבל עדכוני עובדים.</div></div><div class="card"><h3>👥 כוחות – מיקומים</h3><div id="workersList" class="small">אין עדכוני עובדים עדיין.</div><h3 style="margin-top:10px">בקשות מהשטח</h3><div id="helpList" class="log">אין בקשות.</div></div><div class="card"><h3>גזרות</h3><div class="row"><button onclick="sector('א')">גזרה א׳</button><button onclick="sector('ב')">גזרה ב׳</button><button onclick="sector('ג')">גזרה ג׳</button></div></div>
+<div class="card"><h3>רוח ותחזית שעה קרובה</h3><div id="forecast" class="small">סמן מוקד אש לקבלת נתונים.</div></div>
+<div class="card"><h3>יומן אירוע</h3><div id="log" class="log"></div><div class="row"><button onclick="snapshot()">📋 תמונת מצב</button><button onclick="finishEvent()">⏹ סיום אירוע</button><button class="danger" onclick="clearAll()">נקה</button></div></div>
+<div class="small">⚠ נתוני רוח ותחזית הם כלי עזר בלבד ואינם תחליף להנחיות גורמי החירום המוסמכים.</div>
+</div><div id="summaryModal"></div><div id="map"></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const map=L.map('map').setView([31.7,34.9],8),fg=L.featureGroup().addTo(map),history=[];
+const bases={
+street:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}),
+satellite:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19}),
+hybrid:L.layerGroup([L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:19}),L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{attribution:'Labels © Esri',maxZoom:19})]),
+topo:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap',maxZoom:17}),
+light:L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:20}),
+dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:20})
+};let base=bases.street;base.addTo(map);
+baseSel.onchange=()=>{map.removeLayer(base);base=bases[baseSel.value]||bases.street;base.addTo(map);if(base.bringToBack)base.bringToBack()}
+let mode=null,drawKind=null,incident=null,lastWind=null,windM=null,timer=null,startTime=null,counts={engine:0,person:0,blower:0,water:0},eraser=false;
+const defs={fire:['🔥','מוקד אש'],person:['👤','עובד'],blower:['💨','צוות מפוח'],backpack:['🎒','צוות דבשת'],engine:['🚒','כבאית'],floatpump:['🟦','משאבה צפה'],subpump:['🔵','משאבה טבולה'],hydrant:['🚰','הידרנט'],fill:['💧','מים למילוי'],cmd:['📍','חפ״ק'],hazard:['⚠️','מפגע'],assembly:['🟢','נקודת כינוס']};
+function closeMobile(){if(innerWidth<=760)panel.classList.remove('open')}function togglePanel(){panel.classList.toggle('open')}
+function lg(s){let d=document.createElement('div');d.textContent=new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+' — '+s;log.prepend(d)}
+function addLayer(l){fg.addLayer(l);history.push(l)}
+let currentEvent=null;
+async function startEvent(){
+  const name=(eventName.value||'אירוע שריפה').trim();
+  if(currentEvent&&currentEvent.status==='active'){alert('יש כבר אירוע פעיל. יש לסיים אותו לפני פתיחת אירוע חדש.');return}
+  const {data,error}=await db.from('fire_events').insert({name,status:'active'}).select().single();
+  if(error){alert('לא ניתן לפתוח אירוע: '+error.message+'\nיש להריץ קודם את קובץ supabase_event_upgrade.sql');return}
+  currentEvent=data;startTime=new Date(data.started_at);clearOperationalMap(false);hiddenWorkerIds.clear();saveHiddenWorkers();
+  lg('נפתח אירוע '+name);closeMobile();await loadLive();
+}
+setInterval(()=>{if(startTime){let s=Math.floor((Date.now()-startTime)/1000),m=Math.floor(s/60),h=Math.floor(m/60);elapsed.textContent=(h?String(h).padStart(2,'0')+':':'')+String(m%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}},1000)
+function pointMode(m){mode=m;eraser=false;lg('מוכן לסימון '+defs[m][1]);closeMobile()}
+function lineStyle(k){return k==='access'?{color:'#2878b5',weight:6}:k==='escape'?{color:'#32a852',weight:5,dashArray:'10 7'}:k==='firebreak'?{color:'#ef8b20',weight:5,dashArray:'8 7'}:{color:'#c62020',weight:5}}
+function drawLine(k){drawKind=k;closeMobile();new L.Draw.Polyline(map,{shapeOptions:lineStyle(k)}).enable()}
+function drawPoly(k){drawKind=k;closeMobile();new L.Draw.Polygon(map,{shapeOptions:k==='danger'?{color:'#d00000',fillColor:'#ff5b5b',fillOpacity:.25}:{color:'#333',fillColor:'#555',fillOpacity:.45}}).enable()}
+function ringArea(latlngs){if(!latlngs||latlngs.length<3)return 0;const R=6378137;let area=0;for(let i=0;i<latlngs.length;i++){let p1=latlngs[i],p2=latlngs[(i+1)%latlngs.length];area+=(p2.lng-p1.lng)*Math.PI/180*(2+Math.sin(p1.lat*Math.PI/180)+Math.sin(p2.lat*Math.PI/180));}return Math.abs(area*R*R/2)}
+function burnedDunam(){let m2=0;fg.eachLayer(l=>{if(l._fireKind==='burned'&&l.getLatLngs){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];m2+=ringArea(a)}});return m2/1000}
+function sector(n){drawKind='sector '+n;closeMobile();new L.Draw.Polygon(map,{shapeOptions:{color:'#7c4dff',fillOpacity:.08}}).enable()}
+map.on(L.Draw.Event.CREATED,e=>{let k=drawKind;e.layer._fireKind=k;addLayer(e.layer);drawKind=null;lg('נוסף '+(k||'שרטוט'));if(k==='fireline'){let p=e.layer.getLatLngs(),q=p[Math.floor(p.length/2)];incident=q;weather(q.lat,q.lng)}})
+map.on('click',e=>{if(eraser){let near=null,dist=Infinity;fg.eachLayer(l=>{if(l.getLatLng){let d=map.distance(e.latlng,l.getLatLng());if(d<dist){dist=d;near=l}}});if(near&&dist<100){fg.removeLayer(near);lg('נמחק סימון')}return}if(!mode)return;
+let d=defs[mode],name=worker.value.trim(),st=unitStatus.value,coord=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5),label=d[1]+(name?' – '+name:'')+(mode!=='fire'?' | '+st:'')+' | נ״צ '+coord;
+let l=L.marker(e.latlng,{icon:L.divIcon({html:`<div style="font-size:27px">${d[0]}</div>`,className:'',iconSize:[30,30]})}).bindTooltip(label);addLayer(l);lg('נוסף '+label);
+if(mode==='engine')counts.engine++;if(mode==='person'||mode==='backpack')counts.person++;if(mode==='blower')counts.blower++;if(['hydrant','fill','floatpump','subpump'].includes(mode))counts.water++;updateCounts();
+if(mode==='fire'){incident=e.latlng;if(!startTime)startTime=new Date();weather(e.latlng.lat,e.latlng.lng)}mode=null})
+function updateCounts(){counter.textContent=`🚒 ${counts.engine} | 👥 ${counts.person} | 💨 ${counts.blower} | 💧 ${counts.water}`}
+function hd(d){return ['צפונית','צפון־מזרחית','מזרחית','דרום־מזרחית','דרומית','דרום־מערבית','מערבית','צפון־מערבית'][Math.round(d/45)%8]}
+function delta(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d}
+function beep(){try{let c=new (AudioContext||webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=780;g.gain.value=.12;o.start();setTimeout(()=>{o.stop();c.close()},350)}catch(e){}}
+function alertWind(t){windAlert.textContent=t;windAlert.style.display='block';beep();setTimeout(()=>windAlert.style.display='none',9000);lg(t)}
+async function weather(lat,lng){try{let u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&forecast_days=1&wind_speed_unit=kmh&timezone=Asia%2FJerusalem`,r=await fetch(u),j=await r.json(),w=j.current;
+sDir.textContent=hd(w.wind_direction_10m);sSpeed.textContent=Math.round(w.wind_speed_10m)+' קמ״ש';sGust.textContent=Math.round(w.wind_gusts_10m);
+if(lastWind&&delta(lastWind.dir,w.wind_direction_10m)>=30)alertWind(`⚠ שינוי כיוון רוח: ${hd(lastWind.dir)} ← ${hd(w.wind_direction_10m)}`);
+if(lastWind&&w.wind_speed_10m-lastWind.speed>=10)alertWind(`⚠ התחזקות רוח: ${Math.round(lastWind.speed)} ← ${Math.round(w.wind_speed_10m)} קמ״ש`);
+lastWind={dir:w.wind_direction_10m,speed:w.wind_speed_10m};
+let now=new Date(w.time),idx=j.hourly.time.findIndex(t=>new Date(t)>now),ni=idx<0?0:idx,nd=j.hourly.wind_direction_10m[ni],ns=j.hourly.wind_speed_10m[ni],ng=j.hourly.wind_gusts_10m[ni];
+forecast.textContent=`שעה קרובה: ${hd(nd)} • ${Math.round(ns)} קמ״ש • משבים ${Math.round(ng)} קמ״ש`;
+if(delta(w.wind_direction_10m,nd)>=30)alertWind(`⚠ צפוי שינוי בכיוון הרוח בשעה הקרובה: ${hd(w.wind_direction_10m)} ← ${hd(nd)}`);
+if(windM)map.removeLayer(windM);windM=L.marker([lat,lng],{interactive:false,icon:L.divIcon({html:`<div style="font-size:45px;font-weight:bold;transform:rotate(${w.wind_direction_10m+180}deg)">↑</div>`,className:'',iconSize:[50,50]})}).addTo(map);
+clearTimeout(timer);timer=setTimeout(()=>incident&&weather(incident.lat,incident.lng),600000)}catch(e){lg('שגיאה בקבלת נתוני רוח')}}
+function freeDraw(){drawKind='שרטוט חופשי';new L.Draw.Polyline(map,{shapeOptions:{color:'#111',weight:4}}).enable()}
+function undoLast(){let l=history.pop();if(l){fg.removeLayer(l);lg('בוטלה פעולה אחרונה')}}
+function eraseMode(){eraser=!eraser;mode=null;lg(eraser?'מחק פעיל – לחץ ליד סימון':'מחק כבוי')}
+function locateMe(){navigator.geolocation?.getCurrentPosition(p=>{let ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,16);let l=L.marker(ll).bindTooltip('המיקום שלי');addLayer(l);lg('נוסף המיקום שלי')},()=>lg('לא ניתן לקבל מיקום'))}
+function snapshot(){alert(`תמונת מצב\n${sDir.textContent} | ${sSpeed.textContent} | ${sGust.textContent}\n${counter.textContent}`)}
+function clearOperationalMap(writeLog=true){fg.clearLayers();history.length=0;if(windM){map.removeLayer(windM);windM=null}incident=null;lastWind=null;counts={engine:0,person:0,blower:0,water:0};updateCounts();sDir.textContent=sSpeed.textContent=sGust.textContent='—';forecast.textContent='סמן מוקד אש לקבלת נתונים.';Object.values(workerMarkers).forEach(m=>map.removeLayer(m));workerMarkers={};if(writeLog)lg('מפת האירוע נוקתה')}
+function clearAll(){if(confirm('לנקות את סימוני המפה? פעולה זו אינה מסיימת את האירוע.'))clearOperationalMap(true)}
+function fmtDur(ms){let m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);return `${h}:${String(m%60).padStart(2,'0')}`}
+async function finishEvent(){
+ if(!currentEvent){alert('אין אירוע פעיל.');return}
+ if(!confirm('האם אתה בטוח שברצונך לסיים את האירוע? כל העובדים יוצאו מהאירוע והמיקומים יוסרו מהמפה.'))return;
+ const ended=new Date(),dunam=burnedDunam();
+ const active=liveWorkers.filter(w=>String(w.event_id||'')===String(currentEvent.id)&&w.status!=='סיים');
+ if(active.length&&!confirm(`⚠ ${active.length} עובדים עדיין באירוע. לסיים את השתתפותם ולהמשיך?`))return;
+ const eventWorkers=liveWorkers.filter(w=>String(w.event_id||'')===String(currentEvent.id));
+ for(const w of active){await db.from('workers').update({status:'סיים',finished_at:ended.toISOString(),finish_source:'חפ״ק',latitude:null,longitude:null,location_updated_at:ended.toISOString()}).eq('id',w.id)}
+ const totalHours=eventWorkers.reduce((sum,w)=>{let a=new Date(w.created_at||currentEvent.started_at).getTime(),b=new Date(w.finished_at||ended).getTime();return sum+Math.max(0,b-a)/3600000},0);
+ const summary={duration_minutes:Math.round((ended-new Date(currentEvent.started_at))/60000),workers:eventWorkers.length,total_worker_hours:Number(totalHours.toFixed(1)),requests:liveHelp.filter(r=>eventWorkers.some(w=>w.id===r.worker_id)).length,map_counts:{...counts},workers_detail:eventWorkers.map(w=>({name:w.name,status:'סיים',sector:w.sector||'',started_at:w.created_at,finished_at:w.finished_at||ended.toISOString(),finish_source:w.finish_source||'חפ״ק'}))};
+ const {error}=await db.from('fire_events').update({status:'ended',ended_at:ended.toISOString(),burned_dunam:Number(dunam.toFixed(2)),summary}).eq('id',currentEvent.id);
+ if(error){alert('שגיאה בסיום האירוע: '+error.message);return}
+ currentEvent={...currentEvent,status:'ended',ended_at:ended.toISOString(),burned_dunam:dunam,summary};startTime=null;elapsed.textContent='00:00';clearOperationalMap(false);liveWorkers=[];renderWorkers();lg('האירוע הסתיים');showSummary(currentEvent);
+}
+function showSummary(ev){const s=ev.summary||{},end=ev.ended_at?new Date(ev.ended_at):new Date(),start=new Date(ev.started_at);summaryModal.innerHTML=`<div class="row" style="justify-content:space-between"><h2>📋 סיכום אירוע — ${ev.name||''}</h2><button onclick="summaryModal.classList.remove('open')">✕ סגור</button></div><div class="summaryGrid"><div class="metric">שטח שנשרף<b>${Number(ev.burned_dunam||0).toFixed(1)} דונם</b></div><div class="metric">משך האירוע<b>${fmtDur(end-start)}</b></div><div class="metric">עובדים<b>${s.workers||0}</b></div><div class="metric">שעות עבודה מצטברות<b>${s.total_worker_hours||0}</b></div><div class="metric">בקשות מהשטח<b>${s.requests||0}</b></div><div class="metric">כוחות/ציוד<b>🚒 ${s.map_counts?.engine||0} • 💨 ${s.map_counts?.blower||0}</b></div></div><h3>עובדים</h3>${(s.workers_detail||[]).map(w=>`<div class="workerRow"><b>${w.name}</b> • סיום ${w.finished_at?new Date(w.finished_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'—'} • ${w.finish_source||'—'} • ${w.sector?'גזרה '+w.sector:'ללא גזרה'}</div>`).join('')||'<div>אין נתוני עובדים.</div>'}<div class="row" style="margin-top:14px"><button class="fire" onclick="summaryModal.classList.remove('open');eventName.value='';currentEvent=null;">🔥 פתיחת אירוע חדש</button></div>`;summaryModal.classList.add('open')}
+async function showPreviousEvents(){const {data,error}=await db.from('fire_events').select('*').eq('status','ended').order('ended_at',{ascending:false}).limit(30);if(error){alert(error.message);return}summaryModal.innerHTML=`<div class="row" style="justify-content:space-between"><h2>📚 אירועים קודמים</h2><button onclick="summaryModal.classList.remove('open')">✕</button></div>${(data||[]).map(e=>`<button style="width:100%;margin:4px 0;text-align:right" onclick='showSummary(${JSON.stringify(e).replace(/'/g,"&#39;")})'><b>${e.name}</b> • ${new Date(e.started_at).toLocaleString('he-IL')} • ${Number(e.burned_dunam||0).toFixed(1)} דונם</button>`).join('')||'אין אירועים קודמים.'}`;summaryModal.classList.add('open')}
+
+const SUPABASE_URL='https://jvubjwzzikfwsektifzi.supabase.co';
+const SUPABASE_KEY='sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let workerWatch=null,sosTimer=null,workerMarkers={},liveWorkers=[],liveHelp=[];
+let hiddenWorkerIds=new Set(JSON.parse(localStorage.getItem('commandHiddenWorkers')||'[]').map(String));
+function saveHiddenWorkers(){localStorage.setItem('commandHiddenWorkers',JSON.stringify([...hiddenWorkerIds]))}
+async function removeWorkerFromEvent(id){if(!confirm('להוציא את העובד מהאירוע? המיקום יימחק והוא יצטרך להיכנס מחדש כדי להופיע בחפ״ק.'))return;const now=new Date().toISOString();const {error}=await db.from('workers').update({status:'סיים',finished_at:now,finish_source:'חפ״ק',latitude:null,longitude:null,location_updated_at:now}).eq('id',id);if(error){alert('לא ניתן להוציא עובד: '+error.message);return}await loadLive()}
+function hideWorkerFromMap(id){removeWorkerFromEvent(id)}
+function restoreWorkerToMap(id){alert('עובד שהוצא מהאירוע חייב להיכנס מחדש דרך ממשק העובד.') }
+function toggleWorker(){workerSheet.classList.toggle('open')}
+function workerKey(){return (wName.value||'עובד').trim()}
+function saveWorker(pos){wFresh.textContent='ממשק העובד הנפרד נמצא ב-worker.html';}
+function shareWorkerLocation(){location.href='worker.html'}
+function stopWorkerLocation(){wFresh.textContent='פתח את ממשק העובד הנפרד להפסקת שיתוף.'}
+function workerFreshness(w){let raw=w.location_updated_at||w.created_at,ts=raw?new Date(raw).getTime():0,age=ts?Math.max(0,Math.floor((Date.now()-ts)/60000)):99999;return {age,dot:age<2?'🟢':age<10?'🟠':'🔴',label:age<1?'עודכן עכשיו':`עודכן לפני ${age} דק׳`}}
+function renderWorkers(){
+  let rows=[],seen=new Set(),hiddenRows=[];
+  liveWorkers.forEach(w=>{
+    const id=String(w.id), isHidden=hiddenWorkerIds.has(id);
+    if(w.status==='סיים'){
+      if(workerMarkers[w.id]){map.removeLayer(workerMarkers[w.id]);delete workerMarkers[w.id]}
+      return;
+    }
+    let f=workerFreshness(w),sector=w.sector?`גזרה ${w.sector}`:'ללא גזרה';
+    if(isHidden){
+      if(workerMarkers[w.id]){map.removeLayer(workerMarkers[w.id]);delete workerMarkers[w.id]}
+      hiddenRows.push(`<div class="workerRow">🙈 <b>${w.name}</b> • מוסתר מהמפה<br><button onclick="restoreWorkerToMap('${w.id}')">↩️ החזר למפה</button></div>`);
+      return;
+    }
+    seen.add(id);
+    rows.push(`<div class="workerRow">${f.dot} <b>${w.name}</b> • ${w.status||'—'} • ${sector}<br><span class="small">${f.label}</span><br><button onclick="removeWorkerFromEvent('${w.id}')">⏹ הוצא מהאירוע</button></div>`);
+    if(w.latitude!=null&&w.longitude!=null){
+      let ll=[Number(w.latitude),Number(w.longitude)],html=`<div class="workerPin"><span class="dot">${f.dot}</span> ${w.name}<div class="st">${w.status||'—'} • ${f.label}</div></div>`;
+      if(workerMarkers[w.id]){workerMarkers[w.id].setLatLng(ll).setIcon(L.divIcon({html,className:'',iconSize:null,iconAnchor:[40,18]})).setTooltipContent(`${w.name} | ${w.status||'—'} | ${sector} | ${f.label}`)}
+      else{workerMarkers[w.id]=L.marker(ll,{icon:L.divIcon({html,className:'',iconSize:null,iconAnchor:[40,18]})}).bindTooltip(`${w.name} | ${w.status||'—'} | ${sector} | ${f.label}`).addTo(map)}
+    }
+  });
+  Object.keys(workerMarkers).forEach(id=>{if(!seen.has(String(id))){map.removeLayer(workerMarkers[id]);delete workerMarkers[id]}});
+  let html=rows.length?rows.join(''):'אין עובדים פעילים על המפה.';
+  if(hiddenRows.length)html+=`<div style="margin-top:10px;padding-top:8px;border-top:1px solid #ccc"><b>מוסתרים מהמפה</b>${hiddenRows.join('')}</div>`;
+  workersList.innerHTML=html;
+}
+function renderHelp(){helpList.innerHTML=liveHelp.length?liveHelp.map(x=>`<div>${['פציעה / רפואי','חירום / סכנה'].includes(x.request_type)?'🔴':'🟡'} <b>${x.worker_name||'עובד'}</b> — ${x.request_type} ${x.details?'• '+x.details:''} • ${new Date(x.created_at).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</div>`).join(''):'אין בקשות.'}
+async function loadLive(){let a=await db.from('workers').select('*').order('location_updated_at',{ascending:false});if(!a.error){liveWorkers=(a.data||[]).filter(w=>!currentEvent||String(w.event_id||'')===String(currentEvent.id));renderWorkers()}let b=await db.from('worker_requests').select('*').order('created_at',{ascending:false}).limit(100);if(!b.error){liveHelp=b.data||[];renderHelp()}}
+async function adminLogin(){let r=await db.auth.signInWithPassword({email:adminEmail.value,password:adminPass.value});if(r.error){authMsg.textContent='❌ כניסה נכשלה';return}authMsg.textContent='✅ חפ״ק מחובר';adminPass.value='';await loadLive();startRealtime()}
+let audioCtx=null;
+function unlockAudio(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()}catch(e){}}
+document.addEventListener('pointerdown',unlockAudio,{once:true});
+function requestBeep(urgent=false){try{unlockAudio();if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=urgent?880:660;g.gain.setValueAtTime(0.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.18,audioCtx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.35);o.start();o.stop(audioCtx.currentTime+0.36);if(urgent)setTimeout(requestBeep,430,false)}catch(e){}}
+function startRealtime(){
+  db.channel('command-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'workers'},()=>loadLive())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'worker_requests'},payload=>{
+      const x=payload.new;
+      liveHelp=[x,...liveHelp.filter(r=>r.id!==x.id)];
+      renderHelp();
+      const urgent=['פציעה / רפואי','חירום / סכנה'].includes(x.request_type);
+      requestBeep(urgent);
+      helpList.scrollIntoView({behavior:'smooth',block:'nearest'});
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'worker_requests'},()=>loadLive())
+    .subscribe();
+}
+async function initAuth(){let {data}=await db.auth.getSession();if(data.session){authMsg.textContent='✅ חפ״ק מחובר';let ev=await db.from('fire_events').select('*').eq('status','active').order('started_at',{ascending:false}).limit(1).maybeSingle();if(!ev.error&&ev.data){currentEvent=ev.data;startTime=new Date(ev.data.started_at);eventName.value=ev.data.name||''}await loadLive();startRealtime()}}
+function sendHelp(){alert('בקשות נשלחות דרך ממשק העובד הנפרד')}
+function sosDown(){}function sosUp(){}
+setInterval(()=>{if(liveWorkers.length)renderWorkers()},30000);
+initAuth();
+lg('המערכת מוכנה');
+</script></body></html>
