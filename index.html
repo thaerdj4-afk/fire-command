@@ -154,5 +154,824 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 
-</script>
+/* ===== V8 LIVE + EVENT REPORT PATCH ===== */
+
+let V8_lastReport = null;
+let V8_workerMarkers = new Map();
+
+function V8_fmt(v){
+  if(!v) return "—";
+  return new Date(v).toLocaleString("he-IL");
+}
+
+function V8_time(v){
+  if(!v) return "—";
+  return new Date(v).toLocaleTimeString("he-IL",{
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function V8_duration(a,b){
+  if(!a || !b) return "—";
+
+  let mins=Math.max(
+    0,
+    Math.round(
+      (new Date(b)-new Date(a))/60000
+    )
+  );
+
+  let h=Math.floor(mins/60);
+  let m=mins%60;
+
+  return (h ? h+" ש׳ " : "") + m+" דק׳";
+}
+
+
+/* ===== حساب مساحة الحريق ===== */
+
+function V8_areaM2(points){
+
+  if(!points || points.length<3)
+    return 0;
+
+  const R=6378137;
+
+  let lat0=
+    points.reduce(
+      (s,p)=>s+p.lat,
+      0
+    )/points.length;
+
+  let xy=points.map(p=>({
+    x:R*p.lng*Math.PI/180*
+      Math.cos(lat0*Math.PI/180),
+
+    y:R*p.lat*Math.PI/180
+  }));
+
+  let sum=0;
+
+  for(let i=0;i<xy.length;i++){
+
+    let j=(i+1)%xy.length;
+
+    sum+=
+      xy[i].x*xy[j].y-
+      xy[j].x*xy[i].y;
+  }
+
+  return Math.abs(sum/2);
+}
+
+
+function V8_getArea(){
+
+  let total=0;
+
+  try{
+
+    ops.eachLayer(layer=>{
+
+      if(!layer.getLatLngs)
+        return;
+
+      let p=layer.getLatLngs();
+
+      if(
+        Array.isArray(p) &&
+        Array.isArray(p[0])
+      )
+        p=p[0];
+
+      if(
+        Array.isArray(p) &&
+        p.length>=3
+      ){
+
+        let m=V8_areaM2(p);
+
+        /*
+          فقط مضلعات القياس/الحريق
+        */
+
+        if(m>0)
+         ,m);
+
+    });
+
+  }catch(e){
+    console.warn(e);
+  }
+
+  return {
+    m2:total,
+    dunam:total/1000
+  };
+}
+
+
+/* ===== LIVE GPS ===== */
+
+function V8_fresh(w){
+
+  if(w.latitude==null || w.longitude==null)
+    return ["⚫","שיתוף מיקום הופסק"];
+
+  let t=new Date(
+    w.location_updated_at || w.created_at
+  ).getTime();
+
+  let sec=Math.max(
+    0,
+    Math.floor((Date.now()-t)/1000)
+  );
+
+  if(sec<60)
+    return ["🟢","עודכן לפני "+sec+" שנ׳"];
+
+  let min=Math.floor(sec/60);
+
+  if(min<3)
+    return ["🟢","עודכן לפני "+min+" דק׳"];
+
+  if(min<10)
+    return ["🟠","עודכן לפני "+min+" דק׳"];
+
+  return ["🔴","עודכן לפני "+min+" דק׳"];
+}
+
+
+function V8_icon(w){
+
+  let f=V8_fresh(w);
+
+  return L.divIcon({
+    className:"",
+    html:`<div class="pin">
+      ${f[0]} ${esc(w.name)}
+      <br>
+      ${esc(w.status||"—")} •
+      ${w.sector ? "גזרה "+esc(w.sector) : "ללא גזרה"}
+    </div>`
+  });
+}
+
+
+function V8_syncMarkers(){
+
+  if(!ev){
+
+    for(const [id,m] of V8_workerMarkers)
+      wl.removeLayer(m);
+
+    V8_workerMarkers.clear();
+    return;
+  }
+
+  let active=new Set();
+
+  workers
+    .filter(w=>
+      w.status!=="סיים" &&
+      w.latitude!=null &&
+      w.longitude!=null
+    )
+    .forEach(w=>{
+
+      let id=String(w.id);
+
+      active.add(id);
+
+      let pos=[
+        Number(w.latitude),
+        Number(w.longitude)
+      ];
+
+      let marker=V8_workerMarkers.get(id);
+
+      if(marker){
+
+        marker.setLatLng(pos);
+        marker.setIcon(V8_icon(w));
+
+      }else{
+
+        marker=L.marker(
+          pos,
+          {icon:V8_icon(w)}
+        ).addTo(wl);
+
+        V8_workerMarkers.set(id,marker);
+      }
+    });
+
+  for(const [id,marker] of V8_workerMarkers){
+
+    if(!active.has(id)){
+      wl.removeLayer(marker);
+      V8_workerMarkers.delete(id);
+    }
+  }
+}
+
+
+async function V8_liveWorkers(){
+
+  if(!ev) return;
+
+  try{
+
+    let r=await cloud
+      .from("workers")
+      .select("*")
+      .eq("event_id",ev.id)
+      .order(
+        "location_updated_at",
+        {ascending:false}
+      );
+
+    if(r.error)
+      throw r.error;
+
+    workers=r.data||[];
+
+    V8_syncMarkers();
+
+  }catch(e){
+    console.warn("LIVE GPS:",e.message);
+  }
+}
+
+
+setInterval(V8_liveWorkers,2500);
+
+
+/* ===== PHOTO ===== */
+
+function V8_photoParts(x){
+
+  let d=String(x.details||"");
+
+  if(!d.startsWith("PHOTO|"))
+    return null;
+
+  let cut=d.indexOf("|",6);
+
+  if(cut<0)
+    return null;
+
+  return {
+    src:d.slice(6,cut),
+    note:d.slice(cut+1)
+  };
+}
+
+
+/* ===== WORD REPORT ===== */
+
+function V8_reportHTML(data){
+
+  let workersRows=data.workers.map(w=>{
+
+    let end=w.finished_at || data.ended;
+
+    let begin=
+      w.work_started_at ||
+      w.arrived_at ||
+      w.created_at;
+
+    return `
+      <tr>
+        <td>${esc(w.name||"—")}</td>
+        <td>${esc(w.sector||"—")}</td>
+        <td>${V8_time(w.created_at)}</td>
+        <td>${V8_time(w.arrived_at)}</td>
+        <td>${V8_time(w.work_started_at)}</td>
+        <td>${V8_time(end)}</td>
+        <td>${V8_duration(begin,end)}</td>
+      </tr>
+    `;
+
+  }).join("");
+
+
+  let normalRequests=data.requests.filter(
+    x=>x.request_type!=="תמונה מהשטח"
+  );
+
+
+  let requestRows=normalRequests.map(x=>`
+    <tr>
+      <td>${esc(x.worker_name||"—")}</td>
+      <td>${esc(x.request_type||"—")}</td>
+      <td>${esc(x.status||"—")}</td>
+      <td>${V8_fmt(x.created_at)}</td>
+    </tr>
+  `).join("");
+
+
+  let photosHTML=data.photos.map(x=>{
+
+    let p=V8_photoParts(x);
+
+    if(!p) return "";
+
+    return `
+      <div class="photo">
+        <img src="${p.src}">
+        <p>
+          <b>${esc(x.worker_name||"עובד")}</b>
+          <br>
+          ${V8_fmt(x.created_at)}
+          ${p.note ? "<br>"+esc(p.note) : ""}
+        </p>
+      </div>
+    `;
+
+  }).join("");
+
+
+  let sosCount=data.requests.filter(x=>
+    [
+      "SOS / סכנה",
+      "חירום / סכנה",
+      "פציעה / רפואי"
+    ].includes(x.request_type)
+  ).length;
+
+
+  return `
+<!doctype html>
+<html dir="rtl" lang="he">
+
+<head>
+
+<meta charset="utf-8">
+
+<title>סיכום אירוע שריפה</title>
+
+<style>
+
+body{
+  font-family:Arial,sans-serif;
+  direction:rtl;
+  margin:35px;
+  color:#111;
+}
+
+h1{
+  color:#9d1018;
+  border-bottom:3px solid #9d1018;
+  padding-bottom:10px;
+}
+
+.summary{
+  background:#f3f3f3;
+  padding:15px;
+  line-height:2;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+}
+
+th,td{
+  border:1px solid #777;
+  padding:7px;
+  text-align:center;
+}
+
+th{
+  background:#e8e8e8;
+}
+
+.photo{
+  display:inline-block;
+  width:46%;
+  margin:1%;
+  vertical-align:top;
+}
+
+.photo img{
+  max-width:100%;
+  max-height:350px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🔥 סיכום אירוע שריפה</h1>
+
+<h2>${esc(data.name)}</h2>
+
+<div class="summary">
+
+<b>תחילת אירוע:</b>
+${V8_fmt(data.started)}
+<br>
+
+<b>סיום אירוע:</b>
+${V8_fmt(data.ended)}
+<br>
+
+<b>משך האירוע:</b>
+${V8_duration(data.started,data.ended)}
+<br>
+
+<b>שטח שריפה:</b>
+${data.area.dunam.toFixed(2)} דונם
+<br>
+
+<b>שטח במ״ר:</b>
+${Math.round(data.area.m2).toLocaleString("he-IL")}
+<br>
+
+<b>מספר עובדים:</b>
+${data.workers.length}
+<br>
+
+<b>מספר בקשות:</b>
+${normalRequests.length}
+<br>
+
+<b>אירועי SOS / חירום:</b>
+${sosCount}
+<br>
+
+<b>מספר תמונות:</b>
+${data.photos.length}
+
+</div>
+
+
+<h2>👥 עובדים וזמנים</h2>
+
+<table>
+
+<tr>
+<th>שם</th>
+<th>גזרה</th>
+<th>הצטרף</th>
+<th>הגיע</th>
+<th>התחיל עבודה</th>
+<th>סיים</th>
+<th>משך עבודה</th>
+</tr>
+
+${workersRows || `
+<tr>
+<td colspan="7">אין עובדים</td>
+</tr>
+`}
+
+</table>
+
+
+<h2>🆘 בקשות ודיווחים</h2>
+
+<table>
+
+<tr>
+<th>עובד</th>
+<th>סוג דיווח</th>
+<th>סטטוס</th>
+<th>שעה</th>
+</tr>
+
+${requestRows || `
+<tr>
+<td colspan="4">אין דיווחים</td>
+</tr>
+`}
+
+</table>
+
+
+<h2>📸 תמונות מהשטח</h2>
+
+${photosHTML || "<p>אין תמונות מהשטח.</p>"}
+
+<hr>
+
+<p>
+הדוח הופק אוטומטית ממערכת חפ״ק שריפה
+<br>
+פותח ועוצב על ידי תאיר אבו זיד
+</p>
+
+</body>
+</html>
+`;
+}
+
+
+function V8_downloadWord(data){
+
+  let html=V8_reportHTML(data);
+
+  let blob=new Blob(
+    ["\ufeff",html],
+    {
+      type:"application/msword;charset=utf-8"
+    }
+  );
+
+  let objectURL=
+    window.URL.createObjectURL(blob);
+
+  let a=document.createElement("a");
+
+  let safeName=
+    String(data.name||"אירוע-שריפה")
+    .replace(/[\\/:*?"<>|]/g,"-");
+
+  a.href=objectURL;
+
+  a.download=
+    "סיכום-אירוע-"+safeName+".doc";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  setTimeout(
+    ()=>window.URL.revokeObjectURL(objectURL),
+    2000
+  );
+}
+
+
+/* ===== FINISH EVENT ===== */
+
+async function V8_finishEvent(){
+
+  if(!ev){
+    alert("אין אירוע פעיל");
+    return;
+  }
+
+  if(!confirm(
+    "לסיים את האירוע ולהפיק סיכום Word?"
+  ))
+    return;
+
+  try{
+
+    await live();
+
+    const eventCopy={...ev};
+
+    const endISO=
+      new Date().toISOString();
+
+
+    const eventWorkers=
+      workers.filter(w=>
+        String(w.event_id||"")===
+        String(eventCopy.id)
+      );
+
+
+    const eventRequests=
+      requests.filter(x=>
+        String(x.event_id||"")===
+        String(eventCopy.id)
+      );
+
+
+    for(const w of eventWorkers){
+
+      if(w.status!=="סיים"){
+
+        let wr=await cloud
+          .from("workers")
+          .update({
+            status:"סיים",
+            finished_at:endISO,
+            finish_source:"חפ״ק",
+            latitude:null,
+            longitude:null,
+            location_updated_at:endISO
+          })
+          .eq("id",w.id);
+
+        if(wr.error)
+          throw wr.error;
+
+        w.status="סיים";
+        w.finished_at=endISO;
+        w.finish_source="חפ״ק";
+        w.latitude=null;
+        w.longitude=null;
+      }
+    }
+
+
+    const area=V8_getArea();
+
+
+    const report={
+
+      name:
+        eventCopy.name ||
+        "אירוע שריפה",
+
+      started:
+        eventCopy.started_at ||
+        started ||
+        endISO,
+
+      ended:endISO,
+
+      area:area,
+
+      workers:eventWorkers,
+
+      requests:eventRequests,
+
+      photos:eventRequests.filter(
+        x=>x.request_type==="תמונה מהשטח"
+      )
+    };
+
+
+    const reportData={
+
+      name:report.name,
+
+      started_at:report.started,
+
+      ended_at:report.ended,
+
+      fire_area_m2:area.m2,
+
+      fire_area_dunam:area.dunam,
+
+      workers:eventWorkers.map(w=>({
+        id:w.id,
+        name:w.name,
+        sector:w.sector,
+        status:w.status,
+        created_at:w.created_at,
+        arrived_at:w.arrived_at,
+        work_started_at:w.work_started_at,
+        finished_at:w.finished_at,
+        finish_source:w.finish_source
+      })),
+
+      requests:eventRequests.map(x=>({
+        id:x.id,
+        worker_name:x.worker_name,
+        request_type:x.request_type,
+        status:x.status,
+        created_at:x.created_at
+      }))
+    };
+
+
+    let r=await cloud
+      .from("fire_events")
+      .update({
+        status:"ended",
+        ended_at:endISO,
+        fire_area_m2:area.m2,
+        fire_area_dunam:area.dunam,
+        report_data:reportData
+      })
+      .eq("id",eventCopy.id);
+
+
+    if(r.error)
+      throw r.error;
+
+
+    V8_lastReport=report;
+
+    V8_downloadWord(report);
+
+
+    /* تنظيف الشاشة */
+
+    ev=null;
+    started=null;
+    workers=[];
+    requests=[];
+    activeSOS=null;
+
+
+    try{
+      ops.clearLayers();
+      wl.clearLayers();
+      sosLayer.clearLayers();
+    }catch(e){}
+
+
+    V8_workerMarkers.clear();
+
+    stack=[];
+
+
+    try{
+
+      counts={
+        engine:0,
+        person:0,
+        blower:0,
+        water:0
+      };
+
+      counter();
+
+    }catch(e){}
+
+
+    $("estate").textContent=
+      "אין אירוע פעיל";
+
+    $("time").textContent=
+      "00:00:00";
+
+
+    try{
+      link();
+    }catch(e){}
+
+
+    if($("dangerBanner"))
+      $("dangerBanner").style.display="none";
+
+
+    if($("fieldPhotos"))
+      $("fieldPhotos").innerHTML=
+        `<div class="photoCard">
+          אין אירוע פעיל
+        </div>`;
+
+
+    if($("requests"))
+      $("requests").innerHTML=
+        "אין בקשות.";
+
+
+    if($("workers"))
+      $("workers").innerHTML=
+        "אין עובדים פעילים.";
+
+
+    if($("measureResult"))
+      $("measureResult").textContent="";
+
+
+    alert(
+      "✅ האירוע הסתיים\n📄 סיכום Word הופק"
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+    alert(
+      "❌ שגיאה בסיום האירוע: "+
+      e.message
+    );
+  }
+}
+
+
+/* استبدال زر סיום אירוע */
+
+window.addEventListener(
+  "load",
+  ()=>{
+
+    const oldButton=
+      document.getElementById("finish");
+
+    if(!oldButton)
+      return;
+
+    const newButton=
+      oldButton.cloneNode(true);
+
+    oldButton.parentNode.replaceChild(
+      newButton,
+      oldButton
+    );
+
+    newButton.onclick=
+      V8_finishEvent;
+  }
+);
+
+/* ===== END V8 PATCH ===== */</script> 
 </body></html>
