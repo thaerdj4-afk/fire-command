@@ -2,7 +2,7 @@
 const SUPABASE_URL='https://jvubjwzzikfwsektifzi.supabase.co';
 const SUPABASE_KEY='sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let watch=null,timer=null,lastPos=null,workerId=localStorage.getItem('workerId')||null,currentEvent=null,workerChannel=null;
+let watch=null,timer=null,lastPos=null,workerId=null,currentEvent=null,workerChannel=null; localStorage.removeItem('workerId');
 const $=id=>document.getElementById(id);function worker(){return ($('name').value||'').trim()}
 async function upsertWorker(pos){
  if(!worker()) return;
