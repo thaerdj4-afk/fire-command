@@ -136,10 +136,10 @@ h3{margin:0 0 10px}
 
 const $=x=>document.getElementById(x);
 
-const URL="https://jvubjwzzikfwsektifzi.supabase.co";
+const SUPABASE_URL="https://jvubjwzzikfwsektifzi.supabase.co";
 const KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW";
 
-const cloud=supabase.createClient(URL,KEY);
+const cloud=supabase.createClient(SUPABASE_URL,KEY);
 
 const eventId=new URLSearchParams(location.search).get("event");
 
@@ -147,20 +147,13 @@ let worker=null;
 let lastLoc=null;
 let watch=null;
 
-
-/* ===== הודעות ===== */
-
 const msg=(id,t,bad=false)=>{
  const el=$(id);
  el.textContent=t;
  el.className="status "+(bad?"bad":"ok");
 };
 
-
-/* ===== פרטי אירוע ===== */
-
 async function eventInfo(){
-
  if(!eventId){
   $("eventTxt").textContent="⚠ קישור ללא מספר אירוע";
   return;
@@ -185,9 +178,6 @@ async function eventInfo(){
 
 eventInfo();
 
-
-/* ===== עובד - ללא כפילויות ===== */
-
 async function ensureWorker(){
 
  const n=$("name").value.trim();
@@ -200,13 +190,6 @@ async function ensureWorker(){
 
  if(worker)
   return worker;
-
-
- /*
-  קודם מחפשים עובד פעיל שכבר קיים
-  באותו אירוע ובאותו שם.
-  כך רענון הדף לא יוצר עובד כפול.
- */
 
  const old=await cloud
   .from("workers")
@@ -227,9 +210,6 @@ async function ensureWorker(){
   return worker;
  }
 
-
- /* אין עובד קיים — יוצרים חדש */
-
  const row={
   event_id:eventId,
   name:n,
@@ -248,14 +228,10 @@ async function ensureWorker(){
   throw r.error;
 
  worker=r.data;
-
  localStorage.setItem("fireWorkerName",n);
 
  return worker;
 }
-
-
-/* ===== GPS ===== */
 
 async function pushLoc(pos){
 
@@ -288,10 +264,8 @@ async function pushLoc(pos){
  );
 }
 
-
 $("name").value=
  localStorage.getItem("fireWorkerName")||"";
-
 
 $("join").onclick=async()=>{
 
@@ -306,21 +280,14 @@ $("join").onclick=async()=>{
    navigator.geolocation.clearWatch(watch);
 
   watch=navigator.geolocation.watchPosition(
-
    p=>{
     pushLoc(p).catch(e=>
      msg("loc","❌ "+e.message,true)
     );
    },
-
    ()=>{
-    msg(
-     "loc",
-     "❌ צריך לאשר גישה למיקום",
-     true
-    );
+    msg("loc","❌ צריך לאשר גישה למיקום",true);
    },
-
    {
     enableHighAccuracy:true,
     maximumAge:5000,
@@ -331,14 +298,9 @@ $("join").onclick=async()=>{
   msg("loc","⏳ מתחבר ל-GPS...");
 
  }catch(e){
-
   msg("loc","❌ "+e.message,true);
-
  }
 };
-
-
-/* ===== שינוי סטטוס ===== */
 
 $("status").onchange=async()=>{
 
@@ -357,7 +319,6 @@ $("status").onchange=async()=>{
   msg("loc","❌ "+r.error.message,true);
 };
 
-
 $("sector").onchange=async()=>{
 
  if(!worker)
@@ -370,9 +331,6 @@ $("sector").onchange=async()=>{
   })
   .eq("id",worker.id);
 };
-
-
-/* ===== בקשות ===== */
 
 async function request(type,details=""){
 
@@ -399,9 +357,6 @@ async function request(type,details=""){
 
  return r;
 }
-
-
-/* ===== כפתורי בקשות ===== */
 
 document
 .querySelectorAll("[data-r]")
@@ -438,13 +393,9 @@ document
     b.innerHTML=old;
     b.disabled=false;
    },1800);
-
   }
  };
 });
-
-
-/* ===== SOS ===== */
 
 $("sos").onclick=async()=>{
 
@@ -461,18 +412,11 @@ $("sos").onclick=async()=>{
 
  try{
 
-  /*
-   מנסים לקבל מיקום עדכני לפני SOS.
-   אם GPS לא מצליח — עדיין שולחים
-   עם המיקום האחרון שקיים.
-  */
-
   if(navigator.geolocation){
 
    await new Promise(res=>{
 
     navigator.geolocation.getCurrentPosition(
-
      p=>{
       lastLoc={
        lat:p.coords.latitude,
@@ -480,9 +424,7 @@ $("sos").onclick=async()=>{
       };
       res();
      },
-
      ()=>res(),
-
      {
       enableHighAccuracy:true,
       timeout:8000,
@@ -497,9 +439,7 @@ $("sos").onclick=async()=>{
 
   btn.innerHTML="✅ SOS נשלח";
 
-  alert(
-   "🆘 SOS נשלח לחפ״ק עם המיקום האחרון שלך"
-  );
+  alert("🆘 SOS נשלח לחפ״ק עם המיקום האחרון שלך");
 
   setTimeout(()=>{
    btn.innerHTML=old;
@@ -525,12 +465,18 @@ $("photo").onchange=()=>{
  if(!f)
   return;
 
- $("preview").src=URL.createObjectURL(f);
+ const previewUrl=window.URL.createObjectURL(f);
+
+ $("preview").src=previewUrl;
  $("preview").style.display="block";
+
+ $("preview").onload=()=>{
+  window.URL.revokeObjectURL(previewUrl);
+ };
 };
 
 
-/* ===== כיווץ תמונה - מתאים יותר לטלפונים ===== */
+/* ===== כיווץ תמונה ===== */
 
 async function compress(file){
 
@@ -540,21 +486,20 @@ async function compress(file){
  const img=await new Promise((resolve,reject)=>{
 
   const i=new Image();
-  const u=URL.createObjectURL(file);
+  const u=window.URL.createObjectURL(file);
 
   i.onload=()=>{
-   URL.revokeObjectURL(u);
+   window.URL.revokeObjectURL(u);
    resolve(i);
   };
 
   i.onerror=()=>{
-   URL.revokeObjectURL(u);
+   window.URL.revokeObjectURL(u);
    reject(Error("לא ניתן לקרוא את התמונה"));
   };
 
   i.src=u;
  });
-
 
  const max=720;
 
@@ -577,6 +522,9 @@ async function compress(file){
 
  const ctx=canvas.getContext("2d");
 
+ if(!ctx)
+  throw Error("לא ניתן לעבד את התמונה");
+
  ctx.drawImage(
   img,
   0,
@@ -584,13 +532,6 @@ async function compress(file){
   canvas.width,
   canvas.height
  );
-
-
- /*
-  מתחילים באיכות 55%.
-  אם התמונה עדיין כבדה,
-  מורידים איכות בהדרגה.
- */
 
  let quality=.55;
 
@@ -612,9 +553,7 @@ async function compress(file){
  }
 
  if(data.length>850000)
-  throw Error(
-   "התמונה גדולה מדי, נסה תמונה אחרת"
-  );
+  throw Error("התמונה גדולה מדי, נסה תמונה אחרת");
 
  return data;
 }
@@ -675,9 +614,6 @@ $("sendPhoto").onclick=async()=>{
   btn.disabled=false;
  }
 };
-
-
-/* ===== שגיאות כלליות ===== */
 
 window.addEventListener("unhandledrejection",e=>{
  console.error("Worker page error:",e.reason);
