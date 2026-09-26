@@ -8,7 +8,20 @@
 </div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 (()=>{"use strict";const $=x=>document.getElementById(x),URL="https://jvubjwzzikfwsektifzi.supabase.co",KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW",cloud=supabase.createClient(URL,KEY),eventId=new URLSearchParams(location.search).get("event");let worker=null,lastLoc=null,watch=null,ended=false,stopped=false;const nameKey='fireWorkerName:'+eventId,native=new URLSearchParams(location.search).get('native')==='1';const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const msg=(id,t,bad=false)=>{$(id).textContent=t;$(id).className='status '+(bad?'bad':'ok')};
 function stopLocation(message){if(watch!=null){navigator.geolocation.clearWatch(watch);watch=null}lastLoc=null;localStorage.removeItem('fireWorkerLocation:'+eventId);if(message)msg('loc',message,true)}
-async function eventInfo(){if(!eventId){$('eventTxt').textContent='⚠ קישור ללא מספר אירוע';stopLocation();return}let r=await cloud.from('fire_events').select('name,status').eq('id',eventId).maybeSingle();if(r.error){$('eventTxt').textContent='❌ '+r.error.message;return}if(!r.data||r.data.status!=='active'){ended=true;stopLocation('⏹ האירוע הסתיים — המיקום הופסק');$('eventEnded').style.display='block';$('eventTxt').textContent='אירוע: '+(r.data?.name||'שריפה');document.querySelectorAll('#saveWorker,#startLocation,#sendPhoto,#sos,[data-r]').forEach(b=>b.disabled=true);return}$('eventTxt').textContent='אירוע פעיל: '+(r.data.name||'שריפה')}
+async function eventInfo(){
+ if(!eventId){$('eventTxt').textContent='⚠ קישור ללא מספר אירוע';return}
+ let r=await cloud.rpc('worker_event_state',{p_event_id:eventId});
+ if(r.error){$('eventTxt').textContent='❌ בדיקת אירוע: '+r.error.message;return}
+ let e=r.data?.[0];
+ if(!e){$('eventTxt').textContent='⚠ קישור אירוע לא נמצא';return}
+ if(e.status!=='active'){
+  ended=true;stopLocation('⏹ האירוע הסתיים — המיקום הופסק');
+  $('eventEnded').style.display='block';$('eventTxt').textContent='אירוע: '+(e.name||'שריפה');
+  document.querySelectorAll('#saveWorker,#startLocation,#sendPhoto,#sos,[data-r]').forEach(b=>b.disabled=true);return
+ }
+ ended=false;$('eventEnded').style.display='none';$('eventTxt').textContent='אירוע פעיל: '+(e.name||'שריפה');
+ document.querySelectorAll('#saveWorker,#startLocation,#sendPhoto,#sos,[data-r]').forEach(b=>b.disabled=false)
+}
 async function startLocation(){if(ended||stopped)return msg('loc',ended?'האירוע הסתיים':'שיתוף המיקום הופסק ע״י החפ״ק',true);try{await ensureWorker();if(!navigator.geolocation)throw Error('המכשיר אינו תומך במיקום');if(watch!=null)navigator.geolocation.clearWatch(watch);watch=navigator.geolocation.watchPosition(pos=>{if(!ended&&!stopped)pushLoc(pos).catch(e=>msg('loc','❌ '+e.message,true))},e=>msg('loc','❌ מיקום: '+e.message,true),{enableHighAccuracy:true,maximumAge:0,timeout:20000});localStorage.setItem('fireWorkerLocation:'+eventId,'1');msg('loc','⏳ ממתין לאישור המיקום בטלפון...')}catch(e){msg('loc','❌ '+e.message,true)}}
 $('startLocation').onclick=startLocation;if(native){$('startLocation').style.display='none';msg('loc','🟢 מעקב מיקום דרך אפליקציית Android וההתראה שלה')}eventInfo();setInterval(eventInfo,5000);
 async function ensureWorker(){let n=$('name').value.trim();if(!n)throw Error('כתוב שם עובד קודם');if(ended)throw Error('האירוע הסתיים');if(worker&&worker.name===n)return worker;let f=await cloud.from('workers').select('*').eq('event_id',eventId).eq('name',n).neq('status','סיים').order('location_updated_at',{ascending:false}).limit(1).maybeSingle();if(f.data){worker=f.data;localStorage.setItem(nameKey,n);return worker}let row={event_id:eventId,name:n,status:$('status').value,sector:$('sector').value.trim()||null,location_updated_at:new Date().toISOString()};let r=await cloud.from('workers').insert(row).select().single();if(r.error)throw r.error;worker=r.data;localStorage.setItem(nameKey,n);return worker}
