@@ -166,6 +166,12 @@ $("history").onclick=async()=>{let r=await cloud.from("fire_events").select("*")
 const activeBtn=b=>{document.querySelectorAll('#premiumLeft button').forEach(x=>x.classList.remove('toolActive'));b?.classList.add('toolActive')};document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{pMode(b.dataset.p);activeBtn(b)});document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lMode(b.dataset.l);activeBtn(b)});document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{aMode(b.dataset.a);activeBtn(b)});document.querySelectorAll('#premiumLeft button').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('premiumLeft').classList.remove('mobileOpen')}));document.querySelectorAll('#panel [data-p],#panel [data-l],#panel [data-a],#panel [data-s],#panel #freeDraw,#panel #measureArea,#panel #measureDist').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('panel').classList.remove('open')}));document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector "+b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": לחץ נקודות גבול • קליק כפול מסיים."});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")stop()});
 $("base").onchange=()=>{map.removeLayer(bt);bt=tiles[$("base").value];bt.addTo(map);bt.bringToBack?.()};setInterval(()=>{if(started){let s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60),h=Math.floor(m/60);$("time").textContent=`${String(h).padStart(2,"0")}:${String(m%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}},1000);
+let liveRefreshBusy=false;
+setInterval(async()=>{
+ if(liveRefreshBusy||!ev||!document.documentElement.classList.contains("hq-authorized")||document.hidden)return;
+ liveRefreshBusy=true;
+ try{await live()}finally{liveRefreshBusy=false}
+},5000);
 (async()=>{try{let {data}=await cloud.auth.getSession();if(data.session){await enterHQ(data.session)}else $("hqError").textContent="יש להתחבר כדי לפתוח את החפ״ק."}catch(e){$("hqError").textContent="❌ "+e.message}})();
 })();
 </script><script>
