@@ -43,8 +43,8 @@ jobs:
               applicationId 'com.firecommand.worker'
               minSdk 26
               targetSdk 34
-              versionCode 4
-              versionName '4.0'
+              versionCode 5
+              versionName '5.0'
             }
             compileOptions {
               sourceCompatibility JavaVersion.VERSION_17
@@ -170,6 +170,16 @@ jobs:
               setContentView(root);
               enter.setOnClickListener(v->prepare());
               stopLocation.setOnClickListener(v->stopSharing());
+              android.content.SharedPreferences saved=getSharedPreferences("worker",MODE_PRIVATE);
+              eventId=saved.getString("event",""); workerName=saved.getString("name","");
+              eventField.setText(eventId); nameField.setText(workerName);
+              if(saved.getBoolean("sharing",false)&&!eventId.isEmpty()&&!workerName.isEmpty()) openWorkerPage();
+              else if(saved.getBoolean("eventEnded",false)){
+                TextView endedView=new TextView(this);
+                endedView.setText("⏹ סיום אירוע — כדי להצטרף לאירוע חדש, הדבק קישור חדש");
+                endedView.setTextSize(20);endedView.setTextColor(Color.RED);
+                login.addView(endedView,1);
+              }
             }
 
             private String parseEvent(String raw){
@@ -218,9 +228,12 @@ jobs:
               Intent service=new Intent(this,LocationService.class);
               service.setAction("START_SHARING");
               service.putExtra("event",eventId); service.putExtra("name",workerName);
-              getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",true).apply();
+              getSharedPreferences("worker",MODE_PRIVATE).edit().putString("event",eventId).putString("name",workerName).putBoolean("eventEnded",false).putBoolean("sharing",true).apply();
               if(Build.VERSION.SDK_INT>=26) startForegroundService(service); else startService(service);
 
+              openWorkerPage();
+            }
+            private void openWorkerPage(){
               login.setVisibility(View.GONE); stopTop.setVisibility(View.VISIBLE); web.setVisibility(View.VISIBLE);
               WebSettings s=web.getSettings();
               s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setGeolocationEnabled(false);
@@ -302,7 +315,7 @@ jobs:
             @Override public int onStartCommand(Intent intent,int flags,int startId){
               if(intent!=null && "STOP_SHARING".equals(intent.getAction())){
                 getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
-                clearRemoteLocation(); stopForeground(true); stopSelf(); return START_NOT_STICKY;
+                executor.execute(()->{clearRemoteLocation();stopForeground(true);stopSelf();}); return START_NOT_STICKY;
               }
               boolean explicitStart=intent!=null && "START_SHARING".equals(intent.getAction());
               if(intent!=null){
@@ -319,7 +332,32 @@ jobs:
               ready=false;
               executor.execute(()->{if(explicitStart)authorizeRemoteSharing();findOrCreateWorker();ready=true;});
               startGps();
+              scheduleChecks();
               return START_STICKY;
+            }
+            void scheduleChecks(){
+              new Handler(Looper.getMainLooper()).postDelayed(new Runnable(){
+                @Override public void run(){
+                  if(!getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false))return;
+                  executor.execute(()->{
+                    if(eventFinished()){
+                      getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).putBoolean("eventEnded",true).apply();
+                      clearRemoteLocation();updateNotification("⏹ סיום אירוע — המיקום הופסק");stopSelf();return;
+                    }
+                    if(remoteStopRequested()){
+                      getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
+                      clearRemoteLocation();updateNotification("🔴 החפ״ק הפסיק שיתוף מיקום");stopSelf();
+                    }
+                  });
+                  new Handler(Looper.getMainLooper()).postDelayed(this,5000);
+                }
+              },5000);
+            }
+            boolean eventFinished(){
+              if(eventId.isEmpty())return false;HttpURLConnection c=null;
+              try{c=conn(SUPABASE+"/rest/v1/fire_events?id=eq."+URLEncoder.encode(eventId,"UTF-8")+"&select=status&limit=1","GET");
+                if(ok(c.getResponseCode())){JSONArray a=new JSONArray(read(c));return a.length()>0&&!"active".equals(a.getJSONObject(0).optString("status"));}
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}return false;
             }
 
             void startGps(){
@@ -338,6 +376,10 @@ jobs:
               if(!ready)return;
               double lat=l.getLatitude(),lng=l.getLongitude();
               executor.execute(()->{
+                if(eventFinished()){
+                  getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).putBoolean("eventEnded",true).apply();
+                  clearRemoteLocation();stopSelf();return;
+                }
                 if(remoteStopRequested()){
                   getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
                   clearRemoteLocation(); stopForeground(true); stopSelf(); return;
@@ -496,6 +538,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK-v4
+          name: Fire-Command-Worker-APK-v5
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
