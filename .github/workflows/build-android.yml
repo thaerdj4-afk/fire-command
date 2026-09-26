@@ -43,8 +43,8 @@ jobs:
               applicationId 'com.firecommand.worker'
               minSdk 26
               targetSdk 34
-              versionCode 7
-              versionName '7.0'
+              versionCode 8
+              versionName '8.0'
             }
             compileOptions {
               sourceCompatibility JavaVersion.VERSION_17
@@ -117,7 +117,7 @@ jobs:
             private LinearLayout login;
             private WebView web;
             private CheckBox consent;
-            private Button stopLocation, stopTop;
+            private Button stopLocation, stopTop, restartTop;
             private String eventId="", workerName="";
             private ValueCallback<Uri[]> fileCallback;
             private Uri cameraUri;
@@ -173,6 +173,23 @@ jobs:
               stopTop.setVisibility(View.GONE);
               root.addView(stopTop);
               stopTop.setOnClickListener(v->stopSharing());
+              restartTop=new Button(this);
+              restartTop.setText("🟢 הפעל מחדש מיקום LIVE");
+              restartTop.setVisibility(View.GONE);
+              root.addView(restartTop);
+              restartTop.setOnClickListener(v->{
+                if(eventId.isEmpty()||workerName.isEmpty()){
+                  Toast.makeText(this,"יש להיכנס לאירוע קודם",Toast.LENGTH_LONG).show();return;
+                }
+                if(Build.VERSION.SDK_INT>=23 &&
+                   checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED &&
+                   checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+                  requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION},100);return;
+                }
+                startEverything();
+                Toast.makeText(this,"מפעיל מחדש מיקום LIVE...",Toast.LENGTH_LONG).show();
+              });
               switchEvent=new Button(this);
               switchEvent.setText("🆕 כניסה לאירוע חדש");
               switchEvent.setVisibility(View.GONE);
@@ -181,7 +198,7 @@ jobs:
                 stopSharing();
                 eventId="";eventField.setText("");
                 consent.setChecked(false);
-                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);
+                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);restartTop.setVisibility(View.GONE);
                 switchEvent.setVisibility(View.GONE);login.setVisibility(View.VISIBLE);
                 findActiveEvent();
               });
@@ -219,10 +236,14 @@ jobs:
                 String found="",message="";
                 HttpURLConnection c=null;
                 try{
-                  URL u=new URL("https://jvubjwzzikfwsektifzi.supabase.co/rest/v1/fire_events?status=eq.active&select=id&order=started_at.desc&limit=1");
-                  c=(HttpURLConnection)u.openConnection();c.setConnectTimeout(10000);c.setReadTimeout(10000);
+                  URL u=new URL("https://jvubjwzzikfwsektifzi.supabase.co/rest/v1/rpc/worker_latest_active_event");
+                  c=(HttpURLConnection)u.openConnection();c.setRequestMethod("POST");
+                  c.setConnectTimeout(10000);c.setReadTimeout(10000);
                   c.setRequestProperty("apikey","sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW");
                   c.setRequestProperty("Authorization","Bearer sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW");
+                  c.setRequestProperty("Content-Type","application/json");
+                  c.setDoOutput(true);
+                  c.getOutputStream().write("{}".getBytes(StandardCharsets.UTF_8));
                   int code=c.getResponseCode();
                   if(code<200||code>=300)throw new Exception("HTTP "+code);
                   InputStream in=c.getInputStream();byte[] bytes=in.readAllBytes();in.close();
@@ -283,7 +304,7 @@ jobs:
               openWorkerPage();
             }
             private void openWorkerPage(){
-              login.setVisibility(View.GONE); stopTop.setVisibility(View.VISIBLE); switchEvent.setVisibility(View.VISIBLE);web.setVisibility(View.VISIBLE);
+              login.setVisibility(View.GONE); stopTop.setVisibility(View.VISIBLE); restartTop.setVisibility(View.VISIBLE); switchEvent.setVisibility(View.VISIBLE);web.setVisibility(View.VISIBLE);
               WebSettings s=web.getSettings();
               s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setGeolocationEnabled(false);
 
@@ -330,7 +351,7 @@ jobs:
             @Override protected void onResume(){
               super.onResume();
               if(web!=null&&getSharedPreferences("worker",MODE_PRIVATE).getBoolean("eventEnded",false)){
-                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);
+                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);restartTop.setVisibility(View.GONE);
                 if(switchEvent!=null)switchEvent.setVisibility(View.GONE);
                 login.setVisibility(View.VISIBLE);
                 eventField.setText("");consent.setChecked(false);
@@ -432,8 +453,13 @@ jobs:
             }
             boolean eventFinished(){
               if(eventId.isEmpty())return false;HttpURLConnection c=null;
-              try{c=conn(SUPABASE+"/rest/v1/fire_events?id=eq."+URLEncoder.encode(eventId,"UTF-8")+"&select=status&limit=1","GET");
-                if(ok(c.getResponseCode())){JSONArray a=new JSONArray(read(c));return a.length()>0&&!"active".equals(a.getJSONObject(0).optString("status"));}
+              try{
+                c=conn(SUPABASE+"/rest/v1/rpc/worker_event_state","POST");
+                JSONObject b=new JSONObject();b.put("p_event_id",eventId);write(c,b.toString());
+                if(ok(c.getResponseCode())){
+                  JSONArray a=new JSONArray(read(c));
+                  return a.length()>0 && !"active".equals(a.getJSONObject(0).optString("status"));
+                }
               }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}return false;
             }
 
@@ -615,6 +641,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK-v7
+          name: Fire-Command-Worker-APK-v8
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
