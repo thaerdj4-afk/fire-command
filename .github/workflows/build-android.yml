@@ -6,10 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Java 17
         uses: actions/setup-java@v4
@@ -23,91 +21,62 @@ jobs:
           mkdir -p android-app/app/src/main/java/com/firecommand/worker
 
           cat > android-app/settings.gradle <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories { google(); mavenCentral() }
           }
-
           rootProject.name = "FireCommandWorker"
           include(":app")
           EOF
 
           cat > android-app/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application' version '8.5.2' apply false
-          }
+          plugins { id 'com.android.application' version '8.5.2' apply false }
           EOF
 
           cat > android-app/app/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application'
-          }
-
+          plugins { id 'com.android.application' }
           android {
-              namespace 'com.firecommand.worker'
-              compileSdk 34
-
-              defaultConfig {
-                  applicationId 'com.firecommand.worker'
-                  minSdk 26
-                  targetSdk 34
-                  versionCode 2
-                  versionName '2.0'
-              }
-
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
+            namespace 'com.firecommand.worker'
+            compileSdk 34
+            defaultConfig {
+              applicationId 'com.firecommand.worker'
+              minSdk 26
+              targetSdk 34
+              versionCode 4
+              versionName '4.0'
+            }
+            compileOptions {
+              sourceCompatibility JavaVersion.VERSION_17
+              targetCompatibility JavaVersion.VERSION_17
+            }
           }
           EOF
 
           cat > android-app/app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-              <uses-permission android:name="android.permission.INTERNET"/>
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
-              <application
-                  android:allowBackup="true"
-                  android:usesCleartextTraffic="false"
-                  android:label="חפ״ק שריפה - עובד"
-                  android:supportsRtl="true"
-                  android:theme="@android:style/Theme.Material.Light.NoActionBar">
-
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true">
-
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
-                      </intent-filter>
-
-                  </activity>
-
-                  <service
-                      android:name=".LocationService"
-                      android:exported="false"
-                      android:foregroundServiceType="location"/>
-
-              </application>
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+            <application
+              android:allowBackup="true"
+              android:usesCleartextTraffic="false"
+              android:label="חפ״ק שריפה - עובד"
+              android:supportsRtl="true"
+              android:theme="@android:style/Theme.Material.Light.NoActionBar">
+              <activity android:name=".MainActivity" android:exported="true">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN"/>
+                  <category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+              </activity>
+              <service android:name=".LocationService" android:exported="false"
+                android:foregroundServiceType="location"/>
+            </application>
           </manifest>
           EOF
 
@@ -124,273 +93,181 @@ jobs:
           import android.os.Bundle;
           import android.view.Gravity;
           import android.view.View;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
           import android.widget.Button;
+          import android.widget.CheckBox;
           import android.widget.EditText;
           import android.widget.LinearLayout;
           import android.widget.TextView;
           import android.widget.Toast;
 
           public class MainActivity extends Activity {
+            private EditText eventField, nameField;
+            private LinearLayout login;
+            private WebView web;
+            private CheckBox consent;
+            private Button stopLocation, stopTop;
+            private String eventId="", workerName="";
+            private ValueCallback<Uri[]> fileCallback;
+            private static final int FILE_CHOOSER=2026;
 
-              private EditText eventField;
-              private EditText nameField;
-              private LinearLayout login;
-              private WebView web;
+            @Override public void onCreate(Bundle b){
+              super.onCreate(b);
+              LinearLayout root=new LinearLayout(this);
+              root.setOrientation(LinearLayout.VERTICAL);
+              root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+              root.setBackgroundColor(Color.rgb(245,246,248));
 
-              private String eventId = "";
-              private String workerName = "";
+              login=new LinearLayout(this);
+              login.setOrientation(LinearLayout.VERTICAL);
+              login.setPadding(40,55,40,35);
 
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
+              TextView title=new TextView(this);
+              title.setText("🔥 חפ״ק שריפה – אפליקציית עובד");
+              title.setTextSize(25); title.setGravity(Gravity.CENTER);
+              login.addView(title);
 
-                  LinearLayout root = new LinearLayout(this);
-                  root.setOrientation(LinearLayout.VERTICAL);
-                  root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-                  root.setBackgroundColor(Color.rgb(245, 246, 248));
+              TextView privacy=new TextView(this);
+              privacy.setText("\n🔒 הגנת פרטיות\nבלחיצה על הכפתור הירוק המיקום שלך ישותף LIVE עם החפ״ק בזמן האירוע בלבד.\nבסיום העבודה שיתוף המיקום יופסק.\n");
+              privacy.setTextSize(16); privacy.setGravity(Gravity.CENTER);
+              login.addView(privacy);
 
-                  login = new LinearLayout(this);
-                  login.setOrientation(LinearLayout.VERTICAL);
-                  login.setPadding(40, 55, 40, 35);
+              eventField=new EditText(this);
+              eventField.setHint("הדבק קישור עובד או מזהה אירוע");
+              login.addView(eventField);
 
-                  TextView title = new TextView(this);
-                  title.setText("🔥 חפ״ק שריפה – אפליקציית עובד");
-                  title.setTextSize(25);
-                  title.setGravity(Gravity.CENTER);
-                  login.addView(title);
+              nameField=new EditText(this);
+              nameField.setHint("שם העובד");
+              login.addView(nameField);
 
-                  TextView sub = new TextView(this);
-                  sub.setText(
-                      "\nהתחברות לאירוע ושיתוף מיקום חי עם החפ״ק\n"
-                  );
-                  sub.setTextSize(16);
-                  sub.setGravity(Gravity.CENTER);
-                  login.addView(sub);
+              consent=new CheckBox(this);
+              consent.setText("אני מאשר לשתף את המיקום שלי LIVE עם החפ״ק במהלך האירוע");
+              consent.setTextSize(16);
+              consent.setPadding(4,18,4,18);
+              login.addView(consent);
 
-                  eventField = new EditText(this);
-                  eventField.setHint(
-                      "הדבק קישור עובד או מזהה אירוע"
-                  );
-                  login.addView(eventField);
+              Button enter=new Button(this);
+              enter.setText("🟢 אישור והתחלת מיקום LIVE");
+              login.addView(enter);
 
-                  nameField = new EditText(this);
-                  nameField.setHint("שם העובד");
-                  login.addView(nameField);
+              stopLocation=new Button(this);
+              stopLocation.setText("🔴 הפסקת שיתוף מיקום");
+              login.addView(stopLocation);
+              root.addView(login);
 
-                  Button enter = new Button(this);
-                  enter.setText("🔥 כניסה לאירוע");
-                  login.addView(enter);
+              stopTop=new Button(this);
+              stopTop.setText("🔴 הפסקת שיתוף מיקום");
+              stopTop.setVisibility(View.GONE);
+              root.addView(stopTop);
+              stopTop.setOnClickListener(v->stopSharing());
 
-                  root.addView(login);
+              web=new WebView(this); web.setVisibility(View.GONE);
+              root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
+              setContentView(root);
+              enter.setOnClickListener(v->prepare());
+              stopLocation.setOnClickListener(v->stopSharing());
+            }
 
-                  web = new WebView(this);
-                  web.setVisibility(View.GONE);
+            private String parseEvent(String raw){
+              raw=raw.trim();
+              try{
+                Uri u=Uri.parse(raw);
+                String e=u.getQueryParameter("event");
+                if(e!=null&&!e.trim().isEmpty()) return e.trim();
+              }catch(Exception ignored){}
+              return raw;
+            }
 
-                  root.addView(
-                      web,
-                      new LinearLayout.LayoutParams(
-                          -1,
-                          0,
-                          1
-                      )
-                  );
-
-                  setContentView(root);
-
-                  enter.setOnClickListener(
-                      v -> prepare()
-                  );
+            private void prepare(){
+              eventId=parseEvent(eventField.getText().toString());
+              workerName=nameField.getText().toString().trim();
+              if(eventId.isEmpty()||workerName.isEmpty()){
+                Toast.makeText(this,"יש להזין אירוע ושם עובד",Toast.LENGTH_SHORT).show(); return;
               }
-
-              private String parseEvent(String raw) {
-
-                  raw = raw.trim();
-
-                  try {
-
-                      Uri uri = Uri.parse(raw);
-
-                      String e =
-                          uri.getQueryParameter("event");
-
-                      if (
-                          e != null &&
-                          !e.trim().isEmpty()
-                      ) {
-                          return e.trim();
-                      }
-
-                  } catch (Exception ignored) {}
-
-                  return raw;
+              if(!consent.isChecked()){
+                Toast.makeText(this,"יש לאשר שיתוף מיקום LIVE לפני הכניסה",Toast.LENGTH_LONG).show(); return;
               }
-
-              private void prepare() {
-
-                  eventId =
-                      parseEvent(
-                          eventField
-                              .getText()
-                              .toString()
-                      );
-
-                  workerName =
-                      nameField
-                          .getText()
-                          .toString()
-                          .trim();
-
-                  if (
-                      eventId.isEmpty() ||
-                      workerName.isEmpty()
-                  ) {
-
-                      Toast.makeText(
-                          this,
-                          "יש להזין אירוע ושם עובד",
-                          Toast.LENGTH_SHORT
-                      ).show();
-
-                      return;
-                  }
-
-                  if (
-                      Build.VERSION.SDK_INT >= 23 &&
-                      checkSelfPermission(
-                          Manifest.permission
-                              .ACCESS_FINE_LOCATION
-                      )
-                      !=
-                      PackageManager.PERMISSION_GRANTED
-                  ) {
-
-                      requestPermissions(
-                          new String[]{
-                              Manifest.permission
-                                  .ACCESS_FINE_LOCATION,
-                              Manifest.permission
-                                  .ACCESS_COARSE_LOCATION
-                          },
-                          100
-                      );
-
-                      return;
-                  }
-
-                  startEverything();
+              if(Build.VERSION.SDK_INT>=23 &&
+                 checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                  Manifest.permission.ACCESS_COARSE_LOCATION},100); return;
               }
+              startEverything();
+            }
 
-              private void startEverything() {
-
-                  if (
-                      Build.VERSION.SDK_INT >= 33 &&
-                      checkSelfPermission(
-                          Manifest.permission
-                              .POST_NOTIFICATIONS
-                      )
-                      !=
-                      PackageManager.PERMISSION_GRANTED
-                  ) {
-
-                      requestPermissions(
-                          new String[]{
-                              Manifest.permission
-                                  .POST_NOTIFICATIONS
-                          },
-                          101
-                      );
-                  }
-
-                  Intent service =
-                      new Intent(
-                          this,
-                          LocationService.class
-                      );
-
-                  service.putExtra(
-                      "event",
-                      eventId
-                  );
-
-                  service.putExtra(
-                      "name",
-                      workerName
-                  );
-
-                  if (Build.VERSION.SDK_INT >= 26) {
-                      startForegroundService(service);
-                  } else {
-                      startService(service);
-                  }
-
-                  login.setVisibility(View.GONE);
-                  web.setVisibility(View.VISIBLE);
-
-                  WebSettings settings =
-                      web.getSettings();
-
-                  settings.setJavaScriptEnabled(true);
-                  settings.setDomStorageEnabled(true);
-                  settings.setGeolocationEnabled(true);
-
-                  web.setWebViewClient(
-                      new WebViewClient()
-                  );
-
-                  String url =
-                      "https://thaerdj4-afk.github.io/fire-command/worker.html?event="
-                      + Uri.encode(eventId)
-                      + "&name="
-                      + Uri.encode(workerName);
-
-                  web.loadUrl(url);
+            private void stopSharing(){
+              Intent service=new Intent(this,LocationService.class);
+              service.setAction("STOP_SHARING");
+              startService(service);
+              getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
+              Toast.makeText(this,"🔴 שיתוף המיקום הופסק",Toast.LENGTH_LONG).show();
+              if(web!=null){
+                web.evaluateJavascript("(function(){var e=document.getElementById('loc');if(e){e.className='status bad';e.textContent='🔴 שיתוף המיקום מופסק';}})();",null);
               }
+            }
 
-              @Override
-              public void onRequestPermissionsResult(
-                  int requestCode,
-                  String[] permissions,
-                  int[] results
-              ) {
+            private void startEverything(){
+              if(Build.VERSION.SDK_INT>=33 &&
+                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},101);
 
-                  super.onRequestPermissionsResult(
-                      requestCode,
-                      permissions,
-                      results
-                  );
+              Intent service=new Intent(this,LocationService.class);
+              service.setAction("START_SHARING");
+              service.putExtra("event",eventId); service.putExtra("name",workerName);
+              getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",true).apply();
+              if(Build.VERSION.SDK_INT>=26) startForegroundService(service); else startService(service);
 
-                  if (
-                      requestCode == 100 &&
-                      results.length > 0 &&
-                      results[0]
-                      ==
-                      PackageManager.PERMISSION_GRANTED
-                  ) {
+              login.setVisibility(View.GONE); stopTop.setVisibility(View.VISIBLE); web.setVisibility(View.VISIBLE);
+              WebSettings s=web.getSettings();
+              s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setGeolocationEnabled(false);
 
-                      startEverything();
-                  }
-              }
+              web.setWebViewClient(new WebViewClient(){
+                @Override public void onPageFinished(WebView view,String url){
+                  super.onPageFinished(view,url);
+                  view.evaluateJavascript(
+                    "(function(){var e=document.getElementById('loc');if(e){e.className='status ok';e.textContent='🟢 מיקום LIVE פעיל — המיקום שלך משותף עם החפ״ק בזמן האירוע';}})();",
+                    null);
+                }
+              });
 
-              @Override
-              public void onBackPressed() {
+              web.setWebChromeClient(new WebChromeClient(){
+                @Override public boolean onShowFileChooser(WebView w,ValueCallback<Uri[]> cb,FileChooserParams p){
+                  if(fileCallback!=null) fileCallback.onReceiveValue(null);
+                  fileCallback=cb;
+                  Intent pick=new Intent(Intent.ACTION_GET_CONTENT);
+                  pick.addCategory(Intent.CATEGORY_OPENABLE);
+                  pick.setType("image/*");
+                  startActivityForResult(Intent.createChooser(pick,"בחר תמונה"),FILE_CHOOSER);
+                  return true;
+                }
+              });
 
-                  if (
-                      web != null &&
-                      web.getVisibility()
-                          == View.VISIBLE &&
-                      web.canGoBack()
-                  ) {
+              String url="https://thaerdj4-afk.github.io/fire-command/worker.html?event="
+                +Uri.encode(eventId)+"&name="+Uri.encode(workerName)+"&native=1";
+              web.loadUrl(url);
+            }
 
-                      web.goBack();
+            @Override protected void onActivityResult(int req,int result,Intent data){
+              super.onActivityResult(req,result,data);
+              if(req!=FILE_CHOOSER||fileCallback==null) return;
+              Uri[] out=null;
+              if(result==RESULT_OK&&data!=null&&data.getData()!=null) out=new Uri[]{data.getData()};
+              fileCallback.onReceiveValue(out); fileCallback=null;
+            }
 
-                  } else {
+            @Override public void onRequestPermissionsResult(int req,String[] p,int[] r){
+              super.onRequestPermissionsResult(req,p,r);
+              if(req==100&&r.length>0&&r[0]==PackageManager.PERMISSION_GRANTED) startEverything();
+            }
 
-                      super.onBackPressed();
-                  }
-              }
+            @Override public void onBackPressed(){
+              if(web!=null&&web.getVisibility()==View.VISIBLE&&web.canGoBack()) web.goBack();
+              else super.onBackPressed();
+            }
           }
           EOF
 
@@ -398,706 +275,212 @@ jobs:
           package com.firecommand.worker;
 
           import android.Manifest;
-          import android.app.Notification;
-          import android.app.NotificationChannel;
-          import android.app.NotificationManager;
-          import android.app.PendingIntent;
-          import android.app.Service;
-          import android.content.Intent;
+          import android.app.*;
+          import android.content.*;
           import android.content.pm.PackageManager;
-          import android.location.Location;
-          import android.location.LocationListener;
-          import android.location.LocationManager;
-          import android.os.Build;
-          import android.os.IBinder;
-
-          import org.json.JSONArray;
-          import org.json.JSONObject;
-
-          import java.io.BufferedReader;
-          import java.io.InputStreamReader;
-          import java.io.OutputStream;
-          import java.net.HttpURLConnection;
-          import java.net.URL;
-          import java.net.URLEncoder;
+          import android.location.*;
+          import android.os.*;
+          import org.json.*;
+          import java.io.*;
+          import java.net.*;
           import java.nio.charset.StandardCharsets;
           import java.text.SimpleDateFormat;
-          import java.util.Date;
-          import java.util.Locale;
-          import java.util.concurrent.ExecutorService;
-          import java.util.concurrent.Executors;
+          import java.util.*;
+          import java.util.concurrent.*;
 
-          public class LocationService
-              extends Service
-              implements LocationListener {
+          public class LocationService extends Service implements LocationListener {
+            static final String CHANNEL="fire_worker_location";
+            static final String SUPABASE="https://jvubjwzzikfwsektifzi.supabase.co";
+            static final String KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW";
+            LocationManager manager;
+            ExecutorService executor=Executors.newSingleThreadExecutor();
+            String eventId="",workerName="",workerId=null;
+            volatile boolean ready=false;
 
-              private static final String CHANNEL =
-                  "fire_worker_location";
+            @Override public void onCreate(){super.onCreate();createChannel();}
 
-              private static final String SUPABASE =
-                  "https://jvubjwzzikfwsektifzi.supabase.co";
-
-              private static final String KEY =
-                  "sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW";
-
-              private LocationManager manager;
-
-              private final ExecutorService executor =
-                  Executors.newSingleThreadExecutor();
-
-              private String eventId = "";
-              private String workerName = "";
-              private String workerId = null;
-
-              @Override
-              public void onCreate() {
-
-                  super.onCreate();
-
-                  createChannel();
+            @Override public int onStartCommand(Intent intent,int flags,int startId){
+              if(intent!=null && "STOP_SHARING".equals(intent.getAction())){
+                getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
+                clearRemoteLocation(); stopForeground(true); stopSelf(); return START_NOT_STICKY;
               }
+              boolean explicitStart=intent!=null && "START_SHARING".equals(intent.getAction());
+              if(intent!=null){
+                String e=intent.getStringExtra("event"),n=intent.getStringExtra("name");
+                if(e!=null)eventId=e.trim(); if(n!=null)workerName=n.trim();
+                getSharedPreferences("worker",MODE_PRIVATE).edit().putString("event",eventId).putString("name",workerName).apply();
+              }else{
+                eventId=getSharedPreferences("worker",MODE_PRIVATE).getString("event","");
+                workerName=getSharedPreferences("worker",MODE_PRIVATE).getString("name","");
+              }
+              if(explicitStart) getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",true).apply();
+              if(!getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false)){stopSelf();return START_NOT_STICKY;}
+              startForeground(7001,notification("🟡 מתחבר למיקום LIVE..."));
+              ready=false;
+              executor.execute(()->{if(explicitStart)authorizeRemoteSharing();findOrCreateWorker();ready=true;});
+              startGps();
+              return START_STICKY;
+            }
 
-              @Override
-              public int onStartCommand(
-                  Intent intent,
-                  int flags,
-                  int startId
-              ) {
+            void startGps(){
+              if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED &&
+                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+                stopSelf(); return;
+              }
+              manager=(LocationManager)getSystemService(LOCATION_SERVICE);
+              try{if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                manager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,2,this);}catch(Exception ignored){}
+              try{if(manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,7000,3,this);}catch(Exception ignored){}
+            }
 
-                  if (intent != null) {
+            @Override public void onLocationChanged(Location l){
+              if(!ready)return;
+              double lat=l.getLatitude(),lng=l.getLongitude();
+              executor.execute(()->{
+                if(remoteStopRequested()){
+                  getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
+                  clearRemoteLocation(); stopForeground(true); stopSelf(); return;
+                }
+                if(workerId==null)findOrCreateWorker();
+                if(workerId!=null)updateLocation(lat,lng);
+              });
+            }
 
-                      String e =
-                          intent.getStringExtra(
-                              "event"
-                          );
-
-                      String n =
-                          intent.getStringExtra(
-                              "name"
-                          );
-
-                      if (e != null) {
-                          eventId = e.trim();
-                      }
-
-                      if (n != null) {
-                          workerName = n.trim();
-                      }
-
-                      getSharedPreferences(
-                          "worker",
-                          MODE_PRIVATE
-                      )
-                      .edit()
-                      .putString(
-                          "event",
-                          eventId
-                      )
-                      .putString(
-                          "name",
-                          workerName
-                      )
-                      .apply();
-
-                  } else {
-
-                      eventId =
-                          getSharedPreferences(
-                              "worker",
-                              MODE_PRIVATE
-                          )
-                          .getString(
-                              "event",
-                              ""
-                          );
-
-                      workerName =
-                          getSharedPreferences(
-                              "worker",
-                              MODE_PRIVATE
-                          )
-                          .getString(
-                              "name",
-                              ""
-                          );
+            void findOrCreateWorker(){
+              if(eventId.isEmpty()||workerName.isEmpty())return;
+              HttpURLConnection c=null;
+              try{
+                String ep=SUPABASE+"/rest/v1/workers?event_id=eq."+URLEncoder.encode(eventId,"UTF-8")
+                  +"&name=eq."+URLEncoder.encode(workerName,"UTF-8")
+                  +"&select=id,status&order=created_at.desc&limit=10";
+                c=conn(ep,"GET");
+                if(ok(c.getResponseCode())){
+                  JSONArray a=new JSONArray(read(c));
+                  for(int i=0;i<a.length();i++){
+                    JSONObject o=a.getJSONObject(i);
+                    if(!"סיים".equals(o.optString("status"))){workerId=o.optString("id",null);break;}
                   }
-
-                  startForeground(
-                      7001,
-                      notification(
-                          "מתחבר ל-GPS..."
-                      )
-                  );
-
-                  executor.execute(
-                      this::findOrCreateWorker
-                  );
-
-                  startGps();
-
-                  return START_STICKY;
-              }
-
-              private void startGps() {
-
-                  if (
-                      checkSelfPermission(
-                          Manifest.permission
-                              .ACCESS_FINE_LOCATION
-                      )
-                      !=
-                      PackageManager.PERMISSION_GRANTED
-                      &&
-                      checkSelfPermission(
-                          Manifest.permission
-                              .ACCESS_COARSE_LOCATION
-                      )
-                      !=
-                      PackageManager.PERMISSION_GRANTED
-                  ) {
-
-                      stopSelf();
-                      return;
+                  // Important: if this worker already has a finished row, do NOT recreate it automatically.
+                  if(workerId==null && a.length()>0){
+                    stopSelf(); return;
                   }
+                }
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+              if(workerId==null)createWorker();
+            }
 
-                  manager =
-                      (LocationManager)
-                          getSystemService(
-                              LOCATION_SERVICE
-                          );
+            void createWorker(){
+              HttpURLConnection c=null;
+              try{
+                c=conn(SUPABASE+"/rest/v1/workers","POST");
+                c.setRequestProperty("Prefer","return=representation");
+                JSONObject b=new JSONObject();
+                b.put("event_id",eventId);b.put("name",workerName);b.put("status","בדרך");
+                write(c,b.toString());
+                if(ok(c.getResponseCode())){
+                  JSONArray a=new JSONArray(read(c));
+                  if(a.length()>0)workerId=a.getJSONObject(0).optString("id",null);
+                }
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+            }
 
-                  try {
+            void authorizeRemoteSharing(){
+              if(eventId.isEmpty()||workerName.isEmpty())return; HttpURLConnection c=null;
+              try{String ep=SUPABASE+"/rest/v1/worker_requests?event_id=eq."+URLEncoder.encode(eventId,"UTF-8")+"&worker_name=eq."+URLEncoder.encode(workerName,"UTF-8")+"&request_type=eq."+URLEncoder.encode("הפסקת שיתוף מיקום","UTF-8")+"&status=eq."+URLEncoder.encode("פעיל","UTF-8");c=conn(ep,"PATCH");JSONObject b=new JSONObject();b.put("status","אושר מחדש");write(c,b.toString());c.getResponseCode();}catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+            }
+            boolean remoteStopRequested(){
+              if(eventId.isEmpty()||workerName.isEmpty())return false; HttpURLConnection c=null;
+              try{String ep=SUPABASE+"/rest/v1/worker_requests?event_id=eq."+URLEncoder.encode(eventId,"UTF-8")+"&worker_name=eq."+URLEncoder.encode(workerName,"UTF-8")+"&request_type=eq."+URLEncoder.encode("הפסקת שיתוף מיקום","UTF-8")+"&status=eq."+URLEncoder.encode("פעיל","UTF-8")+"&select=id&limit=1";c=conn(ep,"GET");if(ok(c.getResponseCode()))return new JSONArray(read(c)).length()>0;}catch(Exception ignored){}finally{if(c!=null)c.disconnect();}return false;
+            }
 
-                      if (
-                          manager.isProviderEnabled(
-                              LocationManager
-                                  .GPS_PROVIDER
-                          )
-                      ) {
+            void clearRemoteLocation(){
+              if(eventId.isEmpty()) eventId=getSharedPreferences("worker",MODE_PRIVATE).getString("event","");
+              if(workerName.isEmpty()) workerName=getSharedPreferences("worker",MODE_PRIVATE).getString("name","");
+              if(eventId.isEmpty()||workerName.isEmpty())return;
+              HttpURLConnection c=null;
+              try{
+                String ep=SUPABASE+"/rest/v1/workers?event_id=eq."+URLEncoder.encode(eventId,"UTF-8")
+                  +"&name=eq."+URLEncoder.encode(workerName,"UTF-8")+"&status=neq."+URLEncoder.encode("סיים","UTF-8");
+                c=conn(ep,"PATCH");
+                c.setRequestProperty("Prefer","return=minimal");
+                JSONObject b=new JSONObject();
+                b.put("latitude",JSONObject.NULL); b.put("longitude",JSONObject.NULL);
+                b.put("location_updated_at",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX",Locale.US).format(new Date()));
+                write(c,b.toString()); c.getResponseCode();
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+            }
 
-                          manager.requestLocationUpdates(
-                              LocationManager
-                                  .GPS_PROVIDER,
-                              5000,
-                              2,
-                              this
-                          );
-                      }
+            boolean finished(){
+              if(workerId==null)return false;
+              HttpURLConnection c=null;
+              try{
+                c=conn(SUPABASE+"/rest/v1/workers?id=eq."+URLEncoder.encode(workerId,"UTF-8")+"&select=status&limit=1","GET");
+                if(ok(c.getResponseCode())){
+                  JSONArray a=new JSONArray(read(c));
+                  return a.length()>0 && "סיים".equals(a.getJSONObject(0).optString("status"));
+                }
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+              return false;
+            }
 
-                  } catch (Exception ignored) {}
-
-                  try {
-
-                      if (
-                          manager.isProviderEnabled(
-                              LocationManager
-                                  .NETWORK_PROVIDER
-                          )
-                      ) {
-
-                          manager.requestLocationUpdates(
-                              LocationManager
-                                  .NETWORK_PROVIDER,
-                              7000,
-                              3,
-                              this
-                          );
-                      }
-
-                  } catch (Exception ignored) {}
+            void updateLocation(double lat,double lng){
+              if(!getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false)){ stopSelf(); return; }
+              if(finished()){
+                updateNotification("🔴 שיתוף המיקום הופסק — העובד סיים");
+                stopSelf(); return;
               }
+              HttpURLConnection c=null;
+              try{
+                c=conn(SUPABASE+"/rest/v1/workers?id=eq."+URLEncoder.encode(workerId,"UTF-8"),"PATCH");
+                c.setRequestProperty("Prefer","return=minimal");
+                JSONObject b=new JSONObject();
+                b.put("latitude",lat);b.put("longitude",lng);
+                b.put("location_updated_at",new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX",Locale.US).format(new Date()));
+                write(c,b.toString());
+                if(ok(c.getResponseCode())) updateNotification("🟢 מיקום LIVE פעיל — משותף עם החפ״ק");
+              }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}
+            }
 
-              @Override
-              public void onLocationChanged(
-                  Location location
-              ) {
+            boolean ok(int c){return c>=200&&c<300;}
+            HttpURLConnection conn(String address,String method)throws Exception{
+              HttpURLConnection c=(HttpURLConnection)new URL(address).openConnection();
+              c.setRequestMethod(method);c.setConnectTimeout(15000);c.setReadTimeout(15000);
+              c.setRequestProperty("apikey",KEY);c.setRequestProperty("Authorization","Bearer "+KEY);
+              c.setRequestProperty("Content-Type","application/json");
+              if("POST".equals(method)||"PATCH".equals(method))c.setDoOutput(true);
+              return c;
+            }
+            void write(HttpURLConnection c,String d)throws Exception{
+              try(OutputStream o=c.getOutputStream()){o.write(d.getBytes(StandardCharsets.UTF_8));}
+            }
+            String read(HttpURLConnection c)throws Exception{
+              BufferedReader r=new BufferedReader(new InputStreamReader(c.getInputStream(),StandardCharsets.UTF_8));
+              StringBuilder b=new StringBuilder();String line;while((line=r.readLine())!=null)b.append(line);return b.toString();
+            }
 
-                  double lat =
-                      location.getLatitude();
-
-                  double lng =
-                      location.getLongitude();
-
-                  executor.execute(() -> {
-
-                      if (workerId == null) {
-                          findOrCreateWorker();
-                      }
-
-                      if (workerId != null) {
-                          updateLocation(
-                              lat,
-                              lng
-                          );
-                      }
-                  });
+            void createChannel(){
+              if(Build.VERSION.SDK_INT>=26){
+                NotificationChannel ch=new NotificationChannel(CHANNEL,"מיקום חפ״ק",NotificationManager.IMPORTANCE_LOW);
+                NotificationManager n=getSystemService(NotificationManager.class);if(n!=null)n.createNotificationChannel(ch);
               }
-
-              private void findOrCreateWorker() {
-
-                  if (
-                      eventId.isEmpty() ||
-                      workerName.isEmpty()
-                  ) {
-                      return;
-                  }
-
-                  HttpURLConnection c = null;
-
-                  try {
-
-                      String endpoint =
-                          SUPABASE
-                          + "/rest/v1/workers"
-                          + "?event_id=eq."
-                          + URLEncoder.encode(
-                              eventId,
-                              "UTF-8"
-                          )
-                          + "&name=eq."
-                          + URLEncoder.encode(
-                              workerName,
-                              "UTF-8"
-                          )
-                          + "&select=id,status"
-                          + "&order=created_at.desc"
-                          + "&limit=10";
-
-                      c = connection(
-                          endpoint,
-                          "GET"
-                      );
-
-                      int code =
-                          c.getResponseCode();
-
-                      if (
-                          code >= 200 &&
-                          code < 300
-                      ) {
-
-                          JSONArray rows =
-                              new JSONArray(
-                                  read(c)
-                              );
-
-                          for (
-                              int i = 0;
-                              i < rows.length();
-                              i++
-                          ) {
-
-                              JSONObject row =
-                                  rows.getJSONObject(i);
-
-                              if (
-                                  !"סיים".equals(
-                                      row.optString(
-                                          "status"
-                                      )
-                                  )
-                              ) {
-
-                                  workerId =
-                                      row.optString(
-                                          "id",
-                                          null
-                                      );
-
-                                  break;
-                              }
-                          }
-                      }
-
-                  } catch (Exception ignored) {
-
-                  } finally {
-
-                      if (c != null) {
-                          c.disconnect();
-                      }
-                  }
-
-                  if (workerId == null) {
-                      createWorker();
-                  }
-              }
-
-              private void createWorker() {
-
-                  HttpURLConnection c = null;
-
-                  try {
-
-                      c = connection(
-                          SUPABASE
-                          + "/rest/v1/workers",
-                          "POST"
-                      );
-
-                      c.setRequestProperty(
-                          "Prefer",
-                          "return=representation"
-                      );
-
-                      JSONObject body =
-                          new JSONObject();
-
-                      body.put(
-                          "event_id",
-                          eventId
-                      );
-
-                      body.put(
-                          "name",
-                          workerName
-                      );
-
-                      body.put(
-                          "status",
-                          "פעיל"
-                      );
-
-                      write(
-                          c,
-                          body.toString()
-                      );
-
-                      int code =
-                          c.getResponseCode();
-
-                      if (
-                          code >= 200 &&
-                          code < 300
-                      ) {
-
-                          JSONArray rows =
-                              new JSONArray(
-                                  read(c)
-                              );
-
-                          if (
-                              rows.length() > 0
-                          ) {
-
-                              workerId =
-                                  rows
-                                      .getJSONObject(0)
-                                      .optString(
-                                          "id",
-                                          null
-                                      );
-                          }
-                      }
-
-                  } catch (Exception ignored) {
-
-                  } finally {
-
-                      if (c != null) {
-                          c.disconnect();
-                      }
-                  }
-              }
-
-              private void updateLocation(
-                  double lat,
-                  double lng
-              ) {
-
-                  HttpURLConnection c = null;
-
-                  try {
-
-                      String endpoint =
-                          SUPABASE
-                          + "/rest/v1/workers?id=eq."
-                          + URLEncoder.encode(
-                              workerId,
-                              "UTF-8"
-                          );
-
-                      c = connection(
-                          endpoint,
-                          "PATCH"
-                      );
-
-                      c.setRequestProperty(
-                          "Prefer",
-                          "return=minimal"
-                      );
-
-                      JSONObject body =
-                          new JSONObject();
-
-                      body.put(
-                          "latitude",
-                          lat
-                      );
-
-                      body.put(
-                          "longitude",
-                          lng
-                      );
-
-                      body.put(
-                          "location_updated_at",
-                          new SimpleDateFormat(
-                              "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-                              Locale.US
-                          ).format(
-                              new Date()
-                          )
-                      );
-
-                      write(
-                          c,
-                          body.toString()
-                      );
-
-                      int code =
-                          c.getResponseCode();
-
-                      if (
-                          code >= 200 &&
-                          code < 300
-                      ) {
-
-                          updateNotification(
-                              "🟢 מיקום חי מחובר לחפ״ק"
-                          );
-                      }
-
-                  } catch (Exception ignored) {
-
-                  } finally {
-
-                      if (c != null) {
-                          c.disconnect();
-                      }
-                  }
-              }
-
-              private HttpURLConnection connection(
-                  String address,
-                  String method
-              ) throws Exception {
-
-                  HttpURLConnection c =
-                      (HttpURLConnection)
-                          new URL(address)
-                              .openConnection();
-
-                  c.setRequestMethod(method);
-
-                  c.setConnectTimeout(15000);
-                  c.setReadTimeout(15000);
-
-                  c.setRequestProperty(
-                      "apikey",
-                      KEY
-                  );
-
-                  c.setRequestProperty(
-                      "Authorization",
-                      "Bearer " + KEY
-                  );
-
-                  c.setRequestProperty(
-                      "Content-Type",
-                      "application/json"
-                  );
-
-                  if (
-                      "POST".equals(method) ||
-                      "PATCH".equals(method)
-                  ) {
-
-                      c.setDoOutput(true);
-                  }
-
-                  return c;
-              }
-
-              private void write(
-                  HttpURLConnection c,
-                  String data
-              ) throws Exception {
-
-                  try (
-                      OutputStream out =
-                          c.getOutputStream()
-                  ) {
-
-                      out.write(
-                          data.getBytes(
-                              StandardCharsets.UTF_8
-                          )
-                      );
-                  }
-              }
-
-              private String read(
-                  HttpURLConnection c
-              ) throws Exception {
-
-                  BufferedReader reader =
-                      new BufferedReader(
-                          new InputStreamReader(
-                              c.getInputStream(),
-                              StandardCharsets.UTF_8
-                          )
-                      );
-
-                  StringBuilder data =
-                      new StringBuilder();
-
-                  String line;
-
-                  while (
-                      (line = reader.readLine())
-                      != null
-                  ) {
-
-                      data.append(line);
-                  }
-
-                  return data.toString();
-              }
-
-              private void createChannel() {
-
-                  if (
-                      Build.VERSION.SDK_INT >= 26
-                  ) {
-
-                      NotificationChannel channel =
-                          new NotificationChannel(
-                              CHANNEL,
-                              "מיקום חפ״ק",
-                              NotificationManager
-                                  .IMPORTANCE_LOW
-                          );
-
-                      NotificationManager nm =
-                          getSystemService(
-                              NotificationManager.class
-                          );
-
-                      if (nm != null) {
-
-                          nm.createNotificationChannel(
-                              channel
-                          );
-                      }
-                  }
-              }
-
-              private Notification notification(
-                  String text
-              ) {
-
-                  Intent open =
-                      new Intent(
-                          this,
-                          MainActivity.class
-                      );
-
-                  PendingIntent pi =
-                      PendingIntent.getActivity(
-                          this,
-                          0,
-                          open,
-                          PendingIntent
-                              .FLAG_UPDATE_CURRENT
-                          |
-                          PendingIntent
-                              .FLAG_IMMUTABLE
-                      );
-
-                  Notification.Builder builder;
-
-                  if (
-                      Build.VERSION.SDK_INT >= 26
-                  ) {
-
-                      builder =
-                          new Notification.Builder(
-                              this,
-                              CHANNEL
-                          );
-
-                  } else {
-
-                      builder =
-                          new Notification.Builder(
-                              this
-                          );
-                  }
-
-                  return builder
-                      .setContentTitle(
-                          "🔥 חפ״ק שריפה – "
-                          + workerName
-                      )
-                      .setContentText(text)
-                      .setSmallIcon(
-                          android.R.drawable
-                              .ic_menu_mylocation
-                      )
-                      .setContentIntent(pi)
-                      .setOngoing(true)
-                      .setOnlyAlertOnce(true)
-                      .build();
-              }
-
-              private void updateNotification(
-                  String text
-              ) {
-
-                  NotificationManager nm =
-                      (NotificationManager)
-                          getSystemService(
-                              NOTIFICATION_SERVICE
-                          );
-
-                  if (nm != null) {
-
-                      nm.notify(
-                          7001,
-                          notification(text)
-                      );
-                  }
-              }
-
-              @Override
-              public void onDestroy() {
-
-                  if (manager != null) {
-
-                      try {
-
-                          manager.removeUpdates(
-                              this
-                          );
-
-                      } catch (
-                          Exception ignored
-                      ) {}
-                  }
-
-                  executor.shutdown();
-
-                  super.onDestroy();
-              }
-
-              @Override
-              public IBinder onBind(
-                  Intent intent
-              ) {
-
-                  return null;
-              }
+            }
+            Notification notification(String text){
+              Intent i=new Intent(this,MainActivity.class);
+              PendingIntent p=PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+              Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(this,CHANNEL):new Notification.Builder(this);
+              return b.setContentTitle("🔥 חפ״ק שריפה – "+workerName).setContentText(text)
+                .setSmallIcon(android.R.drawable.ic_menu_mylocation).setContentIntent(p).setOngoing(true).setOnlyAlertOnce(true).build();
+            }
+            void updateNotification(String t){
+              NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+              if(n!=null)n.notify(7001,notification(t));
+            }
+            @Override public void onDestroy(){
+              if(manager!=null)try{manager.removeUpdates(this);}catch(Exception ignored){}
+              executor.shutdown();super.onDestroy();
+            }
+            @Override public IBinder onBind(Intent i){return null;}
           }
           EOF
 
@@ -1113,6 +496,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK-v2
+          name: Fire-Command-Worker-APK-v4
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
