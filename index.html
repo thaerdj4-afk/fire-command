@@ -248,8 +248,7 @@ renderSectorSetup = function () {
       <select id="easyWorker"></select>
       <select id="easySector"></select>
       <button id="easySend" class="green">📲 افتح واتساب</button>`;
-    document.getElementById("panel").prepend(box);
-
+    document.getElementById("workerLink").closest(".card").after(box);
     document.getElementById("easySend").onclick = () => {
       const workerId = document.getElementById("easyWorker").value;
       const sector = document.getElementById("easySector").value;
