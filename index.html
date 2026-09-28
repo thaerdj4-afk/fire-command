@@ -203,6 +203,38 @@ window.workerWhatsApp = id => {
 
   location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
 };
+const oldSectorSetup = renderSectorSetup;
+renderSectorSetup = function () {
+  oldSectorSetup();
+  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
+    const sector = sectorNames()[i];
+    const select = document.createElement("select");
+    select.add(new Option("בחר עובד", ""));
+    workers
+      .filter(w => w.status !== "סיים" && w.latitude != null && w.longitude != null)
+      .forEach(w => select.add(new Option(w.name, w.id)));
+
+    const button = document.createElement("button");
+    button.textContent = "📍 שתף גזרה לעובד";
+    button.onclick = () => {
+      const worker = workers.find(w => String(w.id) === select.value);
+      if (!worker) return alert("בחר עובד");
+      const phone = workerPhones.get(worker.name);
+      if (!phone) return alert("העובד צריך לשמור מספר WhatsApp באפליקציה");
+      const point = sectorPosition(sector);
+      if (!point) return alert("קודם בחר נקודה במפה לגזרה " + sector);
+      const manager = sectorConfig(sector).manager || "";
+      const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+        Number(point[0]).toFixed(6) + "," + Number(point[1]).toFixed(6);
+      const message = "שלום " + worker.name + ", גזרה " + sector +
+        (manager ? "\nמנהל הגזרה: " + manager : "") +
+        "\nמיקום וניווט: " + maps;
+      location.href = "https://wa.me/" + phone +
+        "?text=" + encodeURIComponent(message);
+    };
+    card.querySelector(".row").append(select, button);
+  });
+};
      })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
