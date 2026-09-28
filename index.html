@@ -184,7 +184,26 @@ setInterval(async()=>{
  try{await live()}finally{liveRefreshBusy=false}
 },5000);
 (async()=>{try{let {data}=await cloud.auth.getSession();if(data.session){await enterHQ(data.session)}else $("hqError").textContent="יש להתחבר כדי לפתוח את החפ״ק."}catch(e){$("hqError").textContent="❌ "+e.message}})();
-})();
+window.workerWhatsApp = id => {
+  const w = workers.find(x => String(x.id) === String(id));
+  if (!ev || !w) return;
+  const phone = workerPhones.get(w.name);
+  if (!phone) return alert("העובד צריך לשמור מספר WhatsApp באפליקציה");
+
+  const k = prompt("איזו גזרה לשלוח? " + sectorNames().join(", "), w.sector || "א");
+  if (!k) return;
+  const p = sectorPosition(k.trim());
+  if (!p) return alert("צריך לבחור נקודה במפה לגזרה " + k);
+
+  const manager = sectorConfig(k.trim()).manager || "";
+  const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+    Number(p[0]).toFixed(6) + "," + Number(p[1]).toFixed(6);
+  const message = "שלום " + w.name + ", מיקום גזרה " + k +
+    (manager ? " • מנהל הגזרה: " + manager : "") + "\n" + maps;
+
+  location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+};
+     })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
  const q=id=>document.getElementById(id), click=id=>q(id)?.click();
