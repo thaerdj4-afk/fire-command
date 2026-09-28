@@ -43,8 +43,8 @@ jobs:
               applicationId 'com.firecommand.worker'
               minSdk 26
               targetSdk 34
-              versionCode 8
-              versionName '8.0'
+              versionCode 12
+              versionName '12.0'
             }
             compileOptions {
               sourceCompatibility JavaVersion.VERSION_17
@@ -62,16 +62,23 @@ jobs:
             <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
             <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
             <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+            <queries><intent><action android:name="android.media.action.IMAGE_CAPTURE"/></intent></queries>
             <application
               android:allowBackup="true"
               android:usesCleartextTraffic="false"
               android:label="חפ״ק שריפה - עובד"
               android:supportsRtl="true"
               android:theme="@android:style/Theme.Material.Light.NoActionBar">
-              <activity android:name=".MainActivity" android:exported="true">
+              <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop">
                 <intent-filter>
                   <action android:name="android.intent.action.MAIN"/>
                   <category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+                <intent-filter>
+                  <action android:name="android.intent.action.VIEW"/>
+                  <category android:name="android.intent.category.DEFAULT"/>
+                  <category android:name="android.intent.category.BROWSABLE"/>
+                  <data android:scheme="https" android:host="thaerdj4-afk.github.io" android:path="/fire-command/worker.html"/>
                 </intent-filter>
               </activity>
               <service android:name=".LocationService" android:exported="false"
@@ -82,303 +89,99 @@ jobs:
 
           cat > android-app/app/src/main/java/com/firecommand/worker/MainActivity.java <<'EOF'
           package com.firecommand.worker;
-
           import android.Manifest;
-          import android.app.Activity;
-          import android.content.Intent;
-          import android.content.ContentValues;
+          import android.app.*;
+          import android.content.*;
           import android.content.pm.PackageManager;
           import android.graphics.Color;
           import android.net.Uri;
+          import android.os.*;
           import android.provider.MediaStore;
-          import android.os.Build;
-          import android.os.Bundle;
-          import android.view.Gravity;
-          import android.view.View;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          import android.widget.Button;
-          import android.widget.CheckBox;
-          import android.widget.EditText;
-          import android.widget.LinearLayout;
-          import android.widget.TextView;
+          import android.webkit.*;
           import android.widget.Toast;
-          import java.net.HttpURLConnection;
-          import java.net.URL;
-          import java.io.InputStream;
-          import java.nio.charset.StandardCharsets;
-          import org.json.JSONArray;
-
+          import org.json.JSONObject;
+          
           public class MainActivity extends Activity {
-            private EditText eventField, nameField;
-            private LinearLayout login;
-            private WebView web;
-            private CheckBox consent;
-            private Button stopLocation, stopTop, restartTop;
-            private String eventId="", workerName="";
-            private ValueCallback<Uri[]> fileCallback;
-            private Uri cameraUri;
-            private Button switchEvent;
-            private static final int FILE_CHOOSER=2026;
-
-            @Override public void onCreate(Bundle b){
-              super.onCreate(b);
-              LinearLayout root=new LinearLayout(this);
-              root.setOrientation(LinearLayout.VERTICAL);
-              root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-              root.setBackgroundColor(Color.rgb(245,246,248));
-
-              login=new LinearLayout(this);
-              login.setOrientation(LinearLayout.VERTICAL);
-              login.setPadding(40,55,40,35);
-
-              TextView title=new TextView(this);
-              title.setText("🔥 חפ״ק שריפה – אפליקציית עובד");
-              title.setTextSize(25); title.setGravity(Gravity.CENTER);
-              login.addView(title);
-
-              TextView privacy=new TextView(this);
-              privacy.setText("\n🔒 הגנת פרטיות\nבלחיצה על הכפתור הירוק המיקום שלך ישותף LIVE עם החפ״ק בזמן האירוע בלבד.\nבסיום העבודה שיתוף המיקום יופסק.\n");
-              privacy.setTextSize(16); privacy.setGravity(Gravity.CENTER);
-              login.addView(privacy);
-
-              eventField=new EditText(this);
-              eventField.setHint("הדבק קישור עובד או מזהה אירוע");
-              login.addView(eventField);
-
-              nameField=new EditText(this);
-              nameField.setHint("שם העובד");
-              login.addView(nameField);
-
-              consent=new CheckBox(this);
-              consent.setText("אני מאשר לשתף את המיקום שלי LIVE עם החפ״ק במהלך האירוע");
-              consent.setTextSize(16);
-              consent.setPadding(4,18,4,18);
-              login.addView(consent);
-
-              Button enter=new Button(this);
-              enter.setText("🟢 אישור והתחלת מיקום LIVE");
-              login.addView(enter);
-
-              stopLocation=new Button(this);
-              stopLocation.setText("🔴 הפסקת שיתוף מיקום");
-              login.addView(stopLocation);
-              root.addView(login);
-
-              stopTop=new Button(this);
-              stopTop.setText("🔴 הפסקת שיתוף מיקום");
-              stopTop.setVisibility(View.GONE);
-              root.addView(stopTop);
-              stopTop.setOnClickListener(v->stopSharing());
-              restartTop=new Button(this);
-              restartTop.setText("🟢 הפעל מחדש מיקום LIVE");
-              restartTop.setVisibility(View.GONE);
-              root.addView(restartTop);
-              restartTop.setOnClickListener(v->{
-                if(eventId.isEmpty()||workerName.isEmpty()){
-                  Toast.makeText(this,"יש להיכנס לאירוע קודם",Toast.LENGTH_LONG).show();return;
-                }
-                if(Build.VERSION.SDK_INT>=23 &&
-                   checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED &&
-                   checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
-                  requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION},100);return;
-                }
-                startEverything();
-                Toast.makeText(this,"מפעיל מחדש מיקום LIVE...",Toast.LENGTH_LONG).show();
-              });
-              switchEvent=new Button(this);
-              switchEvent.setText("🆕 כניסה לאירוע חדש");
-              switchEvent.setVisibility(View.GONE);
-              root.addView(switchEvent);
-              switchEvent.setOnClickListener(v->{
-                stopSharing();
-                eventId="";eventField.setText("");
-                consent.setChecked(false);
-                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);restartTop.setVisibility(View.GONE);
-                switchEvent.setVisibility(View.GONE);login.setVisibility(View.VISIBLE);
-                findActiveEvent();
-              });
-
-              web=new WebView(this); web.setVisibility(View.GONE);
-              root.addView(web,new LinearLayout.LayoutParams(-1,0,1));
-              setContentView(root);
-              enter.setOnClickListener(v->prepare());
-              stopLocation.setOnClickListener(v->stopSharing());
-              android.content.SharedPreferences saved=getSharedPreferences("worker",MODE_PRIVATE);
-              eventId=saved.getString("event",""); workerName=saved.getString("name","");
-              eventField.setText(eventId); nameField.setText(workerName);
-              if(saved.getBoolean("sharing",false)&&!eventId.isEmpty()&&!workerName.isEmpty()) openWorkerPage();
-              else if(saved.getBoolean("eventEnded",false)){
-                TextView endedView=new TextView(this);
-                endedView.setText("⏹ סיום אירוע — כדי להצטרף לאירוע חדש, הדבק קישור חדש");
-                endedView.setTextSize(20);endedView.setTextColor(Color.RED);
-                login.addView(endedView,1);
-              }
-            }
-
-            private String parseEvent(String raw){
-              raw=raw.trim();
-              try{
-                Uri u=Uri.parse(raw);
-                String e=u.getQueryParameter("event");
-                if(e!=null&&!e.trim().isEmpty()) return e.trim();
-              }catch(Exception ignored){}
-              return raw;
-            }
-
-            private void findActiveEvent(){
-              Toast.makeText(this,"מחפש אירוע פעיל בחפ״ק...",Toast.LENGTH_SHORT).show();
-              new Thread(()->{
-                String found="",message="";
-                HttpURLConnection c=null;
-                try{
-                  URL u=new URL("https://jvubjwzzikfwsektifzi.supabase.co/rest/v1/rpc/worker_latest_active_event");
-                  c=(HttpURLConnection)u.openConnection();c.setRequestMethod("POST");
-                  c.setConnectTimeout(10000);c.setReadTimeout(10000);
-                  c.setRequestProperty("apikey","sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW");
-                  c.setRequestProperty("Authorization","Bearer sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW");
-                  c.setRequestProperty("Content-Type","application/json");
-                  c.setDoOutput(true);
-                  c.getOutputStream().write("{}".getBytes(StandardCharsets.UTF_8));
-                  int code=c.getResponseCode();
-                  if(code<200||code>=300)throw new Exception("HTTP "+code);
-                  InputStream in=c.getInputStream();byte[] bytes=in.readAllBytes();in.close();
-                  JSONArray rows=new JSONArray(new String(bytes,StandardCharsets.UTF_8));
-                  if(rows.length()>0)found=rows.getJSONObject(0).getString("id");
-                  else message="אין אירוע פעיל. פתח אירוע בחפ״ק ואז לחץ שוב, או הדבק קישור עובד.";
-                }catch(Exception e){message="לא הצלחתי למצוא אירוע. אפשר להדביק כאן קישור עובד: "+e.getMessage();}
-                finally{if(c!=null)c.disconnect();}
-                final String id=found,msg=message;
-                runOnUiThread(()->{
-                  if(!id.isEmpty()){
-                    eventField.setText(id);
-                    Toast.makeText(this,"✓ האירוע הפעיל נמצא. אשר מיקום ולחץ על הכפתור הירוק",Toast.LENGTH_LONG).show();
-                  }else Toast.makeText(this,msg,Toast.LENGTH_LONG).show();
-                });
-              }).start();
-            }
-
-            private void prepare(){
-              eventId=parseEvent(eventField.getText().toString());
-              workerName=nameField.getText().toString().trim();
-              if(eventId.isEmpty()||workerName.isEmpty()){
-                Toast.makeText(this,"יש להזין אירוע ושם עובד",Toast.LENGTH_SHORT).show(); return;
-              }
-              if(!consent.isChecked()){
-                Toast.makeText(this,"יש לאשר שיתוף מיקום LIVE לפני הכניסה",Toast.LENGTH_LONG).show(); return;
-              }
-              if(Build.VERSION.SDK_INT>=23 &&
-                 checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                  Manifest.permission.ACCESS_COARSE_LOCATION},100); return;
-              }
-              startEverything();
-            }
-
-            private void stopSharing(){
-              Intent service=new Intent(this,LocationService.class);
-              service.setAction("STOP_SHARING");
-              startService(service);
-              getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();
-              Toast.makeText(this,"🔴 שיתוף המיקום הופסק",Toast.LENGTH_LONG).show();
-              if(web!=null){
-                web.evaluateJavascript("(function(){var e=document.getElementById('loc');if(e){e.className='status bad';e.textContent='🔴 שיתוף המיקום מופסק';}})();",null);
-              }
-            }
-
-            private void startEverything(){
-              if(Build.VERSION.SDK_INT>=33 &&
-                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},101);
-
-              Intent service=new Intent(this,LocationService.class);
-              service.setAction("START_SHARING");
-              service.putExtra("event",eventId); service.putExtra("name",workerName);
-              getSharedPreferences("worker",MODE_PRIVATE).edit().putString("event",eventId).putString("name",workerName).putBoolean("eventEnded",false).putBoolean("sharing",true).apply();
-              if(Build.VERSION.SDK_INT>=26) startForegroundService(service); else startService(service);
-
-              openWorkerPage();
-            }
-            private void openWorkerPage(){
-              login.setVisibility(View.GONE); stopTop.setVisibility(View.VISIBLE); restartTop.setVisibility(View.VISIBLE); switchEvent.setVisibility(View.VISIBLE);web.setVisibility(View.VISIBLE);
-              WebSettings s=web.getSettings();
-              s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setGeolocationEnabled(false);
-
+            static final String BASE="https://thaerdj4-afk.github.io/fire-command/worker.html";
+            WebView web; String currentEvent="",pendingEvent="",pendingName="";
+            ValueCallback<Uri[]> fileCallback; Uri cameraUri;
+            boolean starting=false, explicitStart=true;
+            @Override public void onCreate(Bundle state){
+              super.onCreate(state);
+              getWindow().setStatusBarColor(Color.rgb(4,19,33));
+              getWindow().setNavigationBarColor(Color.rgb(4,19,33));
+              web=new WebView(this);web.setBackgroundColor(Color.rgb(4,19,33));setContentView(web);
+              web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);
+              web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(true);
+              web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+              web.addJavascriptInterface(new Bridge(),"FireWorker");
               web.setWebViewClient(new WebViewClient(){
-                @Override public void onPageFinished(WebView view,String url){
-                  super.onPageFinished(view,url);
-                  view.evaluateJavascript(
-                    "(function(){var e=document.getElementById('loc');if(e){e.className='status ok';e.textContent='🟢 מיקום LIVE פעיל — המיקום שלך משותף עם החפ״ק בזמן האירוע';}})();",
-                    null);
-                }
-              });
-
-              web.setWebChromeClient(new WebChromeClient(){
-                @Override public boolean onShowFileChooser(WebView w,ValueCallback<Uri[]> cb,FileChooserParams p){
-                  if(fileCallback!=null) fileCallback.onReceiveValue(null);
-                  fileCallback=cb;
-                  Intent pick=new Intent(Intent.ACTION_GET_CONTENT);
-                  pick.addCategory(Intent.CATEGORY_OPENABLE);
-                  pick.setType("image/*");
-                  Intent chooser=Intent.createChooser(pick,"בחר תמונה או צלם");
-                  try{
-                    ContentValues values=new ContentValues();
-                    values.put(MediaStore.Images.Media.DISPLAY_NAME,"fire-command-"+System.currentTimeMillis()+".jpg");
-                    values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg");
-                    cameraUri=getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
-                    if(cameraUri!=null){
-                      Intent camera=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                      camera.putExtra(MediaStore.EXTRA_OUTPUT,cameraUri);
-                      camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                      if(camera.resolveActivity(getPackageManager())!=null)
-                        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS,new Intent[]{camera});
-                    }
-                  }catch(Exception ignored){cameraUri=null;}
-                  startActivityForResult(chooser,FILE_CHOOSER);
+                @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
+                  Uri uri=request.getUrl();
+                  if(trusted(uri)){currentEvent=eventFrom(uri);return false;}
+                  if("https".equals(uri.getScheme())||"tel".equals(uri.getScheme())){
+                    try{startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){toast("לא נמצאה אפליקציה לפתיחת הקישור");}
+                  }
                   return true;
                 }
               });
-
-              String url="https://thaerdj4-afk.github.io/fire-command/worker.html?event="
-                +Uri.encode(eventId)+"&name="+Uri.encode(workerName)+"&native=1";
-              web.loadUrl(url);
+              web.setWebChromeClient(new WebChromeClient(){
+                @Override public boolean onJsAlert(WebView v,String u,String message,JsResult result){
+                  new AlertDialog.Builder(MainActivity.this).setMessage(message).setPositiveButton("אישור",(d,w)->result.confirm()).setOnCancelListener(d->result.cancel()).show();return true;
+                }
+                @Override public boolean onJsConfirm(WebView v,String u,String message,JsResult result){
+                  new AlertDialog.Builder(MainActivity.this).setMessage(message).setPositiveButton("אישור",(d,w)->result.confirm()).setNegativeButton("ביטול",(d,w)->result.cancel()).setOnCancelListener(d->result.cancel()).show();return true;
+                }
+                @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
+                  if(fileCallback!=null)fileCallback.onReceiveValue(null);fileCallback=callback;
+                  Intent pick=new Intent(Intent.ACTION_GET_CONTENT).setType("image/*").addCategory(Intent.CATEGORY_OPENABLE);
+                  Intent chooser=Intent.createChooser(pick,"צילום או בחירת תמונה");
+                  try{
+                    ContentValues values=new ContentValues();values.put(MediaStore.Images.Media.DISPLAY_NAME,"fire-"+System.currentTimeMillis()+".jpg");values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg");
+                    cameraUri=getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
+                    if(cameraUri!=null){Intent camera=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);camera.putExtra(MediaStore.EXTRA_OUTPUT,cameraUri);camera.setClipData(ClipData.newRawUri("photo",cameraUri));camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);if(camera.resolveActivity(getPackageManager())!=null)chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS,new Intent[]{camera});}
+                    startActivityForResult(chooser,2026);
+                  }catch(Exception e){callback.onReceiveValue(null);fileCallback=null;toast("לא ניתן לפתוח מצלמה או גלריה");}
+                  return true;
+                }
+              });
+              String incoming=eventFrom(getIntent().getData());
+              currentEvent=incoming.isEmpty()?getSharedPreferences("worker",MODE_PRIVATE).getString("event",""):incoming;
+              loadEvent(currentEvent);
             }
-
-            @Override protected void onResume(){
-              super.onResume();
-              if(web!=null&&getSharedPreferences("worker",MODE_PRIVATE).getBoolean("eventEnded",false)){
-                web.setVisibility(View.GONE);stopTop.setVisibility(View.GONE);restartTop.setVisibility(View.GONE);
-                if(switchEvent!=null)switchEvent.setVisibility(View.GONE);
-                login.setVisibility(View.VISIBLE);
-                eventField.setText("");consent.setChecked(false);
-              }
+            boolean trusted(Uri u){return "https".equals(u.getScheme())&&"thaerdj4-afk.github.io".equals(u.getHost())&&"/fire-command/worker.html".equals(u.getPath());}
+            String eventFrom(Uri u){if(u==null||!trusted(u))return "";String e=u.getQueryParameter("event");return e!=null&&e.matches("[0-9a-fA-F]{8}-[0-9a-fA-F-]{27}")?e:"";}
+            void loadEvent(String event){currentEvent=event;web.loadUrl(BASE+"?native=1"+(event.isEmpty()?"":"&event="+Uri.encode(event)));}
+            @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String next=eventFrom(intent.getData());if(next.isEmpty()||next.equals(currentEvent))return;
+              new AlertDialog.Builder(this).setMessage("לעבור לאירוע החדש? שיתוף המיקום באירוע הקודם יופסק.").setPositiveButton("מעבר",(d,w)->{stopNative();loadEvent(next);}).setNegativeButton("ביטול",null).show();
             }
-
-            @Override protected void onActivityResult(int req,int result,Intent data){
-              super.onActivityResult(req,result,data);
-              if(req!=FILE_CHOOSER||fileCallback==null) return;
-              Uri[] out=null;
-              if(result==RESULT_OK){
-                if(data!=null&&data.getData()!=null) out=new Uri[]{data.getData()};
-                else if(cameraUri!=null) out=new Uri[]{cameraUri};
-              }
-              if(out==null&&cameraUri!=null)try{getContentResolver().delete(cameraUri,null,null);}catch(Exception ignored){}
-              cameraUri=null;fileCallback.onReceiveValue(out); fileCallback=null;
+            class Bridge {
+              @JavascriptInterface public void startLocation(String event,String name){runOnUiThread(()->prepare(event,name,true));}
+              @JavascriptInterface public void resumeLocation(String event,String name){runOnUiThread(()->prepare(event,name,false));}
+              @JavascriptInterface public void stopLocation(){runOnUiThread(()->stopNative());}
             }
-
-            @Override public void onRequestPermissionsResult(int req,String[] p,int[] r){
-              super.onRequestPermissionsResult(req,p,r);
-              if(req==100&&r.length>0&&r[0]==PackageManager.PERMISSION_GRANTED) startEverything();
+            void prepare(String event,String name,boolean explicit){
+              if(!event.equals(currentEvent)||name.trim().isEmpty()||starting)return;
+              android.content.SharedPreferences saved=getSharedPreferences("worker",MODE_PRIVATE);
+              if(!explicit&&!saved.getBoolean("sharing",false)){state("stopped","שיתוף המיקום מופסק");return;}
+              
+              pendingEvent=event;pendingName=name;starting=true;explicitStart=explicit;
+              if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED&&checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},100);return;}
+              startNative();
             }
-
-            @Override public void onBackPressed(){
-              if(web!=null&&web.getVisibility()==View.VISIBLE&&web.canGoBack()) web.goBack();
-              else super.onBackPressed();
-            }
+            void startNative(){try{
+              android.content.SharedPreferences saved=getSharedPreferences("worker",MODE_PRIVATE);
+              if(!pendingEvent.equals(saved.getString("event","")))stopService(new Intent(this,LocationService.class));
+              saved.edit().putString("event",pendingEvent).putString("name",pendingName).putBoolean("eventEnded",false).putBoolean("sharing",true).apply();
+              Intent i=new Intent(this,LocationService.class).setAction(explicitStart?"START_SHARING":"RESUME_SHARING").putExtra("event",pendingEvent).putExtra("name",pendingName);startForegroundService(i);
+              state("waiting","ממתין לאות GPS…");
+            }catch(Exception e){state("stopped","לא ניתן להפעיל מיקום: "+e.getMessage());}finally{starting=false;}}
+            void stopNative(){getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).apply();stopService(new Intent(this,LocationService.class));state("stopped","שיתוף המיקום מופסק");}
+            void state(String state,String message){if(web!=null)web.evaluateJavascript("window.workerLocationState&&window.workerLocationState("+JSONObject.quote(state)+","+JSONObject.quote(message)+")",null);}
+            void toast(String text){Toast.makeText(this,text,Toast.LENGTH_LONG).show();}
+            @Override public void onRequestPermissionsResult(int req,String[] permissions,int[] results){super.onRequestPermissionsResult(req,permissions,results);if(req==100){if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED||checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)==PackageManager.PERMISSION_GRANTED)startNative();else{starting=false;state("stopped","הרשאת המיקום לא אושרה. ניתן להפעיל שיתוף בהמשך.");}}}
+            @Override protected void onActivityResult(int req,int result,Intent data){super.onActivityResult(req,result,data);if(req!=2026||fileCallback==null)return;Uri[] out=null;if(result==RESULT_OK){if(data!=null&&data.getData()!=null)out=new Uri[]{data.getData()};else if(cameraUri!=null)out=new Uri[]{cameraUri};}if(cameraUri!=null&&(out==null||!cameraUri.equals(out[0])))try{getContentResolver().delete(cameraUri,null,null);}catch(Exception ignored){}cameraUri=null;fileCallback.onReceiveValue(out);fileCallback=null;}
+            @Override public void onBackPressed(){moveTaskToBack(true);}
           }
           EOF
 
@@ -407,6 +210,8 @@ jobs:
             ExecutorService executor=Executors.newSingleThreadExecutor();
             String eventId="",workerName="",workerId=null;
             volatile boolean ready=false;
+            final Handler checks=new Handler(Looper.getMainLooper());
+            boolean checksStarted=false;
 
             @Override public void onCreate(){super.onCreate();createChannel();}
 
@@ -427,18 +232,20 @@ jobs:
               if(explicitStart) getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",true).apply();
               if(!getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false)){stopSelf();return START_NOT_STICKY;}
               startForeground(7001,notification("🟡 מתחבר למיקום LIVE..."));
-              ready=false;
-              executor.execute(()->{if(explicitStart)authorizeRemoteSharing();findOrCreateWorker();ready=true;});
+              if(ready)return START_STICKY;
+              workerId=null;ready=false;
+              executor.execute(()->{if(eventFinished()||finished()){getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).putBoolean("eventEnded",true).apply();stopSelf();return;}if(explicitStart)authorizeRemoteSharing();findOrCreateWorker();ready=workerId!=null;});
               startGps();
               scheduleChecks();
               return START_STICKY;
             }
             void scheduleChecks(){
-              new Handler(Looper.getMainLooper()).postDelayed(new Runnable(){
+              if(checksStarted)return;checksStarted=true;
+              checks.postDelayed(new Runnable(){
                 @Override public void run(){
                   if(!getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false))return;
                   executor.execute(()->{
-                    if(eventFinished()){
+                    if(eventFinished()||finished()){
                       getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).putBoolean("eventEnded",true).apply();
                       clearRemoteLocation();updateNotification("⏹ סיום אירוע — המיקום הופסק");stopSelf();return;
                     }
@@ -447,7 +254,7 @@ jobs:
                       clearRemoteLocation();updateNotification("🔴 החפ״ק הפסיק שיתוף מיקום");stopSelf();
                     }
                   });
-                  new Handler(Looper.getMainLooper()).postDelayed(this,5000);
+                  checks.postDelayed(this,5000);
                 }
               },5000);
             }
@@ -479,7 +286,7 @@ jobs:
               if(!ready)return;
               double lat=l.getLatitude(),lng=l.getLongitude();
               executor.execute(()->{
-                if(eventFinished()){
+                if(eventFinished()||finished()){
                   getSharedPreferences("worker",MODE_PRIVATE).edit().putBoolean("sharing",false).putBoolean("eventEnded",true).apply();
                   clearRemoteLocation();stopSelf();return;
                 }
@@ -622,6 +429,7 @@ jobs:
               if(n!=null)n.notify(7001,notification(t));
             }
             @Override public void onDestroy(){
+              ready=false;checks.removeCallbacksAndMessages(null);stopForeground(true);
               if(manager!=null)try{manager.removeUpdates(this);}catch(Exception ignored){}
               executor.shutdown();super.onDestroy();
             }
@@ -641,6 +449,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK-v8
+          name: Fire-Command-Worker-APK-v12
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
