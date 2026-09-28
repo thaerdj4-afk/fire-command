@@ -43,8 +43,8 @@ jobs:
               applicationId 'com.firecommand.worker'
               minSdk 26
               targetSdk 34
-              versionCode 13
-              versionName '13.0'
+              versionCode 14
+              versionName '14.0'
             }
             compileOptions {
               sourceCompatibility JavaVersion.VERSION_17
@@ -162,7 +162,9 @@ jobs:
               @JavascriptInterface public void stopLocation(){runOnUiThread(()->stopNative());}
             }
             void prepare(String event,String name,boolean explicit){
-              if(!event.equals(currentEvent)||name.trim().isEmpty()||starting)return;
+              String pageEvent=eventFrom(Uri.parse(web.getUrl()==null?"":web.getUrl()));
+              if(!event.equals(pageEvent)||name.trim().isEmpty()||starting){state("stopped","לא ניתן להפעיל מיקום: קישור האירוע אינו תואם");return;}
+              if(!event.equals(currentEvent)){stopNative();currentEvent=event;}
               android.content.SharedPreferences saved=getSharedPreferences("worker",MODE_PRIVATE);
               if(!explicit&&!saved.getBoolean("sharing",false)){state("stopped","שיתוף המיקום מופסק");return;}
               
@@ -460,7 +462,8 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Fire-Command-Worker-APK-v13
+          name: Fire-Command-Worker-APK-v14
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
 
