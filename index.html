@@ -323,7 +323,92 @@ renderSectorSetup = function () {
   };
 
   document.getElementById("easySectorShare").append(button);
-};     })();
+};   const namesBeforeDelete = sectorNames;
+function deletedSectorNames() {
+  try {
+    return JSON.parse(
+      localStorage.getItem("deletedSectors:" + ev?.id) || "[]"
+    );
+  } catch {
+    return [];
+  }
+}
+
+sectorNames = function () {
+  const deleted = deletedSectorNames();
+  return namesBeforeDelete().filter(name => !deleted.includes(name));
+};
+
+const pointBeforeDelete = window.setSectorPoint;
+window.setSectorPoint = function (name) {
+  if (!ev) return alert("פתח אירוע קודם");
+  localStorage.setItem(
+    "deletedSectors:" + ev.id,
+    JSON.stringify(deletedSectorNames().filter(x => x !== name))
+  );
+  return pointBeforeDelete(name);
+};
+
+const renderBeforeDelete = renderSectorSetup;
+renderSectorSetup = function () {
+  renderBeforeDelete();
+  const names = sectorNames();
+
+  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
+    const name = names[i];
+    const button = document.createElement("button");
+    button.className = "red";
+    button.textContent = "🗑 מחק גזרה";
+
+    button.onclick = async () => {
+      if (!ev) return alert("אין אירוע פעיל");
+      if (pendingMap.size || polyKind || mode) {
+        return alert("סיים את כלי המפה והמתן לשמירה לפני המחיקה");
+      }
+      if (!confirm("למחוק את גזרה " + name + " ואת הסימונים שלה?")) return;
+
+      const eventId = ev.id;
+      const kinds = ["sector " + name, "sector-point " + name];
+      button.disabled = true;
+
+      try {
+        const {error} = await cloud.from("map_items")
+          .delete()
+          .eq("event_id", eventId)
+          .in("data->>kind", kinds);
+        if (error) throw error;
+        if (ev?.id !== eventId) return;
+
+        localStorage.removeItem("sector:" + eventId + ":" + name);
+        localStorage.setItem(
+          "sectorNames:" + eventId,
+          JSON.stringify(namesBeforeDelete().filter(x => x !== name))
+        );
+        localStorage.setItem(
+          "deletedSectors:" + eventId,
+          JSON.stringify([...new Set([...deletedSectorNames(), name])])
+        );
+
+        for (const [id, layer] of mapLayers) {
+          if (!kinds.includes(layer._kind)) continue;
+          ops.removeLayer(layer);
+          mapLayers.delete(id);
+          stack = stack.filter(x => x !== layer);
+        }
+
+        recountMap();
+        renderWorkers();
+        renderSectorSetup();
+      } catch (error) {
+        alert("המחיקה נכשלה: " + error.message);
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    card.append(button);
+  });
+};  })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
  const q=id=>document.getElementById(id), click=id=>q(id)?.click();
