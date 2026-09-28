@@ -287,6 +287,42 @@ renderSectorSetup = function () {
     if (oldSelect) oldSelect.style.display = "none";
     if (oldButton) oldButton.style.display = "none";
   });
+};const beforeGroupShare = renderSectorSetup;
+renderSectorSetup = function () {
+  beforeGroupShare();
+  if (document.getElementById("shareSectorGroup")) return;
+
+  const button = document.createElement("button");
+  button.id = "shareSectorGroup";
+  button.className = "green";
+  button.textContent = "📍 مشاركة الجَزرة لأكثر من عامل";
+
+  button.onclick = async () => {
+    const sector = document.getElementById("easySector").value;
+    if (!sector) return alert("اختار الجَزرة أولاً");
+
+    const point = sectorPosition(sector);
+    if (!point) return alert("حدّد موقع الجَزرة على الخريطة أولاً");
+
+    const manager = sectorConfig(sector).manager || "";
+    const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+      Number(point[0]) + "," + Number(point[1]);
+    const text = "גזרה " + sector +
+      (manager ? "\nמנהל הגזרה: " + manager : "") +
+      "\nמיקום וניווט:\n" + maps;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({text});
+      } else {
+        location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") alert("تعذّرت المشاركة، حاول مرة ثانية");
+    }
+  };
+
+  document.getElementById("easySectorShare").append(button);
 };     })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
