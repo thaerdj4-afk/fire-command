@@ -247,19 +247,19 @@ renderSectorSetup = function () {
         box.innerHTML = `<h3>📍 שליחת מיקום גזרה לעובד</h3>
       <select id="easyWorker"></select>
       <select id="easySector"></select>
-      <button id="easySend" class="green">📲 افتح واتساب</button>`;
+            <button id="easySend" class="green">📲 פתח WhatsApp</button>`;
     document.getElementById("workerLink").closest(".card").after(box);
     document.getElementById("easySend").onclick = () => {
       const workerId = document.getElementById("easyWorker").value;
       const sector = document.getElementById("easySector").value;
-      if (!workerId || !sector) return alert("اختار العامل والجَزرة");
+            if (!workerId || !sector) return alert("בחר עובד וגזרה");
       const card = document.querySelectorAll("#sectorSetup .worker")[
         sectorNames().indexOf(sector)
       ];
       const select = card?.querySelector(".row select");
       const button = [...(card?.querySelectorAll(".row button") || [])]
         .find(b => b.textContent.includes("שתף גזרה לעובד"));
-      if (!select || !button) return alert("تعذّر تجهيز الجَزرة");
+            if (!select || !button) return alert("לא ניתן להכין את שיתוף הגזרה");
       select.value = workerId;
       button.click();
     };
@@ -270,12 +270,12 @@ renderSectorSetup = function () {
   const workerValue = workerSelect.value;
   const sectorValue = sectorSelect.value;
 
-  workerSelect.replaceChildren(new Option("اختار العامل", ""));
+    workerSelect.replaceChildren(new Option("בחר עובד", ""));
   workers.filter(w => w.status !== "סיים")
     .forEach(w => workerSelect.add(new Option(w.name, w.id)));
   workerSelect.value = workerValue;
 
-  sectorSelect.replaceChildren(new Option("اختار الجَزرة", ""));
+    sectorSelect.replaceChildren(new Option("בחר גזרה", ""));
   sectorNames().forEach(name => sectorSelect.add(new Option(name, name)));
   sectorSelect.value = sectorValue;
 
@@ -294,15 +294,14 @@ renderSectorSetup = function () {
   const button = document.createElement("button");
   button.id = "shareSectorGroup";
   button.className = "green";
-  button.textContent = "📍 مشاركة الجَزرة لأكثر من عامل";
+    button.textContent = "📍 שתף גזרה למספר עובדים";
 
   button.onclick = async () => {
     const sector = document.getElementById("easySector").value;
-    if (!sector) return alert("اختار الجَزرة أولاً");
+       if (!sector) return alert("בחר גזרה תחילה");
 
     const point = sectorPosition(sector);
-    if (!point) return alert("حدّد موقع الجَزرة على الخريطة أولاً");
-
+        if (!point) return alert("בחר תחילה מיקום לגזרה במפה");
     const manager = sectorConfig(sector).manager || "";
     const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
       Number(point[0]) + "," + Number(point[1]);
@@ -317,7 +316,7 @@ renderSectorSetup = function () {
         location.href = "https://wa.me/?text=" + encodeURIComponent(text);
       }
     } catch (error) {
-      if (error.name !== "AbortError") alert("تعذّرت المشاركة، حاول مرة ثانية");
+      if (error.name !== "AbortError") alert("השיתוף נכשל, נסה שוב");
     }
   };
 
