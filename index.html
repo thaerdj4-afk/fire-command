@@ -211,7 +211,7 @@ renderSectorSetup = function () {
     const select = document.createElement("select");
     select.add(new Option("בחר עובד", ""));
     workers
-      .filter(w => w.status !== "סיים" && w.latitude != null && w.longitude != null)
+      .filter(w => w.status !== "סיים")
       .forEach(w => select.add(new Option(w.name, w.id)));
 
     const button = document.createElement("button");
