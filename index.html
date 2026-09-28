@@ -148,6 +148,26 @@ $("copyEventNumber").onclick = async () => {
 `);
 
     replaceRequired(
+      'let workerPhones=new Map(),phoneLoadError="";',
+      'let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";'
+    );
+
+    replaceRequired(
+      'function renderWorkers(){wl.clearLayers();let a=workers.filter(w=>w.status!=="סיים");$("workers").innerHTML=',
+      'function renderWorkers(){wl.clearLayers();let a=workers.filter(w=>w.status!=="סיים");let eqNames=["מפוח","דבשת","מרסס גב","משאבה צפה","משאבה טבולה","תיק צינורות"],eqCounts=new Map(eqNames.map(x=>[x,0]));for(const w of a)for(const x of workerEquipment.get(w.name)||[])if(eqCounts.has(x))eqCounts.set(x,eqCounts.get(x)+1);let eqTotal=eqNames.filter(x=>eqCounts.get(x)).map(x=>x+" "+eqCounts.get(x)).join(" | ");$("workers").innerHTML=(eqTotal?\`<div class="small" style="margin-bottom:8px"><b>🎒 ציוד עובדים:</b> \${esc(eqTotal)}</div>\`:"")+'
+    );
+
+    replaceRequired(
+      '\${f[0]} <b>\${esc(w.name)}</b> • \${esc(w.status||"—")} • \${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}<br><span class="small">\${f[1]}</span>',
+      '\${f[0]} <b>\${esc(w.name)}</b> • \${esc(w.status||"—")} • \${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}<br><span class="small">🎒 \${esc((workerEquipment.get(w.name)||["ציוד לא דווח"]).join(" + "))}</span><br><span class="small">\${f[1]}</span>'
+    );
+
+    replaceRequired(
+      'async function live(){if(ev){let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);',
+      'async function live(){if(ev){let equipment=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","ציוד עובד").order("created_at",{ascending:false}).limit(500);if(!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);'
+    );
+
+    replaceRequired(
       'p=>{beep(["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes((p.new||{}).request_type));live()}',
       `p=>{
         const x=p.new||{};
