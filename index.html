@@ -235,7 +235,59 @@ renderSectorSetup = function () {
     card.querySelector(".row").append(select, button);
   });
 };
-     })();
+const previousShareSetup = renderSectorSetup;
+renderSectorSetup = function () {
+  previousShareSetup();
+
+  let box = document.getElementById("easySectorShare");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "easySectorShare";
+    box.className = "card";
+    box.innerHTML = `<h3>📍 إرسال موقع جَزرة للعامل</h3>
+      <select id="easyWorker"></select>
+      <select id="easySector"></select>
+      <button id="easySend" class="green">📲 افتح واتساب</button>`;
+    document.getElementById("panel").prepend(box);
+
+    document.getElementById("easySend").onclick = () => {
+      const workerId = document.getElementById("easyWorker").value;
+      const sector = document.getElementById("easySector").value;
+      if (!workerId || !sector) return alert("اختار العامل والجَزرة");
+      const card = document.querySelectorAll("#sectorSetup .worker")[
+        sectorNames().indexOf(sector)
+      ];
+      const select = card?.querySelector(".row select");
+      const button = [...(card?.querySelectorAll(".row button") || [])]
+        .find(b => b.textContent.includes("שתף גזרה לעובד"));
+      if (!select || !button) return alert("تعذّر تجهيز الجَزرة");
+      select.value = workerId;
+      button.click();
+    };
+  }
+
+  const workerSelect = document.getElementById("easyWorker");
+  const sectorSelect = document.getElementById("easySector");
+  const workerValue = workerSelect.value;
+  const sectorValue = sectorSelect.value;
+
+  workerSelect.replaceChildren(new Option("اختار العامل", ""));
+  workers.filter(w => w.status !== "סיים")
+    .forEach(w => workerSelect.add(new Option(w.name, w.id)));
+  workerSelect.value = workerValue;
+
+  sectorSelect.replaceChildren(new Option("اختار الجَزرة", ""));
+  sectorNames().forEach(name => sectorSelect.add(new Option(name, name)));
+  sectorSelect.value = sectorValue;
+
+  document.querySelectorAll("#sectorSetup .worker .row").forEach(row => {
+    const oldSelect = row.querySelector("select");
+    const oldButton = [...row.querySelectorAll("button")]
+      .find(b => b.textContent.includes("שתף גזרה לעובד"));
+    if (oldSelect) oldSelect.style.display = "none";
+    if (oldButton) oldButton.style.display = "none";
+  });
+};     })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
  const q=id=>document.getElementById(id), click=id=>q(id)?.click();
