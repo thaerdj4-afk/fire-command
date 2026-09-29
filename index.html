@@ -240,6 +240,49 @@ $("copyEventNumber").onclick = async () => {
       }`
     );
 
+    /* Approved demo-style HQ layout: visual reorganization only */
+    html = html.replace('</head>', `<style id="demo-layout-live">
+      @media (min-width:900px){
+        main{grid-template-columns:86px minmax(0,1fr) 335px!important}
+        main>.sidebar:first-child{width:86px!important;padding:7px!important;overflow-y:auto!important}
+        main>.sidebar:last-child{width:335px!important;padding:8px!important;overflow-y:auto!important}
+        main>.sidebar:first-child .card{padding:6px!important;margin-bottom:6px!important;border-radius:12px!important}
+        main>.sidebar:first-child h3{font-size:11px!important;margin:2px 0 5px!important}
+        main>.sidebar:first-child .row{display:grid!important;grid-template-columns:1fr!important;gap:5px!important}
+        main>.sidebar:first-child button{min-height:39px!important;padding:5px 3px!important;font-size:10px!important;line-height:1.1!important}
+        main>.sidebar:first-child input,main>.sidebar:first-child select{font-size:10px!important;padding:5px!important}
+        #map{min-width:0!important}
+        #hqEventHub,.sectorHub{margin-bottom:7px!important}
+        .sectorHub button{min-height:38px!important}
+      }
+      @media (max-width:899px){
+        main>.sidebar:first-child .row{gap:5px!important}
+      }
+    </style></head>`);
+
+    /* Move map/drawing and force/equipment cards into the left tool column.
+       Existing elements are moved, not cloned, so IDs/listeners remain unique. */
+    html = html.replace('</body>', `<script>
+      (function(){
+        function moveOperationalTools(){
+          try{
+            const mains=document.querySelectorAll('main');
+            const root=mains[0]||document.querySelector('.app')||document.body;
+            const sidebars=root.querySelectorAll('.sidebar');
+            if(sidebars.length<2)return;
+            const left=sidebars[0], right=sidebars[sidebars.length-1];
+            const cards=[...right.querySelectorAll('.card')];
+            const wanted=cards.filter(card=>{
+              const h=(card.querySelector('h3')?.textContent||'').trim();
+              return h.includes('מפה ורישום')||h.includes('כוחות וציוד');
+            });
+            wanted.forEach(card=>left.appendChild(card));
+          }catch(e){}
+        }
+        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',moveOperationalTools);
+        else moveOperationalTools();
+      })();
+    <\/script></body>`);
     document.open();
     document.write(html);
     document.close();
