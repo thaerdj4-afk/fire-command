@@ -723,18 +723,31 @@ function trendRisk(x){const f=trendFuel(),ff=+f.factor||1,wind=Math.max(+x.w||0,
 function escText(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function doSearch(term){
  const box=q("mapSearchResults"); if(!box||!term.trim())return;
+ const raw=term.trim();
  box.style.display="block"; box.innerHTML='<div style="padding:9px">מחפש...</div>';
  try{
-  const u="https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=il&accept-language=he&q="+encodeURIComponent(term.trim());
-  const r=await fetch(u,{headers:{"Accept":"application/json"}}); if(!r.ok)throw Error("search");
-  const a=await r.json();
-  if(!a.length){box.innerHTML='<div style="padding:9px">לא נמצא מיקום</div>';return}
+  const variants=[raw];
+  if(!/שמורת|גן לאומי|נחל|הר|מצפה/.test(raw)){
+    variants.push("שמורת טבע "+raw,raw+" ישראל");
+  }
+  let all=[];
+  for(const query of variants){
+   const u="https://nominatim.openstreetmap.org/search?format=json&limit=7&countrycodes=il&accept-language=he&addressdetails=1&namedetails=1&q="+encodeURIComponent(query);
+   const r=await fetch(u,{headers:{"Accept":"application/json"}});
+   if(!r.ok)continue;
+   const a=await r.json();
+   all.push(...a);
+   if(all.length>=5)break;
+  }
+  const seen=new Set();
+  const a=all.filter(x=>{const k=(+x.lat).toFixed(5)+","+(+x.lon).toFixed(5);if(seen.has(k))return false;seen.add(k);return true}).slice(0,7);
+  if(!a.length){box.innerHTML='<div style="padding:9px">לא נמצא מיקום • נסה שם מלא יותר</div>';return}
   box.innerHTML=a.map((x,i)=>'<button type="button" data-i="'+i+'">'+escText(x.display_name)+'</button>').join("");
   box.querySelectorAll("button").forEach(b=>b.onclick=()=>{
    const x=a[+b.dataset.i],lat=+x.lat,lon=+x.lon;
    if(searchMarker)map.removeLayer(searchMarker);
    searchMarker=L.marker([lat,lon]).addTo(map).bindPopup("📍 "+escText(x.display_name)).openPopup();
-   map.setView([lat,lon],15,{animate:true}); box.style.display="none";
+   map.flyTo([lat,lon],15,{animate:true,duration:.8}); box.style.display="none";
   });
  }catch(e){box.innerHTML='<div style="padding:9px">לא ניתן לחפש כרגע</div>'}
 }
