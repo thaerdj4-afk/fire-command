@@ -186,7 +186,24 @@ function renderReq(){let a=reqForEvent().filter(x=>x.request_type!=="תמונה 
 window.v7r=async(id,s)=>{let r=await cloud.from("worker_requests").update({status:s}).eq("id",id);if(r.error)alert(r.error.message);else live()};
 function pointInPoly(lat,lng,pts){let inside=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){let xi=pts[i].lng,yi=pts[i].lat,xj=pts[j].lng,yj=pts[j].lat,hit=((yi>lat)!=(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi+1e-12)+xi);if(hit)inside=!inside}return inside}
 async function autoWorkerZones(){if(!ev)return;let firePolys=[],cmdPts=[];ops.eachLayer(l=>{if((l._kind==="fire-polygon"||l._kind==="burned")&&l.getLatLngs){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];firePolys.push(a)}if(l._kind==="cmd"&&l.getLatLng)cmdPts.push(l.getLatLng())});for(const w of workers){if(w.status==="סיים"||w.latitude==null||w.longitude==null)continue;let ll=L.latLng(+w.latitude,+w.longitude),target=null;if(firePolys.some(p=>pointInPoly(ll.lat,ll.lng,p))&&w.status!=="עובד בשריפה")target="עובד בשריפה";else if(cmdPts.some(c=>map.distance(ll,c)<=35)&&!["עובד בשריפה","הגיע לחפ״ק"].includes(w.status))target="הגיע לחפ״ק";if(target)await cloud.from("workers").update({status:target,...(target==="עובד בשריפה"?{work_started_at:new Date().toISOString()}:{arrived_at:new Date().toISOString()})}).eq("id",w.id)}}
-async function live(){if(ev){let equipment=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","ציוד עובד").order("created_at",{ascending:false}).limit(500);if(!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);phoneLoadError=phones.error?.message||"";if(!phones.error){workerPhones=new Map();for(let p of phones.data||[])if(!workerPhones.has(p.worker_name)&&/^\d{10,15}$/.test(p.details||""))workerPhones.set(p.worker_name,p.details)}}let a=await cloud.from("workers").select("*").order("location_updated_at",{ascending:false});if(!a.error){workers=(a.data||[]).filter(w=>!ev||String(w.event_id||"")===String(ev.id));renderWorkers();renderSectorSetup();autoWorkerZones().catch(()=>{})}let b=await cloud.from("worker_requests").select("*").order("created_at",{ascending:false}).limit(100);if(!b.error){requests=b.data||[];renderReq();renderPhotos();renderSOS()}}
+let liveRunning=false,liveQueued=false,lastAuxLoad=0,lastWorkersSig="",lastRequestsSig="";
+async function live(forceAux=false){
+ if(liveRunning){liveQueued=true;return}
+ liveRunning=true;
+ try{
+  const now=Date.now(),needAux=!!ev&&(forceAux||now-lastAuxLoad>60000),jobs=[];
+  if(needAux){
+   jobs.push(cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","ציוד עובד").order("created_at",{ascending:false}).limit(500));
+   jobs.push(cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500));
+  }else{jobs.push(Promise.resolve(null),Promise.resolve(null))}
+  jobs.push(ev?cloud.from("workers").select("*").eq("event_id",ev.id).order("location_updated_at",{ascending:false}):cloud.from("workers").select("*").order("location_updated_at",{ascending:false}));
+  jobs.push(ev?cloud.from("worker_requests").select("*").eq("event_id",ev.id).order("created_at",{ascending:false}).limit(100):cloud.from("worker_requests").select("*").order("created_at",{ascending:false}).limit(100));
+  const [equipment,phones,a,b]=await Promise.all(jobs);
+  if(needAux){lastAuxLoad=now;if(equipment&&!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}if(phones){phoneLoadError=phones.error?.message||"";if(!phones.error){workerPhones=new Map();for(let p of phones.data||[])if(!workerPhones.has(p.worker_name)&&/^\d{10,15}$/.test(p.details||""))workerPhones.set(p.worker_name,p.details)}}}
+  if(!a.error){const next=a.data||[],sig=next.map(w=>[w.id,w.status,w.sector,w.latitude,w.longitude,w.location_updated_at].join(":")).join("|")+"#"+lastAuxLoad;workers=next;if(sig!==lastWorkersSig){lastWorkersSig=sig;renderWorkers();renderSectorSetup();autoWorkerZones().catch(()=>{})}}
+  if(!b.error){const next=b.data||[],sig=next.map(x=>[x.id,x.status,x.created_at,x.request_type].join(":")).join("|");requests=next;if(sig!==lastRequestsSig){lastRequestsSig=sig;renderReq();renderPhotos();renderSOS()}}
+ }finally{liveRunning=false;if(liveQueued){liveQueued=false;setTimeout(()=>live(),0)}}
+}
 
 let alertAudio = null;
 
@@ -255,7 +272,8 @@ $("copyEventNumber").onclick = async () => {
     prompt("מספר אירוע:", number);
   }
 };
-function rt(){if(chan)cloud.removeChannel(chan);chan=cloud.channel("command-v7").on("postgres_changes",{event:"*",schema:"public",table:"workers"},live).on("postgres_changes",{event:"*",schema:"public",table:"worker_requests"},p=>{
+let liveDebounceTimer=null;function queueLive(forceAux=false){clearTimeout(liveDebounceTimer);liveDebounceTimer=setTimeout(()=>live(forceAux),180)}
+function rt(){if(chan)cloud.removeChannel(chan);chan=cloud.channel("command-v7").on("postgres_changes",{event:"*",schema:"public",table:"workers"},()=>queueLive(false)).on("postgres_changes",{event:"*",schema:"public",table:"worker_requests"},p=>{
         const x=p.new||{};
         const urgent=["פציעה / רפואי","חירום / סכנה","SOS / סכנה"];
         const ordinary=[
@@ -269,7 +287,7 @@ function rt(){if(chan)cloud.removeChannel(chan);chan=cloud.channel("command-v7")
         ){
           beep(urgent.includes(x.request_type));
         }
-        live();
+        queueLive(["ציוד עובד","WhatsApp opt-in"].includes(x.request_type));
       }).on("postgres_changes",{event:"*",schema:"public",table:"map_items"},()=>syncMap()).on("postgres_changes",{event:"*",schema:"public",table:"fire_events"},async()=>{let old=ev?.id;await restore();if(old&&!ev){ops.clearLayers();mapLayers.clear();recountMap()}}).subscribe()}
 function hd(d){return["צפונית","צפון־מזרחית","מזרחית","דרום־מזרחית","דרומית","דרום־מערבית","מערבית","צפון־מערבית"][Math.round(d/45)%8]}
 function destination(lat,lng,bearing,meters){let R=6371000,p1=lat*Math.PI/180,l1=lng*Math.PI/180,b=bearing*Math.PI/180,d=meters/R,p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(b)),l2=l1+Math.atan2(Math.sin(b)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return[p2*180/Math.PI,l2*180/Math.PI]}
@@ -289,7 +307,7 @@ setInterval(async()=>{
  if(liveRefreshBusy||!ev||!document.documentElement.classList.contains("hq-authorized")||document.hidden)return;
  liveRefreshBusy=true;
  try{await live()}finally{liveRefreshBusy=false}
-},5000);
+},15000);
 (async()=>{try{let {data}=await cloud.auth.getSession();if(data.session){await enterHQ(data.session)}else $("hqError").textContent="יש להתחבר כדי לפתוח את החפ״ק."}catch(e){$("hqError").textContent="❌ "+e.message}})();
 window.workerWhatsApp = id => {
   const w = workers.find(x => String(x.id) === String(id));
