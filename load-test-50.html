@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת עומס חפ״ק - 50 עובדים</title>
+<style>
+body{margin:0;background:#07131d;color:#eef7ff;font-family:Arial,sans-serif}main{max-width:1100px;margin:auto;padding:18px}
+h1{font-size:24px}.card{background:#0d2231;border:1px solid #1f4a63;border-radius:14px;padding:14px;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#102c3e;padding:12px;border-radius:10px;text-align:center}.n{font-size:28px;font-weight:900}
+button{background:#1677a8;color:white;border:0;border-radius:9px;padding:11px 16px;font-weight:800;margin:4px;cursor:pointer}button.stop{background:#9f2f2f}
+#map{height:420px;position:relative;overflow:hidden;background:linear-gradient(135deg,#173927,#183146);border-radius:12px}
+.dot{position:absolute;width:12px;height:12px;border-radius:50%;background:#55e38a;box-shadow:0 0 8px #55e38a;transform:translate(-50%,-50%)}
+#log{height:150px;overflow:auto;background:#061019;padding:8px;border-radius:8px;font-family:monospace;font-size:12px;direction:ltr;text-align:left}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
+</style></head><body><main>
+<h1>🔥 בדיקת עומס חפ״ק — 50 עובדים</h1>
+<div class="card">בדיקה מקומית בלבד — לא כותבת עובדים או אירועים ל-Supabase ולא נוגעת בחפ״ק הראשי.<br>
+<button id="start">▶ התחל 50 עובדים</button><button id="stop" class="stop">■ עצור</button></div>
+<div class="stats"><div class="stat"><div class="n" id="workers">0</div>עובדים LIVE</div><div class="stat"><div class="n" id="updates">0</div>עדכוני מיקום</div><div class="stat"><div class="n" id="fps">0</div>FPS</div><div class="stat"><div class="n" id="latency">0</div>ms / update</div></div>
+<div class="card"><div id="map"></div></div><div class="card"><b>יומן עומס</b><div id="log"></div></div>
+</main><script>
+const N=50,map=document.getElementById('map'),dots=[],people=[];let timer=null,total=0,frames=0,lastF=performance.now(),fps=0;
+function log(s){const e=document.getElementById('log');e.innerHTML=new Date().toLocaleTimeString()+' '+s+'<br>'+e.innerHTML.slice(0,6000)}
+function init(){if(dots.length)return;for(let i=0;i<N;i++){let d=document.createElement('i');d.className='dot';map.appendChild(d);dots.push(d);people.push({x:10+Math.random()*80,y:10+Math.random()*80})}}
+function tick(){const t=performance.now();for(let i=0;i<N;i++){let p=people[i];p.x=Math.max(2,Math.min(98,p.x+(Math.random()-.5)*1.8));p.y=Math.max(2,Math.min(98,p.y+(Math.random()-.5)*1.8));dots[i].style.left=p.x+'%';dots[i].style.top=p.y+'%';total++}document.getElementById('updates').textContent=total;document.getElementById('latency').textContent=(performance.now()-t).toFixed(1)}
+function raf(t){frames++;if(t-lastF>=1000){fps=frames;frames=0;lastF=t;document.getElementById('fps').textContent=fps}requestAnimationFrame(raf)}requestAnimationFrame(raf);
+document.getElementById('start').onclick=()=>{init();if(timer)return;document.getElementById('workers').textContent=N;tick();timer=setInterval(tick,1000);log('START: 50 workers, 50 location updates/sec')};
+document.getElementById('stop').onclick=()=>{clearInterval(timer);timer=null;document.getElementById('workers').textContent=0;log('STOP')};
+</script></body></html>
