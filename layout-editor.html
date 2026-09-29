@@ -155,6 +155,11 @@ html,body{overflow:auto!important}
 .editor-handle{position:absolute!important;top:3px!important;left:3px!important;z-index:99998!important;background:#ffc14d!important;color:#111!important;border-radius:6px!important;padding:2px 6px!important;font:bold 12px Arial!important;cursor:move!important}
 .editor-floating{position:fixed!important;margin:0!important;transform:none!important;z-index:9000!important;max-width:calc(100vw - 8px)!important}
 .editor-hidden{opacity:.25!important}
+</style><style id="layout-editor-drag-fix">
+.editor-movable{outline:2px dashed #ffc14d!important;outline-offset:2px!important}
+.editor-handle{display:block!important;appearance:none!important;border:0!important;pointer-events:auto!important;touch-action:none!important;width:30px!important;height:26px!important;text-align:center!important}
+.editor-floating{position:fixed!important;transform:none!important;z-index:9000!important}
+#map{outline:2px solid #1c516d!important}
 </style></head><body class="layout-editor-body"><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><b>LIVE • חפ״ק</b><button id="arrangeDashboardBtn" type="button" title="סידור זמני של לוח מזג האוויר">✥ סידור</button><div id="arrangeHint">גרור את הכרטיסים והגרף למקום הרצוי • לחץ שוב לסיום</div></header><div id="desktopWeatherBand" dir="rtl"><div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 רוח והתקדמות השריפה</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><div class="ftTiles"><div><small>🧭 כיוון רוח</small><b id="ftDir">—</b></div><div><small>🌬 מהירות</small><b id="ftWind">—</b></div><div><small>💨 משבים</small><b id="ftGust">—</b></div><div><small>💧 לחות</small><b id="ftHumidity">—</b></div><div><small>🔥 התקדמות</small><b id="ftProgress">אין מספיק נתונים</b></div></div><canvas id="fireTrendCanvas" width="760" height="120"></canvas><div class="ftLegend"><span>מהירות רוח</span><span>משבים</span><span>לחות</span></div></div></div><main>
 <div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div>
 <button class="primary" id="plDraw"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10-3.5-3.5-10 10L4 20z"/><path d="M13.5 6.5l3.5 3.5"/></svg></span><span>ציור / סימון</span></button><button data-l="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"/></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"/></svg></span><span>קו הגנה / פס אש</span></button><button data-l="escape"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="2"/><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"/></svg></span><span>מסלול בריחה</span></button><button data-p="assembly"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"/></svg></span><span>נקודת כינוס</span></button><button data-p="water"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"/></svg></span><span>מקור מים</span></button><button data-p="engine"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8V5h7v3M17 11V7h2"/></svg></span><span>כבאית / רכב</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span>אזור סכנה</span></button><button id="plArea"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M5 5l13-2 3 13-8 5-10-6z"/><circle cx="5" cy="5" r="1"/><circle cx="18" cy="3" r="1"/><circle cx="21" cy="16" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="3" cy="15" r="1"/></svg></span><span>פוליגון שריפה / מדידת שטח</span></button><button id="plDist"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M4 17L17 4l3 3L7 20z"/><path d="M14 7l3 3M11 10l2 2M8 13l3 3"/></svg></span><span>מדידת מרחק</span></button><button id="plUndo"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M5 12h8c4 0 7 2 7 6"/></svg></span><span>בטל צעד</span></button><button id="plErase"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M8 4l12 12-5 5H9L3 15z"/><path d="M6 12l6 6M15 21h6"/></svg></span><span>מחיקה רציפה</span></button><button id="plStop"><span class="cmdIcon "><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></span><span>סיום כלי</span></button><button id="plLocate"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span>המיקום שלי</span></button><div class="leftGroupTitle">🗺️ מפה ורישום</div><div class="leftMiniGrid"><div class="leftFull"><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small leftFull">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small leftFull"></div><div class="leftGroupTitle">🚒 כוחות וציוד</div><div class="leftMiniGrid"><input class="leftFull" id="unit" placeholder="שם עובד / צוות / כלי"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div>
@@ -244,26 +249,86 @@ function photoParts(x){let d=String(x.details||"");if(!d.startsWith("PHOTO|"))re
 function renderPhotos(){let ps=reqForEvent().filter(x=>x.request_type==="תמונה מהשטח").slice(0,12);let html=ps.length?ps.map(x=>{let p=photoParts(x);return p?`<div class="photoCard" style="background-image:linear-gradient(0deg,#00111dcc,#00111d11),url('${p.src}');background-size:cover;background-position:center;cursor:pointer" onclick="window.openPhoto('${x.id}')"><span><b>${esc(x.worker_name||"עובד")}</b><br>${new Date(x.created_at).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}${p.note?" • "+esc(p.note):""}</span></div>`:""}).join(""): '<div class="small">אין תמונות מהשטח עדיין.</div>';let box=$("fieldPhotos");if(box)box.innerHTML=html;let panel=$("fieldPhotosPanel");if(panel)panel.innerHTML=html}
 window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"><script>
 document.documentElement.classList.add("hq-authorized");
-window.addEventListener("DOMContentLoaded",()=>{
- const note=document.createElement("div");note.id="layoutEditorNote";note.textContent="עורך סידור בלבד — החפ״ק האמיתי לא משתנה";document.body.appendChild(note);
+window.addEventListener("DOMContentLoaded",function(){
+ const KEY="hqLayoutEditorV2";
+ const note=document.createElement("div");
+ note.id="layoutEditorNote";
+ note.textContent="מצב סידור — גרור מהידית הצהובה ✥";
+ document.body.appendChild(note);
+
  const bar=document.createElement("div");bar.id="layoutEditorBar";
- bar.innerHTML='<button id="edSave">💾 שמור במכשיר</button><button id="edReset">↩ איפוס</button><button id="edExport">📋 הצג מיקומים</button>';
+ bar.innerHTML='<button type="button" id="edSave">💾 שמור</button><button type="button" id="edReset">↩ איפוס</button><button type="button" id="edExport">📋 מיקומים</button>';
  document.body.appendChild(bar);
- const KEY="hqLayoutEditorV1", items=[];
- function add(el,key){if(!el||items.some(x=>x.el===el))return;el.classList.add("editor-movable");el.dataset.editorKey=key;if(getComputedStyle(el).position==="static")el.style.position="relative";const h=document.createElement("span");h.className="editor-handle";h.textContent="✥";el.prepend(h);h.onpointerdown=e=>start(e,el);items.push({el,key});}
- const header=document.querySelector("header"); if(header){add(header.querySelector("div"),"title");add(header.querySelector(":scope>b"),"live")}
- add(document.getElementById("fireTrendBox"),"weatherGraph");add(document.getElementById("mapSearchBox"),"search");
- [...document.querySelectorAll("main > div, main > section, main > aside")].forEach((el,i)=>{if(el.id!=="map"&&!el.closest("#map"))add(el,"main-"+(el.id||i))});
- let drag=null,dx=0,dy=0;
- function start(e,el){const r=el.getBoundingClientRect();drag=el;dx=e.clientX-r.left;dy=e.clientY-r.top;el.classList.add("editor-floating");el.style.left=r.left+"px";el.style.top=r.top+"px";el.style.width=r.width+"px";e.preventDefault();e.stopPropagation()}
- document.addEventListener("pointermove",e=>{if(!drag)return;const w=drag.offsetWidth,h=drag.offsetHeight;drag.style.left=Math.max(4,Math.min(innerWidth-w-4,e.clientX-dx))+"px";drag.style.top=Math.max(4,Math.min(innerHeight-h-4,e.clientY-dy))+"px"});
- document.addEventListener("pointerup",()=>{drag=null});
- function state(){const d={};items.forEach(({el,key})=>{const r=el.getBoundingClientRect();d[key]={floating:el.classList.contains("editor-floating"),left:Math.round(r.left),top:Math.round(r.top),width:Math.round(r.width)}});return d}
- function save(){localStorage.setItem(KEY,JSON.stringify(state()));alert("הסידור נשמר במכשיר הזה")}
- function load(){let d={};try{d=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){};items.forEach(({el,key})=>{const x=d[key];if(!x||!x.floating)return;el.classList.add("editor-floating");el.style.left=x.left+"px";el.style.top=x.top+"px";el.style.width=x.width+"px"})}
- document.getElementById("edSave").onclick=save;
+
+ const items=[];
+ function movable(el,key){
+   if(!el||el.id==="map"||el.closest("#map")||items.some(x=>x.el===el))return;
+   el.dataset.editorKey=key;el.classList.add("editor-movable");
+   const cs=getComputedStyle(el);if(cs.position==="static")el.style.position="relative";
+   const h=document.createElement("button");h.type="button";h.className="editor-handle";h.textContent="✥";h.title="גרור";
+   el.appendChild(h);
+   h.addEventListener("pointerdown",function(e){begin(e,el)});
+   items.push({el,key});
+ }
+ const header=document.querySelector("header");
+ if(header){
+   const title=[...header.children].find(x=>x.tagName!=="B"&&x.id!=="arrangeDashboardBtn"&&x.id!=="arrangeHint");
+   movable(title,"header-title");
+   movable([...header.children].find(x=>x.tagName==="B"),"header-live");
+ }
+ movable(document.getElementById("fireTrendBox"),"weather-graph");
+ movable(document.getElementById("mapSearchBox"),"map-search");
+
+ // Direct children around the map: side panels/tool columns and top widgets.
+ const main=document.querySelector("main");
+ if(main)[...main.children].forEach((el,i)=>{
+   if(el.id==="map"||el.id==="top"||el.id==="mapSearchBox"||el.id==="fireTrendBox")return;
+   if(el.tagName==="SCRIPT"||el.tagName==="STYLE")return;
+   movable(el,"main-"+(el.id||el.className||i).toString().replace(/\s+/g,"-").slice(0,50));
+ });
+ movable(document.getElementById("top"),"top-weather");
+
+ let drag=null,ox=0,oy=0;
+ function begin(e,el){
+   const r=el.getBoundingClientRect();
+   drag=el;ox=e.clientX-r.left;oy=e.clientY-r.top;
+   el.classList.add("editor-floating");
+   Object.assign(el.style,{left:r.left+"px",top:r.top+"px",width:r.width+"px",height:"auto",right:"auto",bottom:"auto"});
+   try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}
+   e.preventDefault();e.stopPropagation();
+ }
+ window.addEventListener("pointermove",function(e){
+   if(!drag)return;
+   const w=drag.getBoundingClientRect().width,h=drag.getBoundingClientRect().height;
+   const x=Math.max(2,Math.min(innerWidth-w-2,e.clientX-ox));
+   const y=Math.max(2,Math.min(innerHeight-h-2,e.clientY-oy));
+   drag.style.left=x+"px";drag.style.top=y+"px";
+   e.preventDefault();
+ },{passive:false});
+ window.addEventListener("pointerup",function(){if(drag){drag=null;save(false)}});
+
+ function snapshot(){
+   const d={};
+   items.forEach(({el,key})=>{
+     const r=el.getBoundingClientRect();
+     d[key]={floating:el.classList.contains("editor-floating"),left:Math.round(r.left),top:Math.round(r.top),width:Math.round(r.width)};
+   });return d;
+ }
+ function save(show){
+   localStorage.setItem(KEY,JSON.stringify(snapshot()));
+   if(show)alert("נשמר ✓");
+ }
+ function load(){
+   let d={};try{d=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(_){}
+   items.forEach(({el,key})=>{
+     const x=d[key];if(!x||!x.floating)return;
+     el.classList.add("editor-floating");
+     Object.assign(el.style,{left:x.left+"px",top:x.top+"px",width:x.width+"px",right:"auto",bottom:"auto"});
+   });
+ }
+ document.getElementById("edSave").onclick=()=>save(true);
  document.getElementById("edReset").onclick=()=>{localStorage.removeItem(KEY);location.reload()};
- document.getElementById("edExport").onclick=()=>{const out=JSON.stringify(state(),null,2);prompt("צלם מסך או העתק ושלח לי:",out)};
+ document.getElementById("edExport").onclick=()=>prompt("העתק ושלח לי:",JSON.stringify(snapshot(),null,2));
  load();
 });
 </script></body>`)};
