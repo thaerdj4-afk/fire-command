@@ -178,13 +178,6 @@ $("copyEventNumber").onclick = async () => {
     );
 
 
-    // Unified sector worker controls: only unassigned workers can be added;
-    // assigned workers can be moved directly and contacted on WhatsApp.
-    replaceRequired(
-      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div></div>\`;',
-      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div><div id="sectorAssignedWorkers" style="margin-top:10px"></div><div style="margin-top:12px;padding:10px;border:1px solid #35506b;border-radius:10px"><b>➕ הוסף עובד לגזרה \${esc(k)}</b><div class="row" style="margin-top:8px"><select id="sectorWorkerPick" style="flex:1"><option value="">בחר עובד ללא גזרה</option>\${workers.filter(w=>w.status!=="סיים"&&!String(w.sector||"").trim()).map(w=>\`<option value="\${esc(String(w.id))}">\${esc(w.name)}</option>\`).join("")}</select><button class="green" type="button" data-sector-add-worker="\${esc(k)}">📤 הוסף לגזרה</button></div></div></div>\`;let assigned=$("sectorAssignedWorkers");if(assigned){assigned.innerHTML=ws.length?ws.map(w=>\`<div class="worker" style="margin:6px 0;padding:8px"><b>👤 \${esc(w.name)}</b><div class="row" style="margin-top:6px"><button type="button" data-sector-wa="\${esc(String(w.id))}">💬 WhatsApp</button><span class="small" style="align-self:center">🔄 העבר:</span>\${names.filter(x=>x!==k).map(x=>\`<button type="button" data-sector-move-id="\${esc(String(w.id))}" data-sector-move-to="\${esc(x)}">\${esc(x)}׳</button>\`).join("")}</div></div>\`).join(""):\`<div class="small">אין עובדים בגזרה זו</div>\`;assigned.querySelectorAll("[data-sector-wa]").forEach(b=>b.addEventListener("click",()=>workerWhatsApp(b.dataset.sectorWa)));assigned.querySelectorAll("[data-sector-move-id]").forEach(b=>b.addEventListener("click",()=>assignSector(b.dataset.sectorMoveId,b.dataset.sectorMoveTo)))}let addWorkerBtn=box.querySelector("[data-sector-add-worker]");if(addWorkerBtn)addWorkerBtn.addEventListener("click",()=>sendSelectedWorkerToSector(addWorkerBtn.dataset.sectorAddWorker));'
-    );
-
     replaceRequired(
       'let workerPhones=new Map(),phoneLoadError="";',
       'let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";'
