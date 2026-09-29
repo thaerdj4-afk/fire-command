@@ -137,20 +137,14 @@ main{height:calc(100vh - 252px)!important;min-height:520px!important}
  #desktopWeatherBand{padding-left:190px;padding-right:190px;height:158px}
  main{height:calc(100vh - 244px)!important}
 }
-</style><style id="personal-hq-layout-style">
+</style><style id="dashboard-arrange-mode-style">
 #arrangeDashboardBtn{position:absolute;left:92px;top:26px;z-index:2600;background:#0b2637;border:1px solid #2c6684;color:#d9f2ff;border-radius:9px;padding:7px 11px;font-weight:700;cursor:pointer}
 #arrangeDashboardBtn.active{background:#8a5a00;border-color:#ffc14d;color:#fff}
 #arrangeHint{display:none;position:fixed;left:50%;top:92px;transform:translateX(-50%);z-index:5000;background:#081923f2;border:1px solid #ffc14d;color:#fff;padding:7px 14px;border-radius:9px;font-size:12px;box-shadow:0 8px 30px #0008}
 body.arrange-dashboard #arrangeHint{display:block}
-.hq-collapsible{position:relative}
-.hq-collapse-arrow{float:left;background:transparent;border:0;color:#bfe8ff;font-size:18px;line-height:1;cursor:pointer;padding:0 4px}
-.hq-collapsible.hq-closed>*:not(.hq-panel-head){display:none!important}
-.hq-panel-head{display:flex!important;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
-body.arrange-dashboard .hq-collapsible{outline:1px dashed #ffc14d;outline-offset:2px;cursor:grab}
-body.arrange-dashboard .hq-collapsible:active{cursor:grabbing}
-.hq-layout-actions{display:none;gap:6px;position:fixed;left:50%;top:126px;transform:translateX(-50%);z-index:5000}
-body.arrange-dashboard .hq-layout-actions{display:flex}
-.hq-layout-actions button{background:#0b2637;border:1px solid #2c6684;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+body.arrange-dashboard .ftTiles>div,body.arrange-dashboard #fireTrendCanvas{cursor:move!important;outline:1px dashed #ffc14d;outline-offset:2px;user-select:none}
+body.arrange-dashboard .ftTiles{overflow:visible!important}
+.arrange-floating{position:fixed!important;margin:0!important;z-index:4900!important;transform:none!important}
 </style></head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><b>LIVE • חפ״ק</b><button id="arrangeDashboardBtn" type="button" title="סידור זמני של לוח מזג האוויר">✥ סידור</button><div id="arrangeHint">גרור את הכרטיסים והגרף למקום הרצוי • לחץ שוב לסיום</div></header><div id="desktopWeatherBand" dir="rtl"><div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 רוח והתקדמות השריפה</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><div class="ftTiles"><div><small>🧭 כיוון רוח</small><b id="ftDir">—</b></div><div><small>🌬 מהירות</small><b id="ftWind">—</b></div><div><small>💨 משבים</small><b id="ftGust">—</b></div><div><small>💧 לחות</small><b id="ftHumidity">—</b></div><div><small>🔥 התקדמות</small><b id="ftProgress">אין מספיק נתונים</b></div></div><canvas id="fireTrendCanvas" width="760" height="120"></canvas><div class="ftLegend"><span>מהירות רוח</span><span>משבים</span><span>לחות</span></div></div></div><main>
 <div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div>
 <button class="primary" id="plDraw"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10-3.5-3.5-10 10L4 20z"/><path d="M13.5 6.5l3.5 3.5"/></svg></span><span>ציור / סימון</span></button><button data-l="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"/></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"/></svg></span><span>קו הגנה / פס אש</span></button><button data-l="escape"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="2"/><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"/></svg></span><span>מסלול בריחה</span></button><button data-p="assembly"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"/></svg></span><span>נקודת כינוס</span></button><button data-p="water"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"/></svg></span><span>מקור מים</span></button><button data-p="engine"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8V5h7v3M17 11V7h2"/></svg></span><span>כבאית / רכב</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span>אזור סכנה</span></button><button id="plArea"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M5 5l13-2 3 13-8 5-10-6z"/><circle cx="5" cy="5" r="1"/><circle cx="18" cy="3" r="1"/><circle cx="21" cy="16" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="3" cy="15" r="1"/></svg></span><span>פוליגון שריפה / מדידת שטח</span></button><button id="plDist"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M4 17L17 4l3 3L7 20z"/><path d="M14 7l3 3M11 10l2 2M8 13l3 3"/></svg></span><span>מדידת מרחק</span></button><button id="plUndo"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M5 12h8c4 0 7 2 7 6"/></svg></span><span>בטל צעד</span></button><button id="plErase"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M8 4l12 12-5 5H9L3 15z"/><path d="M6 12l6 6M15 21h6"/></svg></span><span>מחיקה רציפה</span></button><button id="plStop"><span class="cmdIcon "><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></span><span>סיום כלי</span></button><button id="plLocate"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span>המיקום שלי</span></button><div class="leftGroupTitle">🗺️ מפה ורישום</div><div class="leftMiniGrid"><div class="leftFull"><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small leftFull">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small leftFull"></div><div class="leftGroupTitle">🚒 כוחות וציוד</div><div class="leftMiniGrid"><input class="leftFull" id="unit" placeholder="שם עובד / צוות / כלי"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div>
@@ -238,84 +232,7 @@ let sosLayer=L.layerGroup().addTo(map),activeSOS=null;
 function reqForEvent(){return ev?requests.filter(x=>String(x.event_id||"")===String(ev.id)):[]}
 function photoParts(x){let d=String(x.details||"");if(!d.startsWith("PHOTO|"))return null;let cut=d.indexOf("|",6);return cut<0?null:{src:d.slice(6,cut),note:d.slice(cut+1)}}
 function renderPhotos(){let ps=reqForEvent().filter(x=>x.request_type==="תמונה מהשטח").slice(0,12);let html=ps.length?ps.map(x=>{let p=photoParts(x);return p?`<div class="photoCard" style="background-image:linear-gradient(0deg,#00111dcc,#00111d11),url('${p.src}');background-size:cover;background-position:center;cursor:pointer" onclick="window.openPhoto('${x.id}')"><span><b>${esc(x.worker_name||"עובד")}</b><br>${new Date(x.created_at).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}${p.note?" • "+esc(p.note):""}</span></div>`:""}).join(""): '<div class="small">אין תמונות מהשטח עדיין.</div>';let box=$("fieldPhotos");if(box)box.innerHTML=html;let panel=$("fieldPhotosPanel");if(panel)panel.innerHTML=html}
-window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"><script id="personal-hq-layout">
-(function(){
- const KEY="hqPersonalLayoutV1";
- const btn=document.getElementById("arrangeDashboardBtn");
- if(!btn)return;
- const hint=document.getElementById("arrangeHint");
- if(hint)hint.textContent="גרור את הקבוצות לסדר שנוח לך • הסידור נשמר במכשיר הזה";
- const actions=document.createElement("div");actions.className="hq-layout-actions";
- actions.innerHTML='<button type="button" id="hqSaveLayout">💾 שמור סידור</button><button type="button" id="hqResetLayout">↩ איפוס</button>';
- document.body.appendChild(actions);
-
- function norm(t){return (t||"").replace(/\s+/g," ").trim()}
- function findHeading(label){
-  return [...document.querySelectorAll("h2,h3,h4,.title,.panelTitle,b,strong")].find(x=>norm(x.textContent).includes(label));
- }
- function panelOf(h){
-  if(!h)return null;
-  let p=h;
-  while(p&&p!==document.body){
-   if(p.parentElement && p.parentElement.children.length>1 && /^(DIV|SECTION|ASIDE)$/.test(p.tagName)) return p;
-   p=p.parentElement;
-  }
-  return h.parentElement;
- }
- const specs=[["hq-tools","כלי חפ"],["hq-mapdraw","מפה ורישום"],["hq-forces","כוחות וציוד"]];
- const panels=[];
- specs.forEach(([id,label])=>{
-  const h=findHeading(label),p=panelOf(h); if(!h||!p)return;
-  p.dataset.hqPanel=id;p.classList.add("hq-collapsible");
-  let head=h.closest("div")||h;
-  if(head===p)head=h;
-  head.classList.add("hq-panel-head");
-  if(!head.querySelector(".hq-collapse-arrow")){
-   const a=document.createElement("button");a.type="button";a.className="hq-collapse-arrow";a.textContent="▾";a.title="פתח / סגור";
-   a.addEventListener("click",e=>{e.stopPropagation();toggle(p,a)});
-   head.appendChild(a);
-   head.addEventListener("dblclick",e=>{if(!document.body.classList.contains("arrange-dashboard"))toggle(p,a)});
-  }
-  panels.push(p);
- });
- function toggle(p,a){
-  p.classList.toggle("hq-closed");a.textContent=p.classList.contains("hq-closed")?"▸":"▾";save();
- }
- function save(){
-  const data={};
-  panels.forEach(p=>{
-   data[p.dataset.hqPanel]={closed:p.classList.contains("hq-closed"),order:[...p.parentElement.children].indexOf(p)};
-  });
-  localStorage.setItem(KEY,JSON.stringify(data));
- }
- function load(){
-  let d={};try{d=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
-  panels.forEach(p=>{
-   const x=d[p.dataset.hqPanel];if(!x)return;
-   p.classList.toggle("hq-closed",!!x.closed);
-   const a=p.querySelector(".hq-collapse-arrow");if(a)a.textContent=x.closed?"▸":"▾";
-  });
-  const groups=new Map();
-  panels.forEach(p=>{if(!groups.has(p.parentElement))groups.set(p.parentElement,[]);groups.get(p.parentElement).push(p)});
-  groups.forEach(arr=>arr.sort((a,b)=>(d[a.dataset.hqPanel]?.order??999)-(d[b.dataset.hqPanel]?.order??999)).forEach(p=>p.parentElement.appendChild(p)));
- }
- let enabled=false,drag=null;
- btn.addEventListener("click",()=>{
-  enabled=!enabled;document.body.classList.toggle("arrange-dashboard",enabled);btn.classList.toggle("active",enabled);
-  btn.textContent=enabled?"✓ סיום סידור":"✥ סידור";
-  if(!enabled)save();
- });
- panels.forEach(p=>{
-  p.draggable=true;
-  p.addEventListener("dragstart",e=>{if(!enabled){e.preventDefault();return}drag=p;e.dataTransfer.effectAllowed="move"});
-  p.addEventListener("dragover",e=>{if(enabled&&drag&&drag!==p&&drag.parentElement===p.parentElement)e.preventDefault()});
-  p.addEventListener("drop",e=>{if(!enabled||!drag||drag===p||drag.parentElement!==p.parentElement)return;e.preventDefault();const r=p.getBoundingClientRect();p.parentElement.insertBefore(drag,e.clientY<r.top+r.height/2?p:p.nextSibling);save()});
- });
- document.getElementById("hqSaveLayout").onclick=()=>{save();enabled=false;document.body.classList.remove("arrange-dashboard");btn.classList.remove("active");btn.textContent="✥ סידור"};
- document.getElementById("hqResetLayout").onclick=()=>{localStorage.removeItem(KEY);location.reload()};
- load();
-})();
-</script></body>`)};
+window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"></body>`)};
 function coordsFor(x){let w=workers.find(z=>z.name===x.worker_name&&z.latitude!=null&&z.longitude!=null);if(w)return[+w.latitude,+w.longitude];let m=String(x.details||"").match(/LOC\|(-?\d+(?:\.\d+)?)\|(-?\d+(?:\.\d+)?)/);return m?[+m[1],+m[2]]:null}
 function renderSOS(){sosLayer.clearLayers();let all=reqForEvent().filter(x=>["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&!["טופל","נמחק"].includes(x.status));activeSOS=all[0]||null;let b=$("dangerBanner");if(!activeSOS){if(b)b.style.display="none";return}let c=coordsFor(activeSOS);b.style.display="flex";$("dangerName").textContent=`🚨 סכנה / חירום — ${activeSOS.worker_name||"עובד"}`;$("dangerMeta").textContent=`${activeSOS.request_type} • ${activeSOS.status||"חדש"}${c?` • ${c[0].toFixed(5)}, ${c[1].toFixed(5)}`:" • מיקום ממתין"}`;if(c){let ic=L.divIcon({className:"",html:`<div class="sosLabel">🆘 ${esc(activeSOS.worker_name||"עובד")}</div><div class="sosPulse"></div>`,iconSize:[120,55],iconAnchor:[60,45]});L.marker(c,{icon:ic,zIndexOffset:5000}).addTo(sosLayer);map.setView(c,16)}}
 async function setSOS(st){if(!activeSOS)return;let r=await cloud.from("worker_requests").update({status:st}).eq("id",activeSOS.id);if(r.error)alert(r.error.message);else live()}
@@ -731,6 +648,29 @@ function refresh(){
  draw();
 }
 setInterval(refresh,3000);refresh();
+})();
+</script><script id="dashboard-arrange-mode">
+(function(){
+ const btn=document.getElementById("arrangeDashboardBtn"), hint=document.getElementById("arrangeHint");
+ if(!btn)return;
+ let enabled=false,drag=null,dx=0,dy=0;
+ function targets(){return [...document.querySelectorAll("#fireTrendBox .ftTiles > div"),document.getElementById("fireTrendCanvas")].filter(Boolean)}
+ function start(e){
+  if(!enabled)return;
+  const el=e.currentTarget,r=el.getBoundingClientRect();
+  drag=el;dx=e.clientX-r.left;dy=e.clientY-r.top;
+  el.classList.add("arrange-floating");
+  el.style.left=r.left+"px";el.style.top=r.top+"px";el.style.width=r.width+"px";el.style.height=r.height+"px";
+  e.preventDefault();e.stopPropagation();
+ }
+ function move(e){if(!drag)return;drag.style.left=Math.max(0,e.clientX-dx)+"px";drag.style.top=Math.max(0,e.clientY-dy)+"px"}
+ function end(){drag=null}
+ btn.addEventListener("click",()=>{
+  enabled=!enabled;document.body.classList.toggle("arrange-dashboard",enabled);btn.classList.toggle("active",enabled);
+  btn.textContent=enabled?"✓ סיום סידור":"✥ סידור";
+  targets().forEach(el=>{el.onpointerdown=enabled?start:null});
+ });
+ document.addEventListener("pointermove",move);document.addEventListener("pointerup",end);
 })();
 </script></body></html>
 
