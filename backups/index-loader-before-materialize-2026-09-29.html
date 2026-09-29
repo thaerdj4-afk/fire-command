@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חפ״ק שריפה</title>
+<style>
+body {
+  background: #041321;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 24px;
+}
+</style>
+</head>
+<body>
+<h2 id="loading">טוען חפ״ק…</h2>
+<p id="error"></p>
+<button onclick="location.reload()">נסה שוב</button>
+
+<script>
+(async function () {
+  try {
+    const source =
+      "https://raw.githubusercontent.com/thaerdj4-afk/fire-command/" +
+      "b528b062e8e6614a1cf80da0df62a569c4c3e4a7/index.html";
+
+    const response = await fetch(source);
+    if (!response.ok) throw new Error("HTTP " + response.status);
+
+    let html = await response.text();
+
+    if (!html.trimStart().toLowerCase().startsWith("<!doctype html>")) {
+      throw new Error("קובץ החפ״ק לא תקין");
+    }
+
+    function replaceRequired(oldText, newText) {
+      if (!html.includes(oldText)) {
+        throw new Error("לא ניתן להשלים את עדכון החפ״ק");
+      }
+      html = html.replace(oldText, newText);
+    }
+
+    replaceRequired(
+      '<div class="card"><h3>🔐 חיבור חפ״ק</h3><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button">יציאה</button></div>\n<div class="card"><h3>🔥 אירוע</h3><input id="eventName" placeholder="שם אירוע"><div class="row"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small">אין אירוע פעיל</div></div>\n<div class="card"><h3>📱 קישור עובד</h3><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row"><button id="copy">📋 העתק</button><button id="openWorker">👤 פתח</button></div><div id="qr"></div></div>',
+      '<div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div></div>'
+    );
+
+    replaceRequired(
+      'function link(){let u=workerUrl();',
+      'function link(){$("eventNumber").textContent=ev?.event_number??"—";let u=workerUrl();'
+    );
+
+    replaceRequired(
+      'function workerUrl(){return ev?',
+      'window.shareWorkerWhatsApp=()=>{if(!ev)return alert("פתח אירוע קודם");let u=workerUrl(),msg="🔥 "+(ev.name||"אירוע שריפה")+"\\nמספר אירוע: "+(ev.event_number||"—")+"\\nקישור עובד: "+u;open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")};window.sendAppMessageFromHub=async()=>{if(!ev)return alert("פתח אירוע קודם");let active=workers.filter(w=>w.status!=="סיים");if(!active.length)return alert("אין עובדים פעילים");let list=active.map((w,i)=>(i+1)+". "+w.name).join("\\n"),pick=prompt("בחר מספר עובד לשליחת הודעה:\\n"+list,"1");if(pick===null)return;let w=active[Number(pick)-1];if(!w)return alert("בחירה לא תקינה");let t=prompt("הודעה לאפליקציה של "+w.name+":","");if(!t||!t.trim())return;let r=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"הודעה מהחפ״ק",details:t.trim(),status:"חדש"});if(r.error)return alert("❌ "+r.error.message);alert("✓ ההודעה נשלחה לאפליקציה של "+w.name)};function workerUrl(){return ev?'
+    );
+
+    replaceRequired(
+      '["חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&',
+      '["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&'
+    );
+
+    replaceRequired(
+      '`⚠ ${activeSOS.worker_name||"עובד"} בסכנה`',
+      '`🚨 סכנה / חירום — ${activeSOS.worker_name||"עובד"}`'
+    );
+
+    replaceRequired(
+      '`SOS מהשטח • ${activeSOS.status||"חדש"}',
+      '`${activeSOS.request_type} • ${activeSOS.status||"חדש"}'
+    );
+
+    const oldSound = html.match(/function beep\(u\)\{.*?\n/);
+    if (!oldSound) throw new Error("לא נמצא מנגנון הצלילים");
+
+    html = html.replace(oldSound[0], `
+let alertAudio = null;
+
+function unlockAlertAudio() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    if (!alertAudio) alertAudio = new C();
+    if (alertAudio.state === "suspended") {
+      alertAudio.resume().catch(() => {});
+    }
+  } catch {}
+}
+
+document.addEventListener(
+  "pointerdown", unlockAlertAudio, {passive:true}
+);
+document.addEventListener("keydown", unlockAlertAudio);
+
+function beep(urgent) {
+  try {
+    unlockAlertAudio();
+    const c = alertAudio;
+    if (!c || c.state !== "running") return;
+
+    const notes = urgent
+      ? [[0,1046],[.22,784],[.55,1046],[.77,784],
+         [1.10,1046],[1.32,784]]
+      : [[0,880],[.23,1175]];
+
+    for (const [delay, frequency] of notes) {
+      for (const [multiple, volume] of [[1,.13],[2.76,.025]]) {
+        const oscillator = c.createOscillator();
+        const gain = c.createGain();
+        const time = c.currentTime + delay;
+
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency * multiple;
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(volume, time + .008);
+        gain.gain.exponentialRampToValueAtTime(.0001, time + .65);
+
+        oscillator.connect(gain);
+        gain.connect(c.destination);
+        oscillator.start(time);
+        oscillator.stop(time + .7);
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+      }
+    }
+  } catch {}
+}
+
+$("copyEventNumber").onclick = async () => {
+  if (!ev?.event_number) return alert("פתח אירוע קודם");
+  const number = String(ev.event_number);
+  try {
+    await navigator.clipboard.writeText(number);
+    $("copyEventNumber").textContent = "✓ המספר הועתק";
+    setTimeout(() => {
+      $("copyEventNumber").textContent = "📋 העתק מספר אירוע";
+    }, 1800);
+  } catch {
+    prompt("מספר אירוע:", number);
+  }
+};
+`);
+
+    replaceRequired(
+      '<div class="card"><h3>🗺️ מפה ורישום</h3><select id="base"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select><div class="row">\n<button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small" style="margin-top:6px;font-weight:800;color:#ffd166"></div></div>\n<div class="card"><h3>🚒 כוחות וציוד</h3><input id="unit" placeholder="שם עובד / צוות / כלי"><div class="row"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div>\n<div class="card"><h3>🧭 גזרות</h3>',
+      '<div class="card"><h3>🧭 גזרות</h3>'
+    );
+
+    replaceRequired(
+      '<div class="card"><h3>👥 כוחות LIVE</h3>',
+      '<div class="card"><h3>🗺️ מפה ורישום</h3><select id="base"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select><div class="row"><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small" style="margin-top:6px;font-weight:800;color:#ffd166"></div></div><div class="card"><h3>🚒 כוחות וציוד</h3><input id="unit" placeholder="שם עובד / צוות / כלי"><div class="row"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div><div class="card"><h3>👥 כוחות LIVE</h3>'
+    );
+
+    replaceRequired(
+      '<div class="card"><h3>🗺️ מפה ורישום</h3><select id="base"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select><div class="row">',
+      '<div class="card" style="padding:9px"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><h3 style="margin:0">🗺️ מפה ורישום</h3><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><div class="row" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px">'
+    );
+
+    replaceRequired(
+      '<div class="card"><h3>🚒 כוחות וציוד</h3><input id="unit" placeholder="שם עובד / צוות / כלי"><div class="row">',
+      '<div class="card" style="padding:9px"><h3 style="margin:0 0 7px">🚒 כוחות וציוד</h3><input id="unit" placeholder="שם עובד / צוות / כלי"><div class="row" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:7px">'
+    );
+
+    replaceRequired(
+      '<div class="card"><h3>🧭 גזרות</h3><div class="small">סמן גבול גזרה על המפה או בחר נקודת מפגש לכל גזרה.</div><div class="row"><button data-s="א">א׳</button><button data-s="ב">ב׳</button><button data-s="ג">ג׳</button></div><div class="row"><button onclick="setSectorPoint(\'א\')">📍 נקודת גזרה א</button><button onclick="setSectorPoint(\'ב\')">📍 נקודת גזרה ב</button><button onclick="setSectorPoint(\'ג\')">📍 נקודת גזרה ג</button></div><button class="green" type="button" onclick="addCustomSector()">➕ גזרה חדשה — כתוב שם ובחר מיקום</button><div id="sectorSetup"></div></div>',
+      '<div class="card"><h3>🧭 גזרות</h3><div class="small">כל הגזרות במקום אחד — בחר גזרה לניהול.</div><div id="sectorSetup"></div><button class="green" type="button" onclick="addCustomSector()">➕ הוסף גזרה</button></div>'
+    );
+
+    replaceRequired(
+      'function renderSectorSetup(){let box=$("sectorSetup");if(!box)return;box.innerHTML=sectorNames().map(k=>{let c=sectorConfig(k),p=sectorPosition(k);return \`<div class="worker"><b>גזרה \${k}</b> • \${esc(c.manager||"ללא מנהל")} • \${p?"📍 "+(+p[0]).toFixed(5)+", "+(+p[1]).toFixed(5):"מיקום לא הוגדר"}<div class="row"><button onclick="setSectorManager(\'\${k}\')">👤 מנהל גזרה</button><button onclick="setSectorPoint(\'\${k}\')">📍 בחר מיקום במפה</button></div></div>\`}).join("")}',
+      'function renderSectorSetup(){let box=$("sectorSetup");if(!box)return;box.innerHTML=sectorNames().map(k=>{let c=sectorConfig(k),p=sectorPosition(k),n=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k)).length;return \`<details class="worker" \${k==="א"?"open":""}><summary style="cursor:pointer;font-weight:800;font-size:16px">גזרה \${esc(k)} <span class="small">• 👤 \${esc(c.manager||"ללא מנהל")} • 👥 \${n}</span></summary><div class="small" style="margin-top:8px">\${p?"📍 נקודה הוגדרה":"📍 נקודה לא הוגדרה"}</div><div class="row" style="margin-top:8px"><button data-s="\${esc(k)}">✏️ גבולות</button><button onclick="setSectorPoint(\'\${k}\')">📍 נקודת גזרה</button><button onclick="setSectorManager(\'\${k}\')">👤 מנהל</button><button type="button" onclick="document.getElementById(\'workers\')?.scrollIntoView({behavior:\'smooth\'})">👥 עובדים</button></div></details>\`}).join("");box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];b.dataset.sectorActive="1";window._sectorDrawName=b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}'
+    );
+
+    replaceRequired(
+      '<div class="card"><h3>🧭 גזרות</h3><div class="small">כל הגזרות במקום אחד — בחר גזרה לניהול.</div><div id="sectorSetup"></div><button class="green" type="button" onclick="addCustomSector()">➕ הוסף גזרה</button></div>',
+      '<div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div>'
+    );
+
+    replaceRequired(
+      'function renderSectorSetup(){let box=$("sectorSetup");if(!box)return;box.innerHTML=sectorNames().map(k=>{let c=sectorConfig(k),p=sectorPosition(k),n=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k)).length;return \`<details class="worker" \${k==="א"?"open":""}><summary style="cursor:pointer;font-weight:800;font-size:16px">גזרה \${esc(k)} <span class="small">• 👤 \${esc(c.manager||"ללא מנהל")} • 👥 \${n}</span></summary><div class="small" style="margin-top:8px">\${p?"📍 נקודה הוגדרה":"📍 נקודה לא הוגדרה"}</div><div class="row" style="margin-top:8px"><button data-s="\${esc(k)}">✏️ גבולות</button><button onclick="setSectorPoint(\'\${k}\')">📍 נקודת גזרה</button><button onclick="setSectorManager(\'\${k}\')">👤 מנהל</button><button type="button" onclick="document.getElementById(\'workers\')?.scrollIntoView({behavior:\'smooth\'})">👥 עובדים</button></div></details>\`}).join("");box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];b.dataset.sectorActive="1";window._sectorDrawName=b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}',
+      'let activeSectorTab="א";window.selectSectorTab=k=>{activeSectorTab=k;renderSectorSetup()};function renderSectorSetup(){let box=$("sectorSetup"),tabs=$("sectorTabs");if(!box||!tabs)return;let names=sectorNames();if(!names.includes(activeSectorTab))activeSectorTab=names[0]||"א";tabs.innerHTML=names.map(k=>\`<button type="button" data-sector-tab="\${esc(k)}" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px;\${k===activeSectorTab?"border:2px solid #2d9cff;background:#123f72":""}">\${esc(k)}׳</button>\`).join("")+\`<button class="green" type="button" data-sector-add="1" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px">＋</button>\`;tabs.querySelectorAll("[data-sector-tab]").forEach(b=>b.addEventListener("click",()=>{activeSectorTab=b.dataset.sectorTab;renderSectorSetup()}));let addBtn=tabs.querySelector("[data-sector-add]");if(addBtn)addBtn.addEventListener("click",()=>addCustomSector());let k=activeSectorTab,c=sectorConfig(k),p=sectorPosition(k),ws=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k));box.innerHTML=\`<div class="worker" style="padding:10px;border-radius:14px"><div class="row" style="justify-content:space-between;align-items:center"><b style="font-size:17px">📍 גזרה \${esc(k)}</b><span class="small">👤 \${esc(c.manager||"ללא מנהל")} • 👥 \${ws.length}</span></div><div class="row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px"><button data-sector-border="\${esc(k)}" class="green" style="min-height:42px;font-weight:800;padding:6px 4px">✏️ גבולות</button><button onclick="setSectorPoint(\'\${k}\')" class="red" style="min-height:42px;font-weight:800;padding:6px 4px">📍 נקודת גזרה</button><button onclick="setSectorManager(\'\${k}\')" style="min-height:42px;font-weight:800;padding:6px 4px">👤 מנהל גזרה</button><button type="button" onclick="document.getElementById(\'workers\')?.scrollIntoView({behavior:\'smooth\'})" style="min-height:42px;font-weight:800;padding:6px 4px">👥 עובדים בגזרה (\${ws.length})</button></div><div class="small" style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px">\${p?"✅ נקודת גזרה מוגדרת • "+(+p[0]).toFixed(5)+", "+(+p[1]).toFixed(5):"⚠ נקודת גזרה עדיין לא הוגדרה"}<br>מנהל: \${esc(c.manager||"לא הוגדר")}<br>עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div></div>\`;box.querySelectorAll("[data-sector-border]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];window._sectorDrawName=b.dataset.sectorBorder;$("drawmsg").textContent="גזרה "+b.dataset.sectorBorder+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}'
+    );
+
+    replaceRequired(
+      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div></div>\`;',
+      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div><div style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px"><b>📍 שלח מיקום גזרה לעובד</b><div class="row" style="margin-top:8px"><select id="sectorWorkerPick" style="flex:1"><option value="">בחר עובד</option>\${workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")!==String(k)).map(w=>\`<option value="\${esc(String(w.id))}">\${esc(w.name)}\${w.sector?" • גזרה "+esc(w.sector):""}</option>\`).join("")}</select><button class="green" type="button" onclick="sendSelectedWorkerToSector(\'\${k}\')">📲 שלח לאפליקציה</button></div></div></div>\`;'
+    );
+
+    replaceRequired(
+      'localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();setSectorPoint(k)};',
+      'localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();renderWorkers();setSectorPoint(k)};'
+    );
+
+    replaceRequired(
+      'window.assignSector=async(id,k)=>{',
+      'window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{'
+    );
+
+
+    replaceRequired(
+      'let workerPhones=new Map(),phoneLoadError="";',
+      'let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";'
+    );
+
+    replaceRequired(
+      'function renderWorkers(){wl.clearLayers();let a=workers.filter(w=>w.status!=="סיים");$("workers").innerHTML=',
+      'function renderWorkers(){wl.clearLayers();let a=workers.filter(w=>w.status!=="סיים");let eqNames=["מפוח","דבשת","מרסס גב","משאבה צפה","משאבה טבולה","תיק צינורות"],eqCounts=new Map(eqNames.map(x=>[x,0]));for(const w of a)for(const x of workerEquipment.get(w.name)||[])if(eqCounts.has(x))eqCounts.set(x,eqCounts.get(x)+1);let eqTotal=eqNames.filter(x=>eqCounts.get(x)).map(x=>x+" "+eqCounts.get(x)).join(" | ");$("workers").innerHTML=(eqTotal?\`<div class="small" style="margin-bottom:8px"><b>🎒 ציוד עובדים:</b> \${esc(eqTotal)}</div>\`:"")+'
+    );
+
+    replaceRequired(
+      '\${f[0]} <b>\${esc(w.name)}</b> • \${esc(w.status||"—")} • \${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}<br><span class="small">\${f[1]}</span>',
+      '\${f[0]} <b>\${esc(w.name)}</b> • \${esc(w.status||"—")} • \${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}<br><span class="small">🎒 \${esc((workerEquipment.get(w.name)||["ציוד לא דווח"]).join(" + "))}</span><br><span class="small">\${f[1]}</span>'
+    );
+
+    replaceRequired(
+      'async function live(){if(ev){let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);',
+      'async function live(){if(ev){let equipment=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","ציוד עובד").order("created_at",{ascending:false}).limit(500);if(!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);'
+    );
+
+    replaceRequired(
+      'p=>{beep(["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes((p.new||{}).request_type));live()}',
+      `p=>{
+        const x=p.new||{};
+        const urgent=["פציעה / רפואי","חירום / סכנה","SOS / סכנה"];
+        const ordinary=[
+          "⛽ דלק למשאבה","💧 מים","🍴 אוכל",
+          "🧰 ציוד / עזרה","🚒 תגבור","תמונה מהשטח"
+        ];
+        if(
+          p.eventType==="INSERT" &&
+          ev && x.event_id===ev.id &&
+          [...urgent,...ordinary].includes(x.request_type)
+        ){
+          beep(urgent.includes(x.request_type));
+        }
+        live();
+      }`
+    );
+
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (error) {
+    document.getElementById("loading").textContent =
+      "לא ניתן לטעון את החפ״ק";
+    document.getElementById("error").textContent =
+      "בדוק חיבור לאינטרנט ונסה שוב. " + error.message;
+  }
+})();
+</script>
+</body>
+</html>
