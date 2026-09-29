@@ -168,6 +168,16 @@ $("copyEventNumber").onclick = async () => {
     );
 
     replaceRequired(
+      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div></div>\`;',
+      'עובדים: \${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div><div style="margin-top:12px;padding:10px;border:1px solid #35506b;border-radius:10px"><b>📤 שיבוץ עובד לגזרה \${esc(k)}</b><div class="row" style="margin-top:8px"><select id="sectorWorkerPick" style="flex:1"><option value="">בחר עובד LIVE</option>\${workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")!==String(k)).map(w=>\`<option value="\${esc(String(w.id))}">\${esc(w.name)}\${w.sector?" • גזרה "+esc(w.sector):""}</option>\`).join("")}</select><button class="green" type="button" onclick="sendSelectedWorkerToSector(\'\${k}\')">📤 שלח לגזרה \${esc(k)}</button></div></div></div>\`;'
+    );
+
+    replaceRequired(
+      'window.assignSector=async(id,k)=>{',
+      'window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{'
+    );
+
+    replaceRequired(
       'let workerPhones=new Map(),phoneLoadError="";',
       'let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";'
     );
