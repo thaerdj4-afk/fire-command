@@ -704,18 +704,25 @@ function measuredProgress(){
  return Math.round(dist(a,b));
 }
 function draw(){
- const c=q("fireTrendCanvas");if(!c)return;const ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ const c=q("fireTrendCanvas");if(!c)return;
+ const rect=c.getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1);
+ const cssW=Math.max(320,Math.round(rect.width||760)),cssH=Math.max(48,Math.round(rect.height||48));
+ const targetW=Math.round(cssW*dpr),targetH=Math.round(cssH*dpr);
+ if(c.width!==targetW||c.height!==targetH){c.width=targetW;c.height=targetH}
+ const ctx=c.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+ const w=cssW,h=cssH;ctx.clearRect(0,0,w,h);
  let forecast=[];try{forecast=JSON.parse(document.documentElement.dataset.hqForecast6h||"[]")}catch{}
  const data=forecast.length>=2?forecast:windSamples;
- ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=1;
- for(let i=0;i<7;i++){const x=24+i*((w-36)/6);ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x,h-25);ctx.stroke()}
- if(data.length<2){ctx.fillStyle="rgba(238,248,243,.65)";ctx.font="700 16px Arial";ctx.textAlign="center";ctx.fillText("ממתין לנתוני תחזית...",w/2,h/2);return}
- const max=Math.max(100,...data.flatMap(x=>[x.w,x.g,x.h||0]));
- const px=i=>24+i*((w-36)/Math.max(1,data.length-1)), py=v=>h-29-(v/max)*(h-40);
- const line=(key,color)=>{ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();data.forEach((x,i)=>{i?ctx.lineTo(px(i),py(x[key])):ctx.moveTo(px(i),py(x[key]))});ctx.stroke()};
+ ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
+ const count=Math.min(7,Math.max(2,data.length||7));
+ for(let i=0;i<count;i++){const x=24+i*((w-36)/Math.max(1,count-1));ctx.beginPath();ctx.moveTo(x,5);ctx.lineTo(x,h-17);ctx.stroke()}
+ if(data.length<2){ctx.fillStyle="rgba(238,248,243,.72)";ctx.font="700 12px Arial";ctx.textAlign="center";ctx.fillText("ממתין לנתוני תחזית...",w/2,h/2+4);return}
+ const shown=data.slice(0,7),max=Math.max(100,...shown.flatMap(x=>[Number(x.w)||0,Number(x.g)||0,Number(x.h)||0]));
+ const px=i=>24+i*((w-36)/Math.max(1,shown.length-1)),py=v=>h-20-((Number(v)||0)/max)*Math.max(18,h-27);
+ const line=(key,color)=>{ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();shown.forEach((x,i)=>{const X=px(i),Y=py(x[key]);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.stroke()};
  line("g","#ff9d32");line("w","#48d6ff");line("h","#7fe7b2");
- ctx.font="700 11px Arial";ctx.textAlign="center";ctx.fillStyle="rgba(238,248,243,.82)";
- data.slice(0,7).forEach((x,i)=>{let label=i===0?"עכשיו":(forecast.length?String(x.t||"").slice(11,16):"+"+i);ctx.fillText(label,px(i),h-8)});
+ ctx.font="700 9px Arial";ctx.textAlign="center";ctx.fillStyle="rgba(238,248,243,.86)";
+ shown.forEach((x,i)=>{let label=i===0?"עכשיו":(forecast.length?String(x.t||"").slice(11,16):"+"+i);ctx.fillText(label,px(i),h-5)});
 }function refresh(){
  const ws=parseFloat(q("ws")?.textContent)||0,wg=parseFloat(q("wg")?.textContent)||0,hum=parseFloat(document.documentElement.dataset.hqHumidity)||0;
  q("ftDir").textContent=q("wd")?.textContent||"—";q("ftWind").textContent=ws?Math.round(ws)+" קמ״ש":"—";q("ftGust").textContent=wg?Math.round(wg)+" קמ״ש":"—";q("ftHumidity").textContent=hum?Math.round(hum)+"%":"—";
