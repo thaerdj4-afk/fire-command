@@ -98,6 +98,18 @@ button,input,select{background:#0a2132!important;border:1px solid #1c4e6b!import
  #premiumLeft .leftFull{grid-column:1 / -1!important;width:100%!important}
  #premiumLeft #base,#premiumLeft #unit{width:100%!important;max-width:none!important}
  #premiumLeft #drawmsg,#premiumLeft #measureResult{font-size:9px!important;padding:4px 2px!important}
+</style><style id="map-search-fire-trend-style">
+#mapSearchBox{position:absolute;z-index:1100;top:10px;left:50%;transform:translateX(-50%);width:min(430px,48vw);font-family:Arial}
+#mapSearchForm{display:flex;gap:5px;background:#071a18eF;border:1px solid #315a4c;border-radius:12px;padding:5px;box-shadow:0 7px 22px #0008}
+#mapSearchInput{min-width:0;flex:1;background:#0a2132;color:#fff;border:1px solid #355d69;border-radius:8px;padding:8px 10px;font-weight:700}
+#mapSearchForm button{width:auto;padding:7px 12px;margin:0;background:#08754f;color:#fff;border:0;border-radius:8px;font-weight:800}
+#mapSearchResults{display:none;margin-top:4px;background:#071a18f5;border:1px solid #315a4c;border-radius:10px;overflow:hidden;max-height:190px;overflow-y:auto}
+#mapSearchResults button{display:block;width:100%;text-align:right;background:transparent;color:#eef8f3;border:0;border-bottom:1px solid #24473c;padding:9px;cursor:pointer}
+#fireTrendBox{position:absolute;z-index:1050;left:50%;bottom:10px;transform:translateX(-50%);width:min(760px,55vw);background:#071a18eF;border:1px solid #315a4c;border-radius:12px;padding:7px 10px;box-shadow:0 7px 22px #0008;pointer-events:auto}
+.ftHead,.ftStats{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px}.ftHead{margin-bottom:3px}.ftHead b{font-size:12px}.ftHead span{color:#a9beb5}
+#fireTrendCanvas{display:block;width:100%;height:58px;background:#06120f;border-radius:7px}
+.ftStats{margin-top:4px;justify-content:space-around;flex-wrap:wrap}.ftStats b{color:#fff}
+@media(max-width:760px){#mapSearchBox{top:52px;width:calc(100vw - 22px)}#fireTrendBox{width:calc(100vw - 22px);bottom:8px}.ftHead{font-size:10px}#fireTrendCanvas{height:48px}}
 </style></head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><b>LIVE • חפ״ק</b></header><main>
 <div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div>
 <button class="primary" id="plDraw"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10-3.5-3.5-10 10L4 20z"/><path d="M13.5 6.5l3.5 3.5"/></svg></span><span>ציור / סימון</span></button><button data-l="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"/></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"/></svg></span><span>קו הגנה / פס אש</span></button><button data-l="escape"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="2"/><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"/></svg></span><span>מסלול בריחה</span></button><button data-p="assembly"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"/></svg></span><span>נקודת כינוס</span></button><button data-p="water"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"/></svg></span><span>מקור מים</span></button><button data-p="engine"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8V5h7v3M17 11V7h2"/></svg></span><span>כבאית / רכב</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span>אזור סכנה</span></button><button id="plArea"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M5 5l13-2 3 13-8 5-10-6z"/><circle cx="5" cy="5" r="1"/><circle cx="18" cy="3" r="1"/><circle cx="21" cy="16" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="3" cy="15" r="1"/></svg></span><span>פוליגון שריפה / מדידת שטח</span></button><button id="plDist"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M4 17L17 4l3 3L7 20z"/><path d="M14 7l3 3M11 10l2 2M8 13l3 3"/></svg></span><span>מדידת מרחק</span></button><button id="plUndo"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M5 12h8c4 0 7 2 7 6"/></svg></span><span>בטל צעד</span></button><button id="plErase"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M8 4l12 12-5 5H9L3 15z"/><path d="M6 12l6 6M15 21h6"/></svg></span><span>מחיקה רציפה</span></button><button id="plStop"><span class="cmdIcon "><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></span><span>סיום כלי</span></button><button id="plLocate"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span>המיקום שלי</span></button><div class="leftGroupTitle">🗺️ מפה ורישום</div><div class="leftMiniGrid"><div class="leftFull"><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small leftFull">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small leftFull"></div><div class="leftGroupTitle">🚒 כוחות וציוד</div><div class="leftMiniGrid"><input class="leftFull" id="unit" placeholder="שם עובד / צוות / כלי"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div>
@@ -113,7 +125,9 @@ button,input,select{background:#0a2132!important;border:1px solid #1c4e6b!import
 <div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div>
 <div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div>
 <div class="card"><h3>🌬 רוח והתראות</h3><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div>
-<div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></div><div id="map"></div></main>
+<div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></div><div id="map"></div>
+<div id="mapSearchBox" dir="rtl"><form id="mapSearchForm"><input id="mapSearchInput" autocomplete="off" placeholder="🔎 חיפוש מיקום... לדוגמה גמלא"><button type="submit">חפש</button></form><div id="mapSearchResults"></div></div>
+<div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 רוח והתקדמות השריפה</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><canvas id="fireTrendCanvas" width="760" height="120"></canvas><div class="ftStats"><span>🌬 רוח <b id="ftWind">—</b></span><span>💨 משבים <b id="ftGust">—</b></span><span>🔥 התקדמות נמדדת <b id="ftProgress">אין מספיק נתונים</b></span></div></div></main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <div id="summaryModal" style="display:none;position:fixed;inset:0;z-index:5000;background:#07111df2;overflow:auto;padding:20px" dir="rtl"><div style="max-width:950px;margin:auto;background:#102033;border:1px solid #35506b;border-radius:18px;padding:18px"><div class="row" style="justify-content:space-between"><h2>📋 סיכום אירוע</h2><button id="closeSummary">✕ סגור</button></div><div id="summaryBody"></div></div></div>
 
@@ -548,7 +562,59 @@ window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiu
  q('plDraw')?.addEventListener('click',()=>click('freeDraw')); q('plArea')?.addEventListener('click',()=>click('measureArea')); q('plDist')?.addEventListener('click',()=>click('measureDist')); q('plUndo')?.addEventListener('click',()=>click('undo')); q('plErase')?.addEventListener('click',()=>click('erase')); q('plStop')?.addEventListener('click',()=>click('stopDraw')); q('plLocate')?.addEventListener('click',()=>click('locate'));
 });
 </script>
-</body></html>
+<script id="map-search-fire-trend-script">
+(()=>{
+"use strict";
+const q=id=>document.getElementById(id);
+let searchMarker=null, windSamples=[];
+function escText(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function doSearch(term){
+ const box=q("mapSearchResults"); if(!box||!term.trim())return;
+ box.style.display="block"; box.innerHTML='<div style="padding:9px">מחפש...</div>';
+ try{
+  const u="https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=il&accept-language=he&q="+encodeURIComponent(term.trim());
+  const r=await fetch(u,{headers:{"Accept":"application/json"}}); if(!r.ok)throw Error("search");
+  const a=await r.json();
+  if(!a.length){box.innerHTML='<div style="padding:9px">לא נמצא מיקום</div>';return}
+  box.innerHTML=a.map((x,i)=>'<button type="button" data-i="'+i+'">'+escText(x.display_name)+'</button>').join("");
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+   const x=a[+b.dataset.i],lat=+x.lat,lon=+x.lon;
+   if(searchMarker)map.removeLayer(searchMarker);
+   searchMarker=L.marker([lat,lon]).addTo(map).bindPopup("📍 "+escText(x.display_name)).openPopup();
+   map.setView([lat,lon],15,{animate:true}); box.style.display="none";
+  });
+ }catch(e){box.innerHTML='<div style="padding:9px">לא ניתן לחפש כרגע</div>'}
+}
+q("mapSearchForm")?.addEventListener("submit",e=>{e.preventDefault();doSearch(q("mapSearchInput").value)});
+document.addEventListener("click",e=>{if(!q("mapSearchBox")?.contains(e.target)&&q("mapSearchResults"))q("mapSearchResults").style.display="none"});
+
+function dist(a,b){const R=6371000,p1=a.lat*Math.PI/180,p2=b.lat*Math.PI/180,dp=(b.lat-a.lat)*Math.PI/180,dl=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
+function measuredProgress(){
+ const fires=[];
+ mapLayers.forEach(l=>{if(l._kind==="fire"&&l.getLatLng)fires.push(l)});
+ if(fires.length<2)return null;
+ const a=fires[fires.length-2].getLatLng(),b=fires[fires.length-1].getLatLng();
+ return Math.round(dist(a,b));
+}
+function draw(){
+ const c=q("fireTrendCanvas");if(!c)return;const ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=1;for(let y=20;y<h;y+=25){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+ if(windSamples.length<2)return;
+ const max=Math.max(10,...windSamples.flatMap(x=>[x.w,x.g]));
+ const line=(key,color)=>{ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();windSamples.forEach((x,i)=>{const px=i*(w/(Math.max(1,windSamples.length-1))),py=h-8-(x[key]/max)*(h-16);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()};
+ line("g","#ff9d32");line("w","#48d6ff");
+}
+function refresh(){
+ const ws=parseFloat(q("ws")?.textContent)||0,wg=parseFloat(q("wg")?.textContent)||0;
+ q("ftWind").textContent=ws?Math.round(ws)+" קמ״ש":"—";q("ftGust").textContent=wg?Math.round(wg)+" קמ״ש":"—";
+ const p=measuredProgress();q("ftProgress").textContent=p==null?"אין מספיק נתונים":p+" מ׳ בין שני מוקדים";
+ q("fireTrendStatus").textContent=ws?"נתוני רוח חיים":"ממתין למוקד אש";
+ if(ws&&(windSamples.length===0||Date.now()-windSamples[windSamples.length-1].t>55000)){windSamples.push({t:Date.now(),w:ws,g:wg});if(windSamples.length>24)windSamples.shift()}
+ draw();
+}
+setInterval(refresh,3000);refresh();
+})();
+</script></body></html>
 
 
 
