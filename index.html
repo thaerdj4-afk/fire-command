@@ -746,8 +746,7 @@ async function doSearch(term){
   box.querySelectorAll("button").forEach(b=>b.onclick=()=>{
    const x=a[+b.dataset.i],lat=+x.lat,lon=+x.lon;
    const hqMap=window.__hqMap;if(!hqMap){box.innerHTML='<div style="padding:9px">המפה עדיין לא מוכנה</div>';return}
-   if(searchMarker)hqMap.removeLayer(searchMarker);
-   searchMarker=L.marker([lat,lon]).addTo(hqMap).bindPopup("📍 "+escText(x.display_name)).openPopup();
+   if(searchMarker){hqMap.removeLayer(searchMarker);searchMarker=null}
    hqMap.flyTo([lat,lon],15,{animate:true,duration:.8}); box.style.display="none";
   });
  }catch(e){box.innerHTML='<div style="padding:9px">לא ניתן לחפש כרגע</div>'}
