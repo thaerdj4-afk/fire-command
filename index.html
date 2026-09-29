@@ -43,20 +43,7 @@ body {
 
     replaceRequired(
       '<div class="card"><h3>🔐 חיבור חפ״ק</h3><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button">יציאה</button></div>\n<div class="card"><h3>🔥 אירוע</h3><input id="eventName" placeholder="שם אירוע"><div class="row"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small">אין אירוע פעיל</div></div>\n<div class="card"><h3>📱 קישור עובד</h3><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row"><button id="copy">📋 העתק</button><button id="openWorker">👤 פתח</button></div><div id="qr"></div></div>',
-      '<div class="card" id="hqEventHub"><h3>🔐 חיבור חפ״ק • 🔥 אירוע</h3><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button">יציאה</button><hr style="border:0;border-top:1px solid #35506b;margin:10px 0"><input id="eventName" placeholder="שם אירוע"><div class="row"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small">אין אירוע פעיל</div><div style="margin-top:10px"><b>📱 קישור עובד</b><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row"><button id="copy">📋 העתק</button><button id="openWorker">👤 פתח</button><button type="button" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="openWorkerApk()">📲 APK</button></div><div id="qr" style="margin-top:8px"></div></div></div>'
-    );
-
-    replaceRequired(
-      '<input id="eventName" placeholder="שם אירוע">',
-      `<input id="eventName" placeholder="שם אירוע">
-      <div class="card" style="margin-top:10px;text-align:center">
-        <b>מספר אירוע</b>
-        <div id="eventNumber" dir="ltr"
-          style="font-size:30px;font-weight:bold;letter-spacing:2px">
-          —
-        </div>
-        <button id="copyEventNumber">📋 העתק מספר אירוע</button>
-      </div>`
+      '<div class="card" id="hqEventHub" style="padding:10px"><div style="display:grid;grid-template-columns:auto minmax(135px,1fr) 105px minmax(180px,1.4fr) 92px auto auto;gap:8px;align-items:center"><div><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px">יציאה</button></div><div><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:4px"></div><div style="text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 7px">📋</button></div><div><b>🔗 קישור עובד</b><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע" style="margin-top:4px"><div class="row" style="margin-top:4px"><button id="copy" type="button" style="padding:4px 7px">📋</button><button id="openWorker" type="button" style="padding:4px 7px">👤 פתח</button></div></div><div id="qr" style="min-height:78px"></div><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div><div class="row" style="margin-top:7px"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button><span id="estate" class="small">אין אירוע פעיל</span></div></div>'
     );
 
     replaceRequired(
@@ -66,7 +53,7 @@ body {
 
     replaceRequired(
       'function workerUrl(){return ev?',
-      'window.shareWorkerWhatsApp=()=>{if(!ev)return alert("פתח אירוע קודם");let u=workerUrl(),msg="🔥 "+(ev.name||"אירוע שריפה")+"\\nמספר אירוע: "+(ev.event_number||"—")+"\\nקישור עובד: "+u;open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")};window.openWorkerApk=()=>open("https://github.com/thaerdj4-afk/fire-command/actions/workflows/build-android.yml","_blank");function workerUrl(){return ev?'
+      'window.shareWorkerWhatsApp=()=>{if(!ev)return alert("פתח אירוע קודם");let u=workerUrl(),msg="🔥 "+(ev.name||"אירוע שריפה")+"\\nמספר אירוע: "+(ev.event_number||"—")+"\\nקישור עובד: "+u;open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")};window.sendAppMessageFromHub=async()=>{if(!ev)return alert("פתח אירוע קודם");let active=workers.filter(w=>w.status!=="סיים");if(!active.length)return alert("אין עובדים פעילים");let list=active.map((w,i)=>(i+1)+". "+w.name).join("\\n"),pick=prompt("בחר מספר עובד לשליחת הודעה:\\n"+list,"1");if(pick===null)return;let w=active[Number(pick)-1];if(!w)return alert("בחירה לא תקינה");let t=prompt("הודעה לאפליקציה של "+w.name+":","");if(!t||!t.trim())return;let r=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"הודעה מהחפ״ק",details:t.trim(),status:"חדש"});if(r.error)return alert("❌ "+r.error.message);alert("✓ ההודעה נשלחה לאפליקציה של "+w.name)};function workerUrl(){return ev?'
     );
 
     replaceRequired(
