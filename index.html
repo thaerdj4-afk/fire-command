@@ -743,11 +743,7 @@ document.addEventListener("click",e=>{if(!q("mapSearchBox")?.contains(e.target)&
 
 function dist(a,b){const R=6371000,p1=a.lat*Math.PI/180,p2=b.lat*Math.PI/180,dp=(b.lat-a.lat)*Math.PI/180,dl=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
 function measuredProgress(){
- const fires=[];
- mapLayers.forEach(l=>{if(l._kind==="fire"&&l.getLatLng)fires.push(l)});
- if(fires.length<2)return null;
- const a=fires[fires.length-2].getLatLng(),b=fires[fires.length-1].getLatLng();
- return Math.round(dist(a,b));
+ return null;
 }
 function draw(){
  const svg=q("fireTrendCanvas");if(!svg)return;
