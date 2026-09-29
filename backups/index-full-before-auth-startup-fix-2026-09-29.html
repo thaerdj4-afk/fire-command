@@ -1,0 +1,496 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>חפ״ק שריפה V11</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>
+html:not(.hq-authorized) body > header,html:not(.hq-authorized) body > main{display:none!important}
+#hqGate{position:fixed;inset:0;z-index:99999;background:#061725;color:#f4f9ff;display:grid;place-items:center;font-family:Arial;direction:rtl}
+html.hq-authorized #hqGate{display:none}
+#hqGate .box{width:min(92vw,390px);background:#0a2132;border:1px solid #245577;border-radius:18px;padding:24px;box-shadow:0 20px 70px #000a}
+#hqGate h2{margin-top:0}#hqGate input,#hqGate button{display:block;width:100%;margin:10px 0;padding:13px;border-radius:9px;font-size:16px}
+#hqGate input{background:#071827;color:white;border:1px solid #39617a}#hqGate button{background:#08754f;color:white;border:0;font-weight:bold}
+#hqGate .error{min-height:20px;color:#ff9191;font-size:13px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Arial;background:#07110e;color:#eef8f3;overflow:hidden}header{height:72px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,#06100d,#164633,#07110e);border-bottom:1px solid #315a4c}h1{font-size:18px;margin:0}.sub,.small{font-size:11px;color:#a9beb5}main{height:calc(100vh - 72px);position:relative}#map{height:100%}#panel{position:absolute;z-index:1000;right:10px;top:10px;width:390px;max-height:calc(100% - 20px);overflow:auto;background:#091713f2;border:1px solid #315a4c;border-radius:16px;padding:10px;box-shadow:0 12px 34px #000b}.card{background:#10201b;border:1px solid #29483e;border-radius:12px;padding:9px;margin-bottom:8px}.card h3{font-size:14px;margin:0 0 7px}.row{display:flex;flex-wrap:wrap;gap:5px}button,input,select{padding:8px;border:1px solid #45665a;border-radius:8px;background:#172923;color:#eef8f3}button{font-weight:800}.green{background:#155f3d}.red{background:#941d1d}.orange{background:#71520d}#top{position:absolute;z-index:900;left:50%;top:8px;transform:translateX(-50%);background:#07130fee;border:1px solid #376453;border-radius:12px;padding:8px 12px;display:flex;gap:12px;font-size:12px;white-space:nowrap}#count{position:absolute;z-index:900;left:10px;top:58px;background:#07130fee;border:1px solid #376453;border-radius:10px;padding:7px}.worker,.req,.past{padding:7px 0;border-bottom:1px solid #29483e}.urgent{color:#ff7777;font-weight:900}.pin{background:#07130fee;border:2px solid #52b788;border-radius:10px;padding:4px 6px;color:white;white-space:nowrap;font-size:11px;font-weight:bold}#menu{display:none;position:absolute;z-index:1200;right:8px;top:8px}.alert{background:#581d1d;border:1px solid #a44;padding:7px;border-radius:8px;margin-top:5px}#qr{background:#fff;padding:5px;width:max-content;margin:6px auto}@media(max-width:760px){#panel{display:none;right:7px;left:7px;top:55px;width:auto;max-height:72vh}#panel.open{display:block}#menu{display:block}#top{left:7px;right:7px;transform:none;padding-right:85px;gap:5px;font-size:10px}header h1{font-size:14px}}
+</style>
+<style id="premium-v2">
+:root{--bg:#03111c;--panel:#061827;--line:#123955;--blue:#1388ff;--red:#ff3038;--green:#00d68f;--amber:#ffb020}
+html,body{background:#020b12!important;color:#f4f9ff!important;overflow:auto!important}body{min-width:1080px}
+header{height:86px!important;background:linear-gradient(180deg,#061725,#020b12)!important;border-bottom:1px solid #17405a!important;padding:10px 18px!important;box-shadow:0 10px 35px #0009;position:relative;z-index:2000}
+header h1{font-size:25px!important}.sub{color:#87a6ba!important}header>b{background:#ff2f38;padding:10px 14px;border-radius:10px;box-shadow:0 0 24px #ff2f3877}
+main{height:calc(100vh - 86px)!important;min-height:700px;background:#020b12;padding:10px 340px 205px 205px!important;position:relative!important}
+#map{height:100%!important;border:1px solid #174866;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px #07131d,0 18px 50px #000b}
+#panel{display:block!important;right:10px!important;left:auto!important;top:10px!important;width:320px!important;max-height:calc(100% - 10px)!important;border:1px solid #154665!important;border-radius:14px!important;background:#04131ff5!important;padding:8px!important;box-shadow:0 18px 45px #000b!important}
+.card{background:linear-gradient(180deg,#071b2b,#04131f)!important;border:1px solid #17415b!important;border-radius:11px!important;margin-bottom:8px!important}.card h3{font-size:15px!important}.worker,.req,.past{border-bottom:1px solid #12364d!important}
+button,input,select{background:#0a2132!important;border:1px solid #1c4e6b!important;border-radius:8px!important}button:hover{border-color:#2d9cff!important}.red{background:#8d1721!important}.green{background:#086744!important}.orange{background:#79520b!important}
+#top{top:-76px!important;left:50%!important;transform:translateX(-50%)!important;background:transparent!important;border:0!important;z-index:2100!important;gap:8px!important}
+#top span{background:#071a29;border:1px solid #17445f;border-radius:10px;padding:10px 14px;font-size:12px;box-shadow:inset 0 0 18px #0a2a3a66}
+#count{left:215px!important;top:10px!important;background:#061a29ee!important;border-color:#185170!important}
+#menu{display:none!important}
+#premiumLeft{position:absolute;z-index:1100;left:10px;top:10px;width:185px;bottom:10px;background:#04131ff2;border:1px solid #17435e;border-radius:14px;padding:8px;overflow:auto;box-shadow:0 18px 45px #000b}
+#premiumLeft .ptitle{font-weight:900;font-size:16px;padding:9px 8px 12px;border-bottom:1px solid #17435e;margin-bottom:7px}
+#premiumLeft button{width:100%;display:flex;gap:9px;align-items:center;justify-content:flex-start;margin:4px 0;padding:10px;font-size:13px}#premiumLeft button.primary{background:#087af5!important;border-color:#2697ff!important}#premiumLeft button.danger{background:#8f1721!important;border-color:#ff3c45!important}#premiumLeft button.toolActive{outline:2px solid #55b7ff!important;box-shadow:0 0 18px #168cff88!important}
+#premiumBottom{display:none;position:absolute;z-index:1050;left:205px;right:340px;bottom:10px;height:185px;grid-template-columns:1.35fr .85fr .9fr;gap:9px;pointer-events:none}
+.pbox{pointer-events:auto;background:#04131ff5;border:1px solid #17435e;border-radius:12px;padding:10px;overflow:hidden;box-shadow:0 12px 35px #0009}.pbox h3{margin:0 0 8px;font-size:15px}.photos{display:flex;gap:8px;height:130px}.photoCard{width:24%;min-width:100px;border-radius:9px;border:1px solid #1d4b65;background:linear-gradient(145deg,#153449,#071722);display:flex;align-items:end;padding:8px;font-size:11px;color:#b8d1df;position:relative;overflow:hidden}.photoCard:before{content:'📷';font-size:28px;position:absolute;top:25px;left:50%;transform:translateX(-50%);opacity:.7}.photoCard.new{border-style:dashed;align-items:center;justify-content:center;color:#5db6ff}.photoCard.new:before{content:'+';font-size:38px;top:32px}
+#dangerBanner{display:none;position:absolute;z-index:1800;top:10px;left:205px;right:340px;height:74px;background:linear-gradient(90deg,#52090d,#2b0709);border:2px solid #ff323a;border-radius:12px;box-shadow:0 0 30px #ff252566;align-items:center;padding:10px 18px;gap:14px}.dangerIcon{font-size:38px}.dangerText b{font-size:22px}.dangerText small{display:block;color:#ffc5c5;margin-top:3px}.dangerActions{margin-inline-start:auto;display:flex;gap:7px}.dangerActions button{background:#a91c24!important;border-color:#ff5158!important}.dangerActions .done{background:#08784d!important;border-color:#19d88a!important}
+#fieldReqMini .mini{padding:7px;border-bottom:1px solid #14364b;font-size:12px}#fieldReqMini b{color:#ffcf67}.eventMini{font-size:12px;line-height:1.9}.eventMini span{display:block;border-bottom:1px solid #14364b}
+@media(max-width:1200px){body{min-width:900px}main{padding-right:285px!important;padding-left:165px!important}#panel{width:275px!important}#premiumLeft{width:145px!important}#premiumLeft button{font-size:11px;padding:8px}#premiumBottom{left:165px;right:285px}#dangerBanner{left:165px;right:285px}}
+@media(max-width:760px){
+ html,body{width:100%;min-width:0!important;overflow:hidden!important}
+ header{height:76px!important;padding:6px 10px!important}
+ header h1{font-size:15px!important}header .sub{font-size:9px!important}header>b{font-size:10px;padding:7px!important;white-space:nowrap}
+ main{height:calc(100dvh - 76px)!important;min-height:0!important;padding:54px 6px 6px!important;overflow:hidden}
+ #map{height:100%!important;width:100%}
+ #top{top:7px!important;left:7px!important;right:7px!important;transform:none!important;justify-content:center;gap:4px!important;overflow:hidden;padding-left:82px!important;padding-right:82px!important;z-index:900!important}
+ #top span{font-size:10px!important;padding:7px 5px;white-space:nowrap}
+ #count{top:60px!important;left:12px!important;z-index:950}
+ #menu{display:block!important;top:7px;right:8px;z-index:1300;background:#0c3955!important;color:#fff!important}
+ #mobileTools{display:block!important;position:absolute;top:7px;left:8px;z-index:1300;background:#0c3955!important;color:#fff!important}
+ #panel{display:none!important;position:absolute!important;top:50px!important;left:7px!important;right:7px!important;width:auto!important;max-height:calc(100% - 57px)!important;overflow:auto!important;z-index:1250!important}
+ #panel.open{display:block!important}
+ #premiumLeft{display:none;position:absolute;top:50px;left:7px;right:7px;width:auto!important;bottom:auto;max-height:calc(100% - 57px);z-index:1200}
+ #premiumLeft.mobileOpen{display:block}
+ #premiumLeft button{font-size:13px!important;min-height:43px}
+ #premiumBottom{display:none!important}
+ #dangerBanner{left:7px;right:7px;top:95px;height:auto;flex-wrap:wrap;z-index:1150}
+ .dangerText b{font-size:16px}.dangerActions{flex-wrap:wrap}
+}
+
+/* V11 modern command UI */
+.cmdIcon{width:21px;height:21px;display:inline-grid;place-items:center;flex:0 0 21px}.cmdIcon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.cmdIcon.fire svg{stroke:#ff625f}.cmdIcon.warn svg{stroke:#ffbf47}.cmdIcon.safe svg{stroke:#38d996}.cmdIcon.info svg{stroke:#63b7ff}
+#premiumLeft button{min-height:43px;transition:.16s ease;background:linear-gradient(180deg,#0a2132,#071a29)!important}#premiumLeft button:hover{transform:translateX(-2px);background:#0d2b40!important}#premiumLeft button.toolActive{background:linear-gradient(90deg,#0b4e78,#0b273b)!important}
+.fireMarker{width:46px;height:58px;position:relative;filter:drop-shadow(0 0 12px #ff3b24)}.fireMarker .flame{position:absolute;left:9px;bottom:3px;width:28px;height:40px;background:linear-gradient(135deg,#ffef8a 10%,#ff7a22 46%,#e61d2d 78%);border-radius:52% 48% 58% 42%/62% 62% 38% 38%;transform:rotate(45deg);animation:flameMove .72s ease-in-out infinite alternate;box-shadow:0 0 20px #ff4d1f}.fireMarker .flame:after{content:'';position:absolute;width:13px;height:19px;left:8px;top:13px;background:#fff3a3;border-radius:60% 40% 55% 45%;opacity:.9}.fireMarker .spark{position:absolute;width:4px;height:4px;background:#ffc04d;border-radius:50%;animation:spark 1.1s linear infinite}.fireMarker .s1{left:8px;top:13px}.fireMarker .s2{right:7px;top:4px;animation-delay:.4s}@keyframes flameMove{from{transform:rotate(42deg) scale(.94,1)}to{transform:rotate(48deg) scale(1.05,.95)}}@keyframes spark{0%{transform:translateY(14px);opacity:0}30%{opacity:1}100%{transform:translateY(-16px) translateX(5px);opacity:0}}
+.mapSvgMarker{width:38px;height:38px;border-radius:12px;background:#071925eF;border:1px solid #2d6685;display:grid;place-items:center;box-shadow:0 7px 20px #0008}.mapSvgMarker svg{width:25px;height:25px;stroke:#dff4ff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.mapSvgMarker.danger{border-color:#ff4b52;box-shadow:0 0 18px #ff343477}.mapSvgMarker.water svg{stroke:#59c8ff}.mapSvgMarker.safe svg{stroke:#45e09d}
+.windZoneLabel{background:#071925e8;color:#d8efff;border:1px solid #2f7195;border-radius:8px;padding:4px 7px;font:700 11px Arial;white-space:nowrap;box-shadow:0 5px 15px #0008}.summaryMapNote{font-size:11px;color:#9db7c7;margin-top:5px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script></head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><b>LIVE • חפ״ק</b></header><main>
+<div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div>
+<button class="primary" id="plDraw"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10-3.5-3.5-10 10L4 20z"/><path d="M13.5 6.5l3.5 3.5"/></svg></span><span>ציור / סימון</span></button><button data-l="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"/></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"/></svg></span><span>קו הגנה / פס אש</span></button><button data-l="escape"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="2"/><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"/></svg></span><span>מסלול בריחה</span></button><button data-p="assembly"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"/></svg></span><span>נקודת כינוס</span></button><button data-p="water"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"/></svg></span><span>מקור מים</span></button><button data-p="engine"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8V5h7v3M17 11V7h2"/></svg></span><span>כבאית / רכב</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span>אזור סכנה</span></button><button id="plArea"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M5 5l13-2 3 13-8 5-10-6z"/><circle cx="5" cy="5" r="1"/><circle cx="18" cy="3" r="1"/><circle cx="21" cy="16" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="3" cy="15" r="1"/></svg></span><span>פוליגון שריפה / מדידת שטח</span></button><button id="plDist"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M4 17L17 4l3 3L7 20z"/><path d="M14 7l3 3M11 10l2 2M8 13l3 3"/></svg></span><span>מדידת מרחק</span></button><button id="plUndo"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M5 12h8c4 0 7 2 7 6"/></svg></span><span>בטל צעד</span></button><button id="plErase"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M8 4l12 12-5 5H9L3 15z"/><path d="M6 12l6 6M15 21h6"/></svg></span><span>מחיקה רציפה</span></button><button id="plStop"><span class="cmdIcon "><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></span><span>סיום כלי</span></button><button id="plLocate"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span>המיקום שלי</span></button></div>
+
+<div id="dangerBanner" dir="rtl"><div class="dangerIcon">⚠️</div><div class="dangerText"><b id="dangerName">עובד בסכנה</b><small id="dangerMeta">SOS מהשטח • ממתין לטיפול</small></div><div class="dangerActions"><button class="share" id="dangerShare">📍 שלח מיקום</button><button class="done" id="dangerProgress">🟡 בטיפול</button><button class="done" id="dangerDone">✓ טופל</button><button id="dangerDelete">🗑 טופל ומחק דיווח</button></div></div>
+<div id="premiumBottom" dir="rtl"><div class="pbox"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotos"></div></div><div class="pbox" id="fieldReqMini"><h3>🆘 בקשות מהשטח</h3></div><div class="pbox"><h3>📋 יומן אירוע</h3><div class="eventMini" id="eventMini"><span>🟢 אירוע פעיל</span></div></div></div>
+
+<button id="menu">☰ ניהול</button><button id="mobileTools" style="display:none" type="button">🗺 כלים</button><div id="top"><span>🌬 <b id="wd">—</b></span><span>מהירות <b id="ws">—</b></span><span>משבים <b id="wg">—</b></span><span>⏱ <b id="time">00:00:00</b></span></div><div id="count">🚒 0 | 👥 0 | 💨 0 | 💧 0</div>
+<div id="panel">
+<div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div></div>
+<div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div>
+<div class="card" style="padding:9px"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><h3 style="margin:0">🗺️ מפה ורישום</h3><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><div class="row" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px"><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small" style="margin-top:6px;font-weight:800;color:#ffd166"></div></div><div class="card" style="padding:9px"><h3 style="margin:0 0 7px">🚒 כוחות וציוד</h3><input id="unit" placeholder="שם עובד / צוות / כלי"><div class="row" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:7px"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div><div class="card"><h3>👥 כוחות LIVE</h3><div id="workers" class="small">אין עובדים פעילים.</div></div>
+<div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div>
+<div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div>
+<div class="card"><h3>🌬 רוח והתראות</h3><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div>
+<div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></div><div id="map"></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<div id="summaryModal" style="display:none;position:fixed;inset:0;z-index:5000;background:#07111df2;overflow:auto;padding:20px" dir="rtl"><div style="max-width:950px;margin:auto;background:#102033;border:1px solid #35506b;border-radius:18px;padding:18px"><div class="row" style="justify-content:space-between"><h2>📋 סיכום אירוע</h2><button id="closeSummary">✕ סגור</button></div><div id="summaryBody"></div></div></div>
+<script>
+(()=>{"use strict";const $=x=>document.getElementById(x),URL="https://jvubjwzzikfwsektifzi.supabase.co",KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW",cloud=window.supabase.createClient(URL,KEY);
+const map=L.map("map",{doubleClickZoom:false}).setView([32.9,35.65],10),ops=L.featureGroup().addTo(map),wl=L.layerGroup().addTo(map);
+const tiles={street:L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}),sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),hybrid:L.layerGroup([L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),topo:L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17}),dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20})};let bt=tiles.hybrid;bt.addTo(map);
+let ev=null,started=null,mode=null,lineKind=null,linePts=[],polyKind=null,polyPts=[],preview=null,eraseMode=false,stack=[],workers=[],requests=[],chan=null,lastWind=null,freeDrawing=false,freePts=[],measureMode=null,measurePts=[],counts={engine:0,person:0,blower:0,water:0},lastFireAreaM2=0;
+const markerSvg={person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M6 21v-3c0-4 2-6 6-6s6 2 6 6v3"/></svg>',engine:'<svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',water:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/></svg>',assembly:'<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3 19c.5-4 2.2-6 5-6s4.5 2 5 6M11 19c.5-4 2.2-6 5-6s4.5 2 5 6"/></svg>',hazard:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg>',cmd:'<svg viewBox="0 0 24 24"><path d="M4 20V8l8-5 8 5v12z"/><path d="M8 20v-7h8v7M12 3v5"/></svg>',blower:'<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 10h8v4h-8M4 12H2"/></svg>',backpack:'<svg viewBox="0 0 24 24"><path d="M7 8V6c0-2 2-3 5-3s5 1 5 3v2M5 8h14v13H5zM8 12h8"/></svg>',floatpump:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>',subpump:'<svg viewBox="0 0 24 24"><rect x="7" y="5" width="10" height="14" rx="2"/><path d="M10 2h4v3M12 19v3M9 11h6"/></svg>',hydrant:'<svg viewBox="0 0 24 24"><path d="M8 21V9h8v12M6 9h12M9 5h6v4M4 13h4M16 13h4"/></svg>',fill:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M12 9v6M9 12h6"/></svg>'};function markerHtml(k){if(k==='fire')return '<div class="fireMarker"><i class="spark s1"></i><i class="spark s2"></i><i class="flame"></i></div>';let c=k==='hazard'?' danger':(k==='water'||k==='fill'||k==='hydrant')?' water':k==='assembly'?' safe':'';return `<div class="mapSvgMarker${c}">${markerSvg[k]||markerSvg.cmd}</div>`}const esc=s=>String(s??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
+function style(k){return k==="escape"?{color:"#38d878",weight:5,dashArray:"10 7"}:k==="access"?{color:"#4ea5ff",weight:5}:k==="firebreak"?{color:"#ff9d32",weight:6,dashArray:"10 7"}:{color:"#ff4242",weight:5}}
+const mapLayers=new Map(),pendingMap=new Set();
+function mapShape(l,k){let ll=l.getLatLngs?.(),points=ll?(Array.isArray(ll[0])?ll[0]:ll).map(x=>[x.lat,x.lng]):null;return {kind:k,geometry:l instanceof L.Marker?"point":l instanceof L.Polygon?"polygon":"line",points:points||[[l.getLatLng().lat,l.getLatLng().lng]],label:l._label||""}}
+function makeMapLayer(row){let d=row.data,pts=d.points;if(!Array.isArray(pts)||!pts.length)return null;let l;if(d.geometry==="point"){let k=d.kind;l=L.marker(pts[0],{icon:L.divIcon({html:markerHtml(k),className:"",iconSize:k==="fire"?[46,58]:[38,38],iconAnchor:k==="fire"?[23,52]:[19,19]})}).bindTooltip(`${esc(d.label||k)} • ${pts[0][0].toFixed(5)}, ${pts[0][1].toFixed(5)}`)}else if(d.geometry==="polygon")l=L.polygon(pts,d.kind==="fire-polygon"?{color:"#ff5a36",weight:3,fillColor:"#ff5a36",fillOpacity:.18}:{color:d.kind.startsWith("sector")?"#9b7cff":d.kind==="danger"?"#ff3b3b":"#666",fillOpacity:.22});else l=L.polyline(pts,d.kind==="measured-distance"?{color:"#ffd166",weight:4,dashArray:"8 6"}:d.kind==="free-fire"?{color:"#ff4242",weight:5}:style(d.kind));l._kind=d.kind;l._id=row.id;l._label=d.label;return l}
+function recountMap(){counts={engine:0,person:0,blower:0,water:0};lastFireAreaM2=0;ops.eachLayer(l=>{if(counts[l._kind]!=null)counts[l._kind]++;if(l._kind==="fire-polygon"||l._kind==="burned"){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];lastFireAreaM2=areaM2(a)}});counter()}
+function removeMapLayer(l){ops.removeLayer(l);stack=stack.filter(x=>x!==l);if(l._id){mapLayers.delete(l._id);if(ev)cloud.from("map_items").delete().eq("id",l._id).eq("event_id",ev.id).then(({error})=>{if(error)alert("שגיאה במחיקת סימון: "+error.message)})}recountMap()}
+async function syncMap(){if(!ev)return;let eventId=ev.id;let {data,error}=await cloud.from("map_items").select("id,data").eq("event_id",eventId).order("created_at",{ascending:true});if(error){$("drawmsg").textContent="❌ סנכרון מפה: "+error.message;return}if(ev?.id!==eventId)return;let ids=new Set((data||[]).map(x=>x.id));for(let [id,l] of mapLayers)if(!ids.has(id)&&!pendingMap.has(id)){ops.removeLayer(l);mapLayers.delete(id);stack=stack.filter(x=>x!==l)}for(let row of data||[])if(!mapLayers.has(row.id)){let l=makeMapLayer(row);if(l){ops.addLayer(l);mapLayers.set(row.id,l);stack.push(l)}}recountMap();renderSectorSetup()}
+function add(l,k){if(!ev){alert("פתח אירוע קודם כדי לשמור סימונים");return}l._kind=k;l._id=crypto.randomUUID();pendingMap.add(l._id);ops.addLayer(l);mapLayers.set(l._id,l);stack.push(l);let row={id:l._id,event_id:ev.id,data:mapShape(l,k)};cloud.from("map_items").insert(row).then(({error})=>{pendingMap.delete(l._id);if(error){ops.removeLayer(l);mapLayers.delete(l._id);stack=stack.filter(x=>x!==l);recountMap();alert("הסימון לא נשמר: "+error.message)}})}
+function commitCurrent(){
+ if(measureMode&&measurePts.length>=(measureMode==="area"?3:2)){if(preview){map.removeLayer(preview);preview=null}let pts=[...measurePts],l=measureMode==="area"?L.polygon(pts,{color:"#ff5a36",weight:3,fillColor:"#ff5a36",fillOpacity:.18}):L.polyline(pts,{color:"#ffd166",weight:4,dashArray:"8 6"});add(l,measureMode==="area"?"fire-polygon":"measured-distance");if(measureMode==="area")showArea(pts);else showDist(pts);measurePts=[];return true}
+ if(lineKind&&linePts.length>=2){if(preview){map.removeLayer(preview);preview=null}add(L.polyline([...linePts],style(lineKind)),lineKind);linePts=[];$("drawmsg").textContent="הקו נשמר • אפשר לצייר קו נוסף.";return true}
+ if(polyKind&&polyPts.length>=3){if(preview){map.removeLayer(preview);preview=null}let k=polyKind,pts=[...polyPts];add(L.polygon(pts,{color:k.startsWith("sector")?"#9b7cff":k==="danger"?"#ff3b3b":"#666",fillOpacity:.22}),k);if(k==="burned")showArea(pts);polyPts=[];$("drawmsg").textContent="השטח נשמר • אפשר לצייר שטח נוסף.";return true}
+ return false}
+function stop(){commitCurrent();map.getContainer().style.cursor="";mode=lineKind=polyKind=null;linePts=[];polyPts=[];eraseMode=false;freeDrawing=false;freePts=[];measureMode=null;measurePts=[];if(preview){map.removeLayer(preview);preview=null}document.querySelectorAll("#premiumLeft button").forEach(x=>x.classList.remove("toolActive"));$("drawmsg").textContent="הכלי הסתיים • כל הסימונים נשמרו במפה."}
+function pMode(k){stop();mode=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="לחץ על המפה להצבה • הכלי נשאר פעיל עד סיום כלי."}function lMode(k){stop();lineKind=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="כל קליק מוסיף נקודה • קליק כפול שומר קו • אפשר לצייר עוד קו."}function aMode(k){stop();polyKind=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="לחץ על נקודות הגבול • קליק כפול שומר • הכלי נשאר פעיל."}
+
+function areaM2(latlngs){let R=6378137,a=0;if(latlngs.length<3)return 0;for(let i=0;i<latlngs.length;i++){let p1=latlngs[i],p2=latlngs[(i+1)%latlngs.length];a+=(p2.lng-p1.lng)*Math.PI/180*(2+Math.sin(p1.lat*Math.PI/180)+Math.sin(p2.lat*Math.PI/180));}return Math.abs(a*R*R/2)}
+function showArea(pts){let m2=areaM2(pts),d=m2/1000;lastFireAreaM2=m2;$("measureResult").textContent=`🔥 שטח משוער: ${d.toFixed(2)} דונם • ${Math.round(m2).toLocaleString("he-IL")} מ״ר`}
+function showDist(pts){let m=0;for(let i=1;i<pts.length;i++)m+=map.distance(pts[i-1],pts[i]);$("measureResult").textContent=m>=1000?`📏 מרחק: ${(m/1000).toFixed(2)} ק״מ`:`📏 מרחק: ${Math.round(m)} מטר`}
+
+map.on("click",e=>{if(eraseMode)return;if(measureMode){measurePts.push(e.latlng);if(preview)map.removeLayer(preview);preview=measureMode==="area"?L.polygon(measurePts,{color:"#ffd166",weight:3,fillOpacity:.16}).addTo(map):L.polyline(measurePts,{color:"#ffd166",weight:4,dashArray:"8 6"}).addTo(map);if(measureMode==="area"&&measurePts.length>=3)showArea(measurePts);if(measureMode==="dist"&&measurePts.length>=2)showDist(measurePts);return;}if(mode){let n=$("unit").value.trim(),m=L.marker(e.latlng,{icon:L.divIcon({html:markerHtml(mode),className:"",iconSize:mode==="fire"?[46,58]:[38,38],iconAnchor:mode==="fire"?[23,52]:[19,19]})}).bindTooltip(`${esc(n||mode)} • ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);m._label=n;add(m,mode);recountMap();if(mode==="fire")weather(e.latlng.lat,e.latlng.lng);return}if(lineKind){linePts.push(e.latlng);if(preview)map.removeLayer(preview);preview=L.polyline(linePts,style(lineKind)).addTo(map);return}if(polyKind){polyPts.push(e.latlng);if(preview)map.removeLayer(preview);preview=L.polygon(polyPts,{color:polyKind.startsWith("sector")?"#9b7cff":polyKind==="danger"?"#ff3b3b":"#666",fillOpacity:.22}).addTo(map)}});
+map.on("dblclick",e=>{L.DomEvent.stopPropagation(e.originalEvent);if(measureMode&&measurePts.length>=(measureMode==="area"?3:2)){commitCurrent();$("drawmsg").textContent=measureMode==="area"?"🔥 הפוליגון נשמר • אפשר לצייר פוליגון נוסף.":"📏 המדידה נשמרה • אפשר למדוד שוב.";return}if(lineKind&&linePts.length>=2){commitCurrent();return}if(polyKind&&polyPts.length>=3){commitCurrent();return}});
+
+map.on("mousedown",e=>{if(freeDrawing){freePts=[e.latlng];if(preview)map.removeLayer(preview);preview=L.polyline(freePts,{color:"#ff4242",weight:5}).addTo(map);map.dragging.disable()}});
+map.on("mousemove",e=>{if(freeDrawing&&freePts.length){freePts.push(e.latlng);preview.setLatLngs(freePts)}});
+map.on("mouseup",e=>{if(freeDrawing&&freePts.length>1){if(preview)map.removeLayer(preview);add(L.polyline(freePts,{color:"#ff4242",weight:5}),"free-fire");freePts=[];preview=null;map.dragging.enable()}});
+
+ops.on("click",e=>{if(eraseMode){removeMapLayer(e.layer);$("drawmsg").textContent="🧽 מצב מחיקה פעיל • לחץ על פריט נוסף למחיקה • ESC לסיום.";L.DomEvent.stopPropagation(e.originalEvent)}});
+function counter(){$("count").textContent=`🚒 ${counts.engine} | 👥 ${workers.filter(w=>w.status!=="סיים").length+counts.person} | 💨 ${counts.blower} | 💧 ${counts.water}`}
+window.shareWorkerWhatsApp=()=>{if(!ev)return alert("פתח אירוע קודם");let u=workerUrl(),msg="🔥 "+(ev.name||"אירוע שריפה")+"\nמספר אירוע: "+(ev.event_number||"—")+"\nקישור עובד: "+u;open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")};window.sendAppMessageFromHub=async()=>{if(!ev)return alert("פתח אירוע קודם");let active=workers.filter(w=>w.status!=="סיים");if(!active.length)return alert("אין עובדים פעילים");let list=active.map((w,i)=>(i+1)+". "+w.name).join("\n"),pick=prompt("בחר מספר עובד לשליחת הודעה:\n"+list,"1");if(pick===null)return;let w=active[Number(pick)-1];if(!w)return alert("בחירה לא תקינה");let t=prompt("הודעה לאפליקציה של "+w.name+":","");if(!t||!t.trim())return;let r=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"הודעה מהחפ״ק",details:t.trim(),status:"חדש"});if(r.error)return alert("❌ "+r.error.message);alert("✓ ההודעה נשלחה לאפליקציה של "+w.name)};function workerUrl(){return ev?`${location.origin}${location.pathname.replace(/[^/]*$/,"")}worker.html?event=${encodeURIComponent(ev.id)}`:""}function showLivePanels(on){let b=$("premiumBottom");if(b)b.style.display=on?"grid":"none";if(!on){let p=$("fieldPhotos");if(p)p.innerHTML="";let m=$("fieldReqMini");if(m)m.innerHTML="<h3>🆘 בקשות מהשטח</h3>";let d=$("dangerBanner");if(d)d.style.display="none"}}
+function link(){$("eventNumber").textContent=ev?.event_number??"—";let u=workerUrl();$("workerLink").value=u;$("qr").innerHTML="";if(u&&window.QRCode)new QRCode($("qr"),{text:u,width:128,height:128})}
+async function enterHQ(session){if(!session?.user)throw Error("נדרשת כניסה");let {data:role,error}=await cloud.from("hq_managers").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error)throw error;if(!role){let current=await cloud.from("hq_access_requests").select("status").eq("user_id",session.user.id).maybeSingle();if(current.error)throw current.error;if(current.data?.status==="rejected")throw Error("הבקשה נדחתה. פנה לתאיר ישירות.");if(!current.data){let req=await cloud.from("hq_access_requests").insert({user_id:session.user.id,email:session.user.email});if(req.error)throw req.error;}let {error:mailError}=await cloud.functions.invoke("hq-approval",{body:{}});if(mailError)throw Error("הבקשה נשמרה, אבל שליחת האימייל נכשלה: "+mailError.message);throw Error("בקשת האישור נשלחה לתאיר באימייל. הכניסה תיפתח לאחר אישורו.")}document.documentElement.classList.add("hq-authorized");$("auth").textContent="✅ מחובר: "+session.user.email;await restore();await live();rt();setTimeout(()=>map.invalidateSize(),100)}
+async function login(){let em=$("hqEmail").value.trim(),pw=$("hqPassword").value;$("hqError").textContent="מתחבר...";try{let {data,error}=await cloud.auth.signInWithPassword({email:em,password:pw});if(error)throw error;await enterHQ(data.session)}catch(e){document.documentElement.classList.remove("hq-authorized");$("hqError").textContent="❌ "+e.message}}
+$("hqLoginForm").addEventListener("submit",e=>{e.preventDefault();login()});
+$("hqRegister").onclick=async()=>{let email=$("hqEmail").value.trim(),password=$("hqPassword").value;if(!email||password.length<8)return $("hqError").textContent="כתוב אימייל וסיסמה של לפחות 8 תווים";$("hqError").textContent="שולח בקשה...";let {data,error}=await cloud.auth.signUp({email,password});if(error)return $("hqError").textContent="❌ "+error.message;if(data.session){await cloud.from("hq_access_requests").insert({user_id:data.user.id,email});let sent=await cloud.functions.invoke("hq-approval",{body:{}});$("hqError").textContent=sent.error?"החשבון נוצר. התחבר שוב לשליחת طلب الموافقة.":"הבקשה נשלחה לאימייל של תאיר. ממתינים לאישורו."}else $("hqError").textContent="נשלח אימייל אימות. אשר אותו, ואז התחבר כדי לשלוח בקשת גישה."};
+$("hqLogout").onclick=async()=>{document.documentElement.classList.remove("hq-authorized");ev=null;started=null;workers=[];requests=[];await cloud.auth.signOut();$("hqPassword").value="";$("hqError").textContent="";location.reload()};
+cloud.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT")document.documentElement.classList.remove("hq-authorized")});
+async function restore(){let r=await cloud.from("fire_events").select("*").eq("status","active").order("started_at",{ascending:false}).limit(1).maybeSingle();if(r.data){ev=r.data;started=new Date(ev.started_at||Date.now());$("eventName").value=ev.name||"";$("estate").textContent="🔥 אירוע פעיל: "+ev.name;link();showLivePanels(true);await syncMap()}else if(!r.error&&ev){ev=null;started=null;showLivePanels(false);ops.clearLayers();mapLayers.clear();stack=[];recountMap();$("estate").textContent="אין אירוע פעיל";link()}}
+async function start(){if(ev)return alert("יש אירוע פעיל");let r=await cloud.from("fire_events").insert({name:$("eventName").value.trim()||"אירוע שריפה",status:"active"}).select().single();if(r.error)return alert(r.error.message);ev=r.data;started=new Date(ev.started_at||Date.now());$("estate").textContent="🔥 אירוע פעיל: "+ev.name;link();showLivePanels(true);await syncMap();await live();rt()}
+async function finish(){if(!ev)return alert("אין אירוע פעיל");if(!confirm("לסיים את האירוע ולהפיק סיכום?"))return;let endedEvent=ev,now=new Date().toISOString(),mapImg="";try{mapImg=(await html2canvas($("map"),{useCORS:true,allowTaint:false,backgroundColor:"#0b1724"})).toDataURL("image/jpeg",.82)}catch(e){}let active=workers.slice(),evReq=reqForEvent().slice(),duration=started?Math.max(0,Date.now()-started.getTime()):0,report={name:endedEvent.name||"אירוע שריפה",started_at:endedEvent.started_at,ended_at:now,duration_ms:duration,fire_area_m2:Math.round(lastFireAreaM2),fire_area_dunam:+(lastFireAreaM2/1000).toFixed(2),workers:active.map(w=>({name:w.name,status:w.status,sector:w.sector,arrived_at:w.arrived_at,work_started_at:w.work_started_at,finished_at:w.finished_at})),requests:evReq.map(x=>({worker_name:x.worker_name,request_type:x.request_type,status:x.status,created_at:x.created_at})),photos:evReq.filter(x=>x.request_type==="תמונה מהשטח").map(x=>{let p=photoParts(x);return p?{worker_name:x.worker_name,created_at:x.created_at,src:p.src,note:p.note}:null}).filter(Boolean),weather:{direction:$("wd").textContent,speed:$("ws").textContent,gusts:$("wg").textContent},map_image:mapImg};for(const w of workers.filter(x=>x.status!=="סיים"))await cloud.from("workers").update({status:"סיים",finished_at:now,finish_source:"חפ״ק",latitude:null,longitude:null,location_updated_at:now}).eq("id",w.id);let r=await cloud.from("fire_events").update({status:"ended",ended_at:now,fire_area_m2:report.fire_area_m2,fire_area_dunam:report.fire_area_dunam,report_data:report}).eq("id",endedEvent.id);if(r.error)return alert(r.error.message);let mins=Math.floor(duration/60000),photos=evReq.filter(x=>x.request_type==="תמונה מהשטח").length;$("summaryBody").innerHTML=`${mapImg?`<img src="${mapImg}" style="width:100%;max-height:440px;object-fit:contain;border-radius:12px;background:#07111d"><div class="summaryMapNote">צילום מפה בסיום האירוע • שטח השריפה והסימונים כפי שהופיעו בחפ״ק</div>`:"<div class=small>צילום מפה לא היה זמין במכשיר זה.</div>"}<h3>🔥 ${esc(report.name)}</h3><p>⏱ משך: ${Math.floor(mins/60)} שעות ${mins%60} דקות</p><p>📐 שטח שרוף משוער: <b>${report.fire_area_dunam.toFixed(2)} דונם</b> • ${report.fire_area_m2.toLocaleString("he-IL")} מ״ר</p><p>👥 עובדים/כוחות: ${active.length} • 🆘 בקשות: ${evReq.length} • 📸 תמונות: ${photos}</p><button id="downloadSummaryPdf" class="green">הורד סיכום אירוע PDF</button>`;$("summaryModal").style.display="block";setTimeout(()=>{let b=$("downloadSummaryPdf");if(b)b.onclick=()=>reportPdf(report)},0);ev=null;started=null;showLivePanels(false);$("estate").textContent="אין אירוע פעיל";$("time").textContent="00:00:00";link();ops.clearLayers();mapLayers.clear();wl.clearLayers();sosLayer.clearLayers();windLayer.clearLayers();stack=[];requests=[];workers=[];lastFireAreaM2=0;counter();await live()}
+function fresh(w){if(w.latitude==null||w.longitude==null)return["⚫","שיתוף מיקום הופסק"];let a=Math.floor((Date.now()-new Date(w.location_updated_at||w.created_at))/60000);return[a<2?"🟢":a<10?"🟠":"🔴",a<1?"עודכן עכשיו":`עודכן לפני ${a} דק׳`]}
+function sectorMarker(k){return [...mapLayers.values()].find(x=>x._kind==="sector-point "+k)}
+function sectorConfig(k){let saved={};try{saved=JSON.parse(localStorage.getItem("sector:"+ev?.id+":"+k)||"{}")}catch{}let marker=sectorMarker(k);return {...saved,manager:marker?marker._label||"":saved.manager||""}}
+function sectorPosition(k){let marker=sectorMarker(k);if(marker){let p=marker.getLatLng();return [p.lat,p.lng]}let c=sectorConfig(k);if(c.lat!==undefined&&Number.isFinite(+c.lat)&&Number.isFinite(+c.lng))return [+c.lat,+c.lng];let l=[...mapLayers.values()].find(x=>x._kind==="sector "+k);if(l?.getBounds){let p=l.getBounds().getCenter();return [p.lat,p.lng]}return null}
+function sectorNames(){let names=new Set(["א","ב","ג"]);for(let l of mapLayers.values()){let k=String(l._kind||"");if(k.startsWith("sector-point "))names.add(k.slice(13))}try{for(let k of JSON.parse(localStorage.getItem("sectorNames:"+ev?.id)||"[]"))if(k)names.add(k)}catch{}return [...names]}
+window.addCustomSector=()=>{if(!ev)return alert("פתח אירוע קודם");let raw=prompt("שם הגזרה החדשה (למשל: צפונית, נחל, גזרה ד):","");if(raw===null)return;let k=raw.trim();if(!/^[\p{L}\p{N} _-]{1,30}$/u.test(k))return alert("כתוב שם גזרה עד 30 אותיות או מספרים");let names=sectorNames();if(names.includes(k))return setSectorPoint(k);names.push(k);localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();renderWorkers();setSectorPoint(k)};
+let activeSectorTab="א";window.selectSectorTab=k=>{activeSectorTab=k;renderSectorSetup()};function renderSectorSetup(){let box=$("sectorSetup"),tabs=$("sectorTabs");if(!box||!tabs)return;let names=sectorNames();if(!names.includes(activeSectorTab))activeSectorTab=names[0]||"א";tabs.innerHTML=names.map(k=>`<button type="button" data-sector-tab="${esc(k)}" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px;${k===activeSectorTab?"border:2px solid #2d9cff;background:#123f72":""}">${esc(k)}׳</button>`).join("")+`<button class="green" type="button" data-sector-add="1" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px">＋</button>`;tabs.querySelectorAll("[data-sector-tab]").forEach(b=>b.addEventListener("click",()=>{activeSectorTab=b.dataset.sectorTab;renderSectorSetup()}));let addBtn=tabs.querySelector("[data-sector-add]");if(addBtn)addBtn.addEventListener("click",()=>addCustomSector());let k=activeSectorTab,c=sectorConfig(k),p=sectorPosition(k),ws=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k));box.innerHTML=`<div class="worker" style="padding:10px;border-radius:14px"><div class="row" style="justify-content:space-between;align-items:center"><b style="font-size:17px">📍 גזרה ${esc(k)}</b><span class="small">👤 ${esc(c.manager||"ללא מנהל")} • 👥 ${ws.length}</span></div><div class="row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px"><button data-sector-border="${esc(k)}" class="green" style="min-height:42px;font-weight:800;padding:6px 4px">✏️ גבולות</button><button onclick="setSectorPoint('${k}')" class="red" style="min-height:42px;font-weight:800;padding:6px 4px">📍 נקודת גזרה</button><button onclick="setSectorManager('${k}')" style="min-height:42px;font-weight:800;padding:6px 4px">👤 מנהל גזרה</button><button type="button" onclick="document.getElementById('workers')?.scrollIntoView({behavior:'smooth'})" style="min-height:42px;font-weight:800;padding:6px 4px">👥 עובדים בגזרה (${ws.length})</button></div><div class="small" style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px">${p?"✅ נקודת גזרה מוגדרת • "+(+p[0]).toFixed(5)+", "+(+p[1]).toFixed(5):"⚠ נקודת גזרה עדיין לא הוגדרה"}<br>מנהל: ${esc(c.manager||"לא הוגדר")}<br>עובדים: ${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div><div style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px"><b>📍 שלח מיקום גזרה לעובד</b><div class="row" style="margin-top:8px"><select id="sectorWorkerPick" style="flex:1"><option value="">בחר עובד</option>${workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")!==String(k)).map(w=>`<option value="${esc(String(w.id))}">${esc(w.name)}${w.sector?" • גזרה "+esc(w.sector):""}</option>`).join("")}</select><button class="green" type="button" onclick="sendSelectedWorkerToSector('${k}')">📲 שלח לאפליקציה</button></div></div></div>`;box.querySelectorAll("[data-sector-border]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];window._sectorDrawName=b.dataset.sectorBorder;$("drawmsg").textContent="גזרה "+b.dataset.sectorBorder+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}
+window.setSectorManager=k=>{if(!ev)return alert("פתח אירוע קודם");let v=prompt("שם מנהל גזרה "+k+":",sectorConfig(k).manager||"");if(v===null)return;let c=sectorConfig(k);c.manager=v.trim();localStorage.setItem("sector:"+ev.id+":"+k,JSON.stringify(c));let old=sectorMarker(k);if(old){let ll=old.getLatLng();removeMapLayer(old);let mark=L.marker(ll,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+k+'</div>',className:"",iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager;add(mark,"sector-point "+k)}renderSectorSetup()};
+window.setSectorPoint=k=>{if(!ev)return alert("פתח אירוע קודם");stop();$("panel").classList.remove("open");$("premiumLeft").classList.remove("mobileOpen");$("drawmsg").textContent="גע פעם אחת במפה כדי לקבוע נקודת מפגש לגזרה "+k;map.getContainer().style.cursor="crosshair";setTimeout(()=>map.invalidateSize(),100);map.once("click",e=>{let old=sectorMarker(k);if(old)removeMapLayer(old);let c=sectorConfig(k);c.lat=e.latlng.lat;c.lng=e.latlng.lng;localStorage.setItem("sector:"+ev.id+":"+k,JSON.stringify(c));let mark=L.marker(e.latlng,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+k+'</div>',className:"",iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager||"";add(mark,"sector-point "+k);renderSectorSetup();$("drawmsg").textContent="נקודת גזרה "+k+" נשמרה";map.getContainer().style.cursor=""})};
+window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{let w=workers.find(x=>String(x.id)===String(id));if(!ev||!w)return;let p=sectorPosition(k),c=sectorConfig(k);if(!p)return alert("הגדר קודם מיקום לגזרה "+k);let manager=c.manager||"";let r=await cloud.from("workers").update({sector:k}).eq("id",w.id).eq("event_id",ev.id);if(r.error)return alert("❌ "+r.error.message);let details="SECTOR_ASSIGN|"+JSON.stringify({sector:k,manager,lat:+p[0],lng:+p[1]});let m=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"שיבוץ לגזרה",details,status:"חדש"});if(m.error)return alert("הגזרה נשמרה, אבל ההודעה לא נשלחה: "+m.error.message);await live();alert("✓ נשלח ל"+w.name+": גזרה "+k)};
+window.workerWhatsApp=id=>{let w=workers.find(x=>String(x.id)===String(id));if(!w||!ev)return;let digits=workerPhones.get(w.name);if(!digits)return alert("העובד צריך להזין מספר WhatsApp ולאשר קבלת הודעות באפליקציה");let sector=w.sector||"",pos=sector?sectorPosition(sector):null,mgr=sector?sectorConfig(sector).manager:"",message="שלום "+w.name+",\nאירוע: "+(ev.name||"שריפה")+(sector?"\nשובצת לגזרה "+sector:"")+(mgr?"\nמנהל הגזרה: "+mgr:"")+(pos?"\nניווט לגזרה: https://www.google.com/maps/dir/?api=1&destination="+(+pos[0]).toFixed(6)+","+(+pos[1]).toFixed(6):"")+"\nקישור עובד: "+workerUrl();let typed=prompt("הודעת WhatsApp ל"+w.name+" — אפשר לערוך:",message);if(typed===null||!typed.trim())return;open("https://wa.me/"+digits+"?text="+encodeURIComponent(typed),"_blank")};
+let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";
+function renderWorkers(){wl.clearLayers();let a=workers.filter(w=>w.status!=="סיים");let eqNames=["מפוח","דבשת","מרסס גב","משאבה צפה","משאבה טבולה","תיק צינורות"],eqCounts=new Map(eqNames.map(x=>[x,0]));for(const w of a)for(const x of workerEquipment.get(w.name)||[])if(eqCounts.has(x))eqCounts.set(x,eqCounts.get(x)+1);let eqTotal=eqNames.filter(x=>eqCounts.get(x)).map(x=>x+" "+eqCounts.get(x)).join(" | ");$("workers").innerHTML=(eqTotal?`<div class="small" style="margin-bottom:8px"><b>🎒 ציוד עובדים:</b> ${esc(eqTotal)}</div>`:"")+(phoneLoadError?`<div class="bad">❌ WhatsApp: ${esc(phoneLoadError)}</div>`:"")+(a.length?a.map(w=>{let f=fresh(w);if(w.latitude!=null&&w.longitude!=null)L.marker([+w.latitude,+w.longitude],{icon:L.divIcon({html:`<div class="pin">${f[0]} ${esc(w.name)}<br>${esc(w.status||"—")} • ${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}</div>`,className:""})}).addTo(wl);return `<div class="worker">${f[0]} <b>${esc(w.name)}</b> • ${esc(w.status||"—")} • ${w.sector?"גזרה "+esc(w.sector):"ללא גזרה"}<br><span class="small">🎒 ${esc((workerEquipment.get(w.name)||["ציוד לא דווח"]).join(" + "))}</span><br><span class="small">${f[1]}</span><br><span class="small">📱 ${esc(workerPhones.get(w.name)||"מספר WhatsApp טרם נשמר")}</span><div class="row"><button onclick="sendWorkerMessage('${w.id}')">💬 הודעה לעובד</button><button onclick="workerWhatsApp('${w.id}')">📱 WhatsApp${workerPhones.has(w.name)?" ✓":""}</button><select aria-label="שיבוץ לגזרה" onchange="if(this.value)assignSector('${w.id}',this.value);this.value=''"><option value="">🧭 שלח לגזרה</option>${sectorNames().map(k=>'<option value="'+esc(k)+'">גזרה '+esc(k)+'</option>').join("")}</select><button onclick="v7w('${w.id}','בדרך')">בדרך</button><button onclick="v7w('${w.id}','הגיע')">הגיע</button><button onclick="v7w('${w.id}','עובד בשריפה')">עובד</button><button onclick="v7w('${w.id}','בהפסקה')">הפסקה</button><button class="red" onclick="v7w('${w.id}','סיים')">סיים</button><button class="red" onclick="stopWorkerLocation('${w.id}')">📍 הפסק מיקום</button></div></div>`}).join(""):"אין עובדים פעילים.");counter()}
+window.sendWorkerMessage=async id=>{let w=workers.find(x=>String(x.id)===String(id));if(!ev||!w)return;let t=prompt("הודעה לעובד "+w.name+":","");if(!t?.trim())return;let r=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"הודעה מהחפ״ק",details:t.trim(),status:"חדש"});if(r.error)alert("❌ ההודעה לא נשלחה: "+r.error.message);else alert("✓ ההודעה נשלחה לעובד")};
+window.stopWorkerLocation=async id=>{let name=workers.find(w=>String(w.id)===String(id))?.name;if(!ev||!name)return;if(!confirm(`להפסיק שיתוף מיקום של ${name}? העובד יצטרך לאשר מחדש כדי להפעיל.`))return;let r=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:name,request_type:"הפסקת שיתוף מיקום",details:"הופסק ע״י החפ״ק",status:"פעיל"});if(r.error)return alert(r.error.message);await cloud.from("workers").update({latitude:null,longitude:null,location_updated_at:new Date().toISOString()}).eq("event_id",ev.id).eq("name",name).neq("status","סיים");await live();}
+window.v7w=async(id,s)=>{let patch={status:s},now=new Date().toISOString();if(s==="הגיע")patch.arrived_at=now;if(s==="עובד בשריפה")patch.work_started_at=now;if(s==="סיים"){patch.finished_at=now;patch.finish_source="חפ״ק";patch.latitude=null;patch.longitude=null}let r=await cloud.from("workers").update(patch).eq("id",id);if(r.error&&/arrived_at|work_started_at/.test(r.error.message)){delete patch.arrived_at;delete patch.work_started_at;r=await cloud.from("workers").update(patch).eq("id",id)}if(r.error)alert(r.error.message);else live()};
+let sosLayer=L.layerGroup().addTo(map),activeSOS=null;
+function reqForEvent(){return ev?requests.filter(x=>String(x.event_id||"")===String(ev.id)):[]}
+function photoParts(x){let d=String(x.details||"");if(!d.startsWith("PHOTO|"))return null;let cut=d.indexOf("|",6);return cut<0?null:{src:d.slice(6,cut),note:d.slice(cut+1)}}
+function renderPhotos(){let ps=reqForEvent().filter(x=>x.request_type==="תמונה מהשטח").slice(0,12);let html=ps.length?ps.map(x=>{let p=photoParts(x);return p?`<div class="photoCard" style="background-image:linear-gradient(0deg,#00111dcc,#00111d11),url('${p.src}');background-size:cover;background-position:center;cursor:pointer" onclick="window.openPhoto('${x.id}')"><span><b>${esc(x.worker_name||"עובד")}</b><br>${new Date(x.created_at).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}${p.note?" • "+esc(p.note):""}</span></div>`:""}).join(""): '<div class="small">אין תמונות מהשטח עדיין.</div>';let box=$("fieldPhotos");if(box)box.innerHTML=html;let panel=$("fieldPhotosPanel");if(panel)panel.innerHTML=html}
+window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"></body>`)};
+function coordsFor(x){let w=workers.find(z=>z.name===x.worker_name&&z.latitude!=null&&z.longitude!=null);if(w)return[+w.latitude,+w.longitude];let m=String(x.details||"").match(/LOC\|(-?\d+(?:\.\d+)?)\|(-?\d+(?:\.\d+)?)/);return m?[+m[1],+m[2]]:null}
+function renderSOS(){sosLayer.clearLayers();let all=reqForEvent().filter(x=>["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&!["טופל","נמחק"].includes(x.status));activeSOS=all[0]||null;let b=$("dangerBanner");if(!activeSOS){if(b)b.style.display="none";return}let c=coordsFor(activeSOS);b.style.display="flex";$("dangerName").textContent=`🚨 סכנה / חירום — ${activeSOS.worker_name||"עובד"}`;$("dangerMeta").textContent=`${activeSOS.request_type} • ${activeSOS.status||"חדש"}${c?` • ${c[0].toFixed(5)}, ${c[1].toFixed(5)}`:" • מיקום ממתין"}`;if(c){let ic=L.divIcon({className:"",html:`<div class="sosLabel">🆘 ${esc(activeSOS.worker_name||"עובד")}</div><div class="sosPulse"></div>`,iconSize:[120,55],iconAnchor:[60,45]});L.marker(c,{icon:ic,zIndexOffset:5000}).addTo(sosLayer);map.setView(c,16)}}
+async function setSOS(st){if(!activeSOS)return;let r=await cloud.from("worker_requests").update({status:st}).eq("id",activeSOS.id);if(r.error)alert(r.error.message);else live()}
+$("dangerProgress").onclick=()=>setSOS("בטיפול");$("dangerDone").onclick=()=>setSOS("טופל");$("dangerDelete").onclick=()=>setSOS("נמחק");$("dangerShare").onclick=async()=>{if(!activeSOS)return;let c=coordsFor(activeSOS);if(!c)return alert("אין עדיין מיקום לעובד");let maps=`https://www.google.com/maps?q=${c[0]},${c[1]}`,nav=`https://www.google.com/maps/dir/?api=1&destination=${c[0]},${c[1]}`,t=`SOS - ${activeSOS.worker_name||'עובד'}\nמיקום: ${maps}\nניווט: ${nav}`;try{if(navigator.share)await navigator.share({title:'מיקום עובד בסכנה',text:t,url:maps});else{await navigator.clipboard.writeText(t);alert('המיקום הועתק')}}catch{prompt('העתק ושלח:',t)}};
+function reqReply(x){let d=String(x.details||"");let m=d.match(/(?:^|\n)HQ_REPLY\|([^\n|]*)\|([^\n]*)/);return m?{text:m[1],time:m[2]}:null}
+function cleanReqDetails(x){return String(x.details||"").replace(/(?:^|\n)HQ_REPLY\|[^\n|]*\|[^\n]*/g,"").trim()}
+window.replyReq=async id=>{let x=requests.find(r=>String(r.id)===String(id));if(!x)return;let t=prompt("הודעה לעובד:","");if(!t||!t.trim())return;let base=cleanReqDetails(x),details=(base?base+"\n":"")+"HQ_REPLY|"+t.trim().replace(/[|\n]/g," ")+"|"+new Date().toISOString();let r=await cloud.from("worker_requests").update({details,status:"בטיפול"}).eq("id",id);if(r.error)alert(r.error.message);else live()}
+function renderReq(){let a=reqForEvent().filter(x=>x.request_type!=="תמונה מהשטח"&&x.request_type!=="הפסקת שיתוף מיקום"&&x.request_type!=="WhatsApp opt-in"&&!["טופל","נמחק"].includes(x.status));$("requests").innerHTML=a.length?a.slice(0,40).map(x=>{let rep=reqReply(x),det=cleanReqDetails(x);return `<div class="req ${["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)?"urgent":""}"><b>${esc(x.worker_name||"עובד")}</b> — ${esc(x.request_type)} ${det&&!det.startsWith("LOC|")?"• "+esc(det):""}<br><b>${esc(x.status||"חדש")}</b>${rep?`<br>💬 ${esc(rep.text)}`:""}<div class="row"><button onclick="v7r('${x.id}','קיבלתי')">קיבלתי</button><button onclick="v7r('${x.id}','בטיפול')">בטיפול</button><button onclick="replyReq('${x.id}')">💬 שלח לעובד</button><button class="green" onclick="v7r('${x.id}','טופל')">טופל</button><button class="red" onclick="v7r('${x.id}','לא טופל')">לא טופל</button></div></div>`}).join(""):"אין בקשות פתוחות.";let mini=$("fieldReqMini");if(mini)mini.innerHTML='<h3>🆘 בקשות מהשטח</h3>'+a.slice(0,5).map(x=>`<div class="mini">${esc(x.worker_name||'עובד')} • ${esc(x.request_type)} — <b>${esc(x.status||'חדש')}</b></div>`).join('')}
+
+window.v7r=async(id,s)=>{let r=await cloud.from("worker_requests").update({status:s}).eq("id",id);if(r.error)alert(r.error.message);else live()};
+function pointInPoly(lat,lng,pts){let inside=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){let xi=pts[i].lng,yi=pts[i].lat,xj=pts[j].lng,yj=pts[j].lat,hit=((yi>lat)!=(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi+1e-12)+xi);if(hit)inside=!inside}return inside}
+async function autoWorkerZones(){if(!ev)return;let firePolys=[],cmdPts=[];ops.eachLayer(l=>{if((l._kind==="fire-polygon"||l._kind==="burned")&&l.getLatLngs){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];firePolys.push(a)}if(l._kind==="cmd"&&l.getLatLng)cmdPts.push(l.getLatLng())});for(const w of workers){if(w.status==="סיים"||w.latitude==null||w.longitude==null)continue;let ll=L.latLng(+w.latitude,+w.longitude),target=null;if(firePolys.some(p=>pointInPoly(ll.lat,ll.lng,p))&&w.status!=="עובד בשריפה")target="עובד בשריפה";else if(cmdPts.some(c=>map.distance(ll,c)<=35)&&!["עובד בשריפה","הגיע לחפ״ק"].includes(w.status))target="הגיע לחפ״ק";if(target)await cloud.from("workers").update({status:target,...(target==="עובד בשריפה"?{work_started_at:new Date().toISOString()}:{arrived_at:new Date().toISOString()})}).eq("id",w.id)}}
+async function live(){if(ev){let equipment=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","ציוד עובד").order("created_at",{ascending:false}).limit(500);if(!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}let phones=await cloud.from("worker_requests").select("worker_name,details").eq("event_id",ev.id).eq("request_type","WhatsApp opt-in").order("created_at",{ascending:false}).limit(500);phoneLoadError=phones.error?.message||"";if(!phones.error){workerPhones=new Map();for(let p of phones.data||[])if(!workerPhones.has(p.worker_name)&&/^\d{10,15}$/.test(p.details||""))workerPhones.set(p.worker_name,p.details)}}let a=await cloud.from("workers").select("*").order("location_updated_at",{ascending:false});if(!a.error){workers=(a.data||[]).filter(w=>!ev||String(w.event_id||"")===String(ev.id));renderWorkers();renderSectorSetup();autoWorkerZones().catch(()=>{})}let b=await cloud.from("worker_requests").select("*").order("created_at",{ascending:false}).limit(100);if(!b.error){requests=b.data||[];renderReq();renderPhotos();renderSOS()}}
+
+let alertAudio = null;
+
+function unlockAlertAudio() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    if (!alertAudio) alertAudio = new C();
+    if (alertAudio.state === "suspended") {
+      alertAudio.resume().catch(() => {});
+    }
+  } catch {}
+}
+
+document.addEventListener(
+  "pointerdown", unlockAlertAudio, {passive:true}
+);
+document.addEventListener("keydown", unlockAlertAudio);
+
+function beep(urgent) {
+  try {
+    unlockAlertAudio();
+    const c = alertAudio;
+    if (!c || c.state !== "running") return;
+
+    const notes = urgent
+      ? [[0,1046],[.22,784],[.55,1046],[.77,784],
+         [1.10,1046],[1.32,784]]
+      : [[0,880],[.23,1175]];
+
+    for (const [delay, frequency] of notes) {
+      for (const [multiple, volume] of [[1,.13],[2.76,.025]]) {
+        const oscillator = c.createOscillator();
+        const gain = c.createGain();
+        const time = c.currentTime + delay;
+
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency * multiple;
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(volume, time + .008);
+        gain.gain.exponentialRampToValueAtTime(.0001, time + .65);
+
+        oscillator.connect(gain);
+        gain.connect(c.destination);
+        oscillator.start(time);
+        oscillator.stop(time + .7);
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+      }
+    }
+  } catch {}
+}
+
+$("copyEventNumber").onclick = async () => {
+  if (!ev?.event_number) return alert("פתח אירוע קודם");
+  const number = String(ev.event_number);
+  try {
+    await navigator.clipboard.writeText(number);
+    $("copyEventNumber").textContent = "✓ המספר הועתק";
+    setTimeout(() => {
+      $("copyEventNumber").textContent = "📋 העתק מספר אירוע";
+    }, 1800);
+  } catch {
+    prompt("מספר אירוע:", number);
+  }
+};
+function rt(){if(chan)cloud.removeChannel(chan);chan=cloud.channel("command-v7").on("postgres_changes",{event:"*",schema:"public",table:"workers"},live).on("postgres_changes",{event:"*",schema:"public",table:"worker_requests"},p=>{
+        const x=p.new||{};
+        const urgent=["פציעה / רפואי","חירום / סכנה","SOS / סכנה"];
+        const ordinary=[
+          "⛽ דלק למשאבה","💧 מים","🍴 אוכל",
+          "🧰 ציוד / עזרה","🚒 תגבור","תמונה מהשטח"
+        ];
+        if(
+          p.eventType==="INSERT" &&
+          ev && x.event_id===ev.id &&
+          [...urgent,...ordinary].includes(x.request_type)
+        ){
+          beep(urgent.includes(x.request_type));
+        }
+        live();
+      }).on("postgres_changes",{event:"*",schema:"public",table:"map_items"},()=>syncMap()).on("postgres_changes",{event:"*",schema:"public",table:"fire_events"},async()=>{let old=ev?.id;await restore();if(old&&!ev){ops.clearLayers();mapLayers.clear();recountMap()}}).subscribe()}
+function hd(d){return["צפונית","צפון־מזרחית","מזרחית","דרום־מזרחית","דרומית","דרום־מערבית","מערבית","צפון־מערבית"][Math.round(d/45)%8]}
+function destination(lat,lng,bearing,meters){let R=6371000,p1=lat*Math.PI/180,l1=lng*Math.PI/180,b=bearing*Math.PI/180,d=meters/R,p2=Math.asin(Math.sin(p1)*Math.cos(d)+Math.cos(p1)*Math.sin(d)*Math.cos(b)),l2=l1+Math.atan2(Math.sin(b)*Math.sin(d)*Math.cos(p1),Math.cos(d)-Math.sin(p1)*Math.sin(p2));return[p2*180/Math.PI,l2*180/Math.PI]}
+function drawWindZone(lat,lng,fromDeg,speed){windLayer.clearLayers();let down=(fromDeg+180)%360,len=Math.max(180,Math.min(1200,180+speed*22)),left=destination(lat,lng,down-24,len*.82),tip=destination(lat,lng,down,len),right=destination(lat,lng,down+24,len*.82);L.polygon([[lat,lng],left,tip,right],{color:'#ff8d3b',weight:2,dashArray:'8 7',fillColor:'#ff6b35',fillOpacity:.13,interactive:false}).addTo(windLayer);L.marker(tip,{interactive:false,icon:L.divIcon({className:'windZoneLabel',html:'תחזית התפשטות משוערת',iconSize:[150,24],iconAnchor:[75,12]})}).addTo(windLayer)}
+async function weather(lat,lng){try{let r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kmh&timezone=Asia%2FJerusalem`),j=await r.json(),w=j.current;$("wd").textContent=hd(w.wind_direction_10m);$("ws").textContent=Math.round(w.wind_speed_10m)+" קמ״ש";$("wg").textContent=Math.round(w.wind_gusts_10m)+" קמ״ש";$("forecast").innerHTML=`עכשיו: ${hd(w.wind_direction_10m)} • ${Math.round(w.wind_speed_10m)} קמ״ש • משבים ${Math.round(w.wind_gusts_10m)}<br><span class="small">תחזית ההתפשטות על המפה היא אינדיקציה בלבד ותלויה גם בטופוגרפיה, דלק ולחות.</span>`;drawWindZone(lat,lng,w.wind_direction_10m,w.wind_speed_10m);if(lastWind!=null){let d=Math.abs(w.wind_direction_10m-lastWind);d=Math.min(d,360-d);$("windAlert").innerHTML=d>=45?`<div class="alert">⚠ שינוי משמעותי בכיוון הרוח: ${Math.round(d)}°</div>`:""}lastWind=w.wind_direction_10m}catch{$("forecast").textContent="לא ניתן לקבל נתוני רוח"}}
+$("closeSummary").onclick=()=>$("summaryModal").style.display="none";$("menu").onclick=()=>{$("premiumLeft").classList.remove("mobileOpen");$("panel").classList.toggle("open")};$("mobileTools").onclick=()=>{$("panel").classList.remove("open");$("premiumLeft").classList.toggle("mobileOpen")};$("start").onclick=start;$("finish").onclick=finish;$("copy").onclick=async()=>{let u=workerUrl();if(!u)return alert("פתח אירוע קודם");try{await navigator.clipboard.writeText(u);alert("הקישור הועתק")}catch{prompt("העתק:",u)}};$("openWorker").onclick=()=>{let u=workerUrl();if(u)open(u,"_blank");else alert("פתח אירוע קודם")};
+$("freeDraw").onclick=()=>{let on=!freeDrawing;stop();freeDrawing=on;$("drawmsg").textContent=on?"✏️ העט פעיל: לחץ וגרור על המפה. לחץ סיום כלי כשמסיימים.":"העט נעצר."};$("measureArea").onclick=()=>{stop();measureMode="area";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="🔥 פוליגון שריפה: סמן גבול • קליק כפול או סיום כלי לשמירה וחישוב דונם."};$("measureDist").onclick=()=>{stop();measureMode="dist";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="📏 סמן נקודות • קליק כפול או סיום כלי לשמירת המדידה."};$("undo").onclick=()=>{let l=stack[stack.length-1];if(l)removeMapLayer(l)};$("erase").onclick=()=>{stop();eraseMode=true;map.getContainer().style.cursor="not-allowed";$("drawmsg").textContent="🧽 מצב מחיקה פעיל • לחץ על כמה פריטים שתרצה • סיום כלי/ESC לסיום."};$("stopDraw").onclick=stop;$("clear").onclick=()=>{if(confirm("לנקות מפה?")){if(!ev)return alert("אין אירוע פעיל");cloud.from("map_items").delete().eq("event_id",ev.id).then(({error})=>{if(error)return alert(error.message);ops.clearLayers();mapLayers.clear();windLayer.clearLayers();stack=[];recountMap()})}};$("locate").onclick=()=>{if(!navigator.geolocation)return alert("המכשיר לא תומך במיקום");$("drawmsg").textContent="⏳ מאתר מיקום...";let ok=p=>{let ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,17);if(window._myLoc)map.removeLayer(window._myLoc);window._myLoc=L.circleMarker(ll,{radius:9,color:"#fff",weight:3,fillColor:"#1d9bf0",fillOpacity:1}).addTo(map).bindTooltip("המיקום שלי").openTooltip();$("drawmsg").textContent="📍 המיקום שלי נמצא • דיוק "+Math.round(p.coords.accuracy)+" מ׳"};navigator.geolocation.getCurrentPosition(ok,e=>{if(e.code===1)return alert("צריך לאשר הרשאת מיקום לדפדפן ולהפעיל מיקום במכשיר");navigator.geolocation.getCurrentPosition(ok,e2=>alert("לא ניתן לקבל מיקום: "+e2.message),{enableHighAccuracy:false,timeout:30000,maximumAge:60000})},{enableHighAccuracy:true,timeout:20000,maximumAge:15000})};
+async function reportPdf(report){if(!report)return alert("אין נתוני סיכום");let host=document.createElement("div");host.dir="rtl";host.style.cssText="position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111;padding:34px;font-family:Arial,sans-serif";let ws=report.weather||{},workersR=report.workers||[],reqR=report.requests||[],photosR=(report.photos||[]);host.innerHTML=`<h1 style="text-align:center">סיכום אירוע שריפה</h1><h2>${esc(report.name||"אירוע שריפה")}</h2><p><b>תחילת אירוע:</b> ${report.started_at?new Date(report.started_at).toLocaleString("he-IL"):"—"} &nbsp; <b>סיום:</b> ${report.ended_at?new Date(report.ended_at).toLocaleString("he-IL"):"—"}</p><p><b>משך:</b> ${Math.floor((report.duration_ms||0)/3600000)} שעות ${Math.floor(((report.duration_ms||0)%3600000)/60000)} דקות</p><p><b>שטח שרוף:</b> ${(report.fire_area_dunam||0).toFixed(2)} דונם • ${(report.fire_area_m2||0).toLocaleString("he-IL")} מ״ר</p><p><b>רוח:</b> ${esc(ws.direction||"—")} • ${esc(ws.speed||"—")} • משבים ${esc(ws.gusts||"—")}</p>${report.map_image?`<h3>מפת האירוע בסיום</h3><img src="${report.map_image}" style="width:100%;max-height:390px;object-fit:contain;border:1px solid #bbb">`:""}<h3>כוחות ועובדים</h3><table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><tr><th>שם</th><th>סטטוס</th><th>גזרה</th><th>הגיע</th><th>תחילת עבודה</th><th>סיים</th></tr>${workersR.map(w=>`<tr><td>${esc(w.name||"")}</td><td>${esc(w.status||"")}</td><td>${esc(w.sector||"")}</td><td>${w.arrived_at?new Date(w.arrived_at).toLocaleTimeString("he-IL"):"—"}</td><td>${w.work_started_at?new Date(w.work_started_at).toLocaleTimeString("he-IL"):"—"}</td><td>${w.finished_at?new Date(w.finished_at).toLocaleTimeString("he-IL"):"—"}</td></tr>`).join("")}</table><h3>בקשות / SOS</h3><table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><tr><th>עובד</th><th>דיווח</th><th>סטטוס</th><th>שעה</th></tr>${reqR.map(x=>`<tr><td>${esc(x.worker_name||"")}</td><td>${esc(x.request_type||"")}</td><td>${esc(x.status||"")}</td><td>${x.created_at?new Date(x.created_at).toLocaleTimeString("he-IL"):"—"}</td></tr>`).join("")}</table>${photosR.length?`<h3>תמונות מהשטח</h3>${photosR.map(x=>`<div style="margin:12px 0"><b>${esc(x.worker_name||"")}</b> • ${x.created_at?new Date(x.created_at).toLocaleString("he-IL"):""}<br><img src="${x.src}" style="max-width:100%;max-height:300px"></div>`).join("")}`:""}<h3>הערות / לקחים</h3><div style="height:90px;border:1px solid #aaa"></div>`;document.body.appendChild(host);try{let canvas=await html2canvas(host,{scale:1.5,useCORS:true,backgroundColor:"#fff"}),img=canvas.toDataURL("image/jpeg",.92),pdf=new jspdf.jsPDF("p","mm","a4"),pw=210,ph=297,iw=pw,ih=canvas.height*iw/canvas.width,y=0;while(y<ih){if(y>0)pdf.addPage();pdf.addImage(img,"JPEG",0,-y,iw,ih);y+=ph}pdf.save(`סיכום-${(report.name||"אירוע").replace(/[^א-תA-Za-z0-9_-]+/g,"-")}.pdf`)}finally{host.remove()}}
+window.downloadHistoryPdf=async id=>{let r=await cloud.from("fire_events").select("report_data").eq("id",id).maybeSingle();if(r.error)return alert(r.error.message);reportPdf(r.data?.report_data)};
+$("snapshot").onclick=()=>alert(`תמונת מצב\nכוחות פעילים: ${workers.filter(w=>w.status!=="סיים").length}\nבקשות: ${requests.length}\nכבאיות: ${counts.engine}\nמפוחים: ${counts.blower}\nמים: ${counts.water}`);
+$("history").onclick=async()=>{let r=await cloud.from("fire_events").select("*").eq("status","ended").order("ended_at",{ascending:false}).limit(20);$("past").innerHTML=r.error?esc(r.error.message):(r.data||[]).map(e=>`<div class="past"><b>${esc(e.name||"אירוע")}</b><br>${new Date(e.started_at).toLocaleString("he-IL")} → ${e.ended_at?new Date(e.ended_at).toLocaleString("he-IL"):"—"}<br><button onclick="downloadHistoryPdf('${e.id}')">הורד סיכום אירוע PDF</button></div>`).join("")||"אין אירועים קודמים."};
+const activeBtn=b=>{document.querySelectorAll('#premiumLeft button').forEach(x=>x.classList.remove('toolActive'));b?.classList.add('toolActive')};document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{pMode(b.dataset.p);activeBtn(b)});document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lMode(b.dataset.l);activeBtn(b)});document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{aMode(b.dataset.a);activeBtn(b)});document.querySelectorAll('#premiumLeft button').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('premiumLeft').classList.remove('mobileOpen')}));document.querySelectorAll('#panel [data-p],#panel [data-l],#panel [data-a],#panel [data-s],#panel #freeDraw,#panel #measureArea,#panel #measureDist').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('panel').classList.remove('open')}));document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector "+b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": לחץ נקודות גבול • קליק כפול מסיים."});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")stop()});
+$("base").onchange=()=>{map.removeLayer(bt);bt=tiles[$("base").value];bt.addTo(map);bt.bringToBack?.()};setInterval(()=>{if(started){let s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60),h=Math.floor(m/60);$("time").textContent=`${String(h).padStart(2,"0")}:${String(m%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}},1000);
+let liveRefreshBusy=false;
+setInterval(async()=>{
+ if(liveRefreshBusy||!ev||!document.documentElement.classList.contains("hq-authorized")||document.hidden)return;
+ liveRefreshBusy=true;
+ try{await live()}finally{liveRefreshBusy=false}
+},5000);
+(async()=>{try{let {data}=await cloud.auth.getSession();if(data.session){await enterHQ(data.session)}else $("hqError").textContent="יש להתחבר כדי לפתוח את החפ״ק."}catch(e){$("hqError").textContent="❌ "+e.message}})();
+window.workerWhatsApp = id => {
+  const w = workers.find(x => String(x.id) === String(id));
+  if (!ev || !w) return;
+  const phone = workerPhones.get(w.name);
+  if (!phone) return alert("העובד צריך לשמור מספר WhatsApp באפליקציה");
+
+  const k = prompt("איזו גזרה לשלוח? " + sectorNames().join(", "), w.sector || "א");
+  if (!k) return;
+  const p = sectorPosition(k.trim());
+  if (!p) return alert("צריך לבחור נקודה במפה לגזרה " + k);
+
+  const manager = sectorConfig(k.trim()).manager || "";
+  const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+    Number(p[0]).toFixed(6) + "," + Number(p[1]).toFixed(6);
+  const message = "שלום " + w.name + ", מיקום גזרה " + k +
+    (manager ? " • מנהל הגזרה: " + manager : "") + "\n" + maps;
+
+  location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+};
+const oldSectorSetup = renderSectorSetup;
+renderSectorSetup = function () {
+  oldSectorSetup();
+  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
+    const sector = sectorNames()[i];
+    const select = document.createElement("select");
+    select.add(new Option("בחר עובד", ""));
+    workers
+      .filter(w => w.status !== "סיים")
+      .forEach(w => select.add(new Option(w.name, w.id)));
+
+    const button = document.createElement("button");
+    button.textContent = "📍 שתף גזרה לעובד";
+    button.onclick = () => {
+      const worker = workers.find(w => String(w.id) === select.value);
+      if (!worker) return alert("בחר עובד");
+      const phone = workerPhones.get(worker.name);
+      if (!phone) return alert("העובד צריך לשמור מספר WhatsApp באפליקציה");
+      const point = sectorPosition(sector);
+      if (!point) return alert("קודם בחר נקודה במפה לגזרה " + sector);
+      const manager = sectorConfig(sector).manager || "";
+      const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+        Number(point[0]).toFixed(6) + "," + Number(point[1]).toFixed(6);
+      const message = "שלום " + worker.name + ", גזרה " + sector +
+        (manager ? "\nמנהל הגזרה: " + manager : "") +
+        "\nמיקום וניווט: " + maps;
+      location.href = "https://wa.me/" + phone +
+        "?text=" + encodeURIComponent(message);
+    };
+    card.querySelector(".row").append(select, button);
+  });
+};
+const previousShareSetup = renderSectorSetup;
+renderSectorSetup = function () {
+  previousShareSetup();
+
+  let box = document.getElementById("easySectorShare");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "easySectorShare";
+    box.className = "card";
+        box.innerHTML = `<h3>📍 שליחת מיקום גזרה לעובד</h3>
+      <select id="easyWorker"></select>
+      <select id="easySector"></select>
+            <button id="easySend" class="green">📲 פתח WhatsApp</button>`;
+    document.getElementById("workerLink").closest(".card").after(box);
+    document.getElementById("easySend").onclick = () => {
+      const workerId = document.getElementById("easyWorker").value;
+      const sector = document.getElementById("easySector").value;
+            if (!workerId || !sector) return alert("בחר עובד וגזרה");
+      const card = document.querySelectorAll("#sectorSetup .worker")[
+        sectorNames().indexOf(sector)
+      ];
+      const select = card?.querySelector(".row select");
+      const button = [...(card?.querySelectorAll(".row button") || [])]
+        .find(b => b.textContent.includes("שתף גזרה לעובד"));
+            if (!select || !button) return alert("לא ניתן להכין את שיתוף הגזרה");
+      select.value = workerId;
+      button.click();
+    };
+  }
+
+  const workerSelect = document.getElementById("easyWorker");
+  const sectorSelect = document.getElementById("easySector");
+  const workerValue = workerSelect.value;
+  const sectorValue = sectorSelect.value;
+
+    workerSelect.replaceChildren(new Option("בחר עובד", ""));
+  workers.filter(w => w.status !== "סיים")
+    .forEach(w => workerSelect.add(new Option(w.name, w.id)));
+  workerSelect.value = workerValue;
+
+    sectorSelect.replaceChildren(new Option("בחר גזרה", ""));
+  sectorNames().forEach(name => sectorSelect.add(new Option(name, name)));
+  sectorSelect.value = sectorValue;
+
+  document.querySelectorAll("#sectorSetup .worker .row").forEach(row => {
+    const oldSelect = row.querySelector("select");
+    const oldButton = [...row.querySelectorAll("button")]
+      .find(b => b.textContent.includes("שתף גזרה לעובד"));
+    if (oldSelect) oldSelect.style.display = "none";
+    if (oldButton) oldButton.style.display = "none";
+  });
+};const beforeGroupShare = renderSectorSetup;
+renderSectorSetup = function () {
+  beforeGroupShare();
+  if (document.getElementById("shareSectorGroup")) return;
+
+  const button = document.createElement("button");
+  button.id = "shareSectorGroup";
+  button.className = "green";
+    button.textContent = "📍 שתף גזרה למספר עובדים";
+
+  button.onclick = async () => {
+    const sector = document.getElementById("easySector").value;
+       if (!sector) return alert("בחר גזרה תחילה");
+
+    const point = sectorPosition(sector);
+        if (!point) return alert("בחר תחילה מיקום לגזרה במפה");
+    const manager = sectorConfig(sector).manager || "";
+    const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
+      Number(point[0]) + "," + Number(point[1]);
+    const text = "גזרה " + sector +
+      (manager ? "\nמנהל הגזרה: " + manager : "") +
+      "\nמיקום וניווט:\n" + maps;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({text});
+      } else {
+        location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") alert("השיתוף נכשל, נסה שוב");
+    }
+  };
+
+  document.getElementById("easySectorShare").append(button);
+};   const namesBeforeDelete = sectorNames;
+function deletedSectorNames() {
+  try {
+    return JSON.parse(
+      localStorage.getItem("deletedSectors:" + ev?.id) || "[]"
+    );
+  } catch {
+    return [];
+  }
+}
+
+sectorNames = function () {
+  const deleted = deletedSectorNames();
+  return namesBeforeDelete().filter(name => !deleted.includes(name));
+};
+
+const pointBeforeDelete = window.setSectorPoint;
+window.setSectorPoint = function (name) {
+  if (!ev) return alert("פתח אירוע קודם");
+  localStorage.setItem(
+    "deletedSectors:" + ev.id,
+    JSON.stringify(deletedSectorNames().filter(x => x !== name))
+  );
+  return pointBeforeDelete(name);
+};
+
+const renderBeforeDelete = renderSectorSetup;
+renderSectorSetup = function () {
+  renderBeforeDelete();
+  const names = sectorNames();
+
+  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
+    const name = names[i];
+    const button = document.createElement("button");
+    button.className = "red";
+    button.textContent = "🗑 מחק גזרה";
+
+    button.onclick = async () => {
+      if (!ev) return alert("אין אירוע פעיל");
+      if (pendingMap.size || polyKind || mode) {
+        return alert("סיים את כלי המפה והמתן לשמירה לפני המחיקה");
+      }
+      if (!confirm("למחוק את גזרה " + name + " ואת הסימונים שלה?")) return;
+
+      const eventId = ev.id;
+      const kinds = ["sector " + name, "sector-point " + name];
+      button.disabled = true;
+
+      try {
+        const {error} = await cloud.from("map_items")
+          .delete()
+          .eq("event_id", eventId)
+          .in("data->>kind", kinds);
+        if (error) throw error;
+        if (ev?.id !== eventId) return;
+
+        localStorage.removeItem("sector:" + eventId + ":" + name);
+        localStorage.setItem(
+          "sectorNames:" + eventId,
+          JSON.stringify(namesBeforeDelete().filter(x => x !== name))
+        );
+        localStorage.setItem(
+          "deletedSectors:" + eventId,
+          JSON.stringify([...new Set([...deletedSectorNames(), name])])
+        );
+
+        for (const [id, layer] of mapLayers) {
+          if (!kinds.includes(layer._kind)) continue;
+          ops.removeLayer(layer);
+          mapLayers.delete(id);
+          stack = stack.filter(x => x !== layer);
+        }
+
+        recountMap();
+        renderWorkers();
+        renderSectorSetup();
+      } catch (error) {
+        alert("המחיקה נכשלה: " + error.message);
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    card.append(button);
+  });
+};  })();
+</script><script>
+window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
+ const q=id=>document.getElementById(id), click=id=>q(id)?.click();
+ q('plDraw')?.addEventListener('click',()=>click('freeDraw')); q('plArea')?.addEventListener('click',()=>click('measureArea')); q('plDist')?.addEventListener('click',()=>click('measureDist')); q('plUndo')?.addEventListener('click',()=>click('undo')); q('plErase')?.addEventListener('click',()=>click('erase')); q('plStop')?.addEventListener('click',()=>click('stopDraw')); q('plLocate')?.addEventListener('click',()=>click('locate'));
+});
+</script>
+</body></html>
+
+
+
