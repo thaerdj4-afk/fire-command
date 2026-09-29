@@ -218,6 +218,44 @@ $("copyEventNumber").onclick = async () => {
       }`
     );
 
+    /* Demo layout phase 1 — visual-only, injected into the generated HQ document */
+    html = html.replace('</head>', `<style id="demo-phase1">
+      @media (min-width:761px){
+        #premiumLeft{width:112px!important}
+        main{padding-left:132px!important}
+        #premiumLeft .ptitle{font-size:12px!important;padding:7px 4px!important}
+        #premiumLeft button{min-height:39px!important;padding:6px 5px!important;font-size:10px!important;gap:5px!important}
+        #premiumLeft .cmdIcon{width:18px!important;height:18px!important}
+      }
+    </style></head>`);
+
+    html = html.replace('</body>', `<script id="demo-phase1-runtime">
+      (function(){
+        function applyDemoLayout(){
+          var left=document.getElementById('premiumLeft');
+          var panel=document.getElementById('panel');
+          if(!left||!panel)return;
+          var cards=Array.prototype.slice.call(panel.querySelectorAll('.card'));
+          cards.forEach(function(card){
+            var h=card.querySelector('h3');
+            var t=h?h.textContent:'';
+            if(t.indexOf('מפה ורישום')!==-1||t.indexOf('כוחות וציוד')!==-1){
+              left.appendChild(card);
+              card.style.padding='6px';
+              card.style.marginBottom='7px';
+              var row=card.querySelector('.row');
+              if(row){row.style.display='grid';row.style.gridTemplateColumns='1fr';row.style.gap='4px'}
+              var input=card.querySelector('input');
+              if(input){input.style.width='100%';input.style.fontSize='10px'}
+              var select=card.querySelector('select');
+              if(select){select.style.width='100%';select.style.fontSize='10px'}
+            }
+          });
+        }
+        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applyDemoLayout);
+        else applyDemoLayout();
+      })();
+    <\/script></body>`);
     document.open();
     document.write(html);
     document.close();
