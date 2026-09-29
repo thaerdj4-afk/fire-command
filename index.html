@@ -197,33 +197,7 @@ let sosLayer=L.layerGroup().addTo(map),activeSOS=null;
 function reqForEvent(){return ev?requests.filter(x=>String(x.event_id||"")===String(ev.id)):[]}
 function photoParts(x){let d=String(x.details||"");if(!d.startsWith("PHOTO|"))return null;let cut=d.indexOf("|",6);return cut<0?null:{src:d.slice(6,cut),note:d.slice(cut+1)}}
 function renderPhotos(){let ps=reqForEvent().filter(x=>x.request_type==="תמונה מהשטח").slice(0,12);let html=ps.length?ps.map(x=>{let p=photoParts(x);return p?`<div class="photoCard" style="background-image:linear-gradient(0deg,#00111dcc,#00111d11),url('${p.src}');background-size:cover;background-position:center;cursor:pointer" onclick="window.openPhoto('${x.id}')"><span><b>${esc(x.worker_name||"עובד")}</b><br>${new Date(x.created_at).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}${p.note?" • "+esc(p.note):""}</span></div>`:""}).join(""): '<div class="small">אין תמונות מהשטח עדיין.</div>';let box=$("fieldPhotos");if(box)box.innerHTML=html;let panel=$("fieldPhotosPanel");if(panel)panel.innerHTML=html}
-window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"><script id="left-groups-v3-build">
-window.addEventListener("DOMContentLoaded",function(){
- var rail=document.getElementById("premiumLeft"); if(!rail||rail.dataset.grouped==="1")return;
- rail.dataset.grouped="1";
- var buttons=Array.from(rail.querySelectorAll(":scope > button"));
- var mapIds=new Set(["plDraw","plArea","plDist","plUndo","plErase","plStop","plLocate"]);
- var mapKinds=new Set(["fire","firebreak","escape","assembly","hazard"]);
- var equipKinds=new Set(["water","engine"]);
- var map=[],equip=[],hq=[];
- buttons.forEach(function(b){
-   var kind=b.dataset.l||b.dataset.p||"";
-   if(mapIds.has(b.id)||mapKinds.has(kind))map.push(b);
-   else if(equipKinds.has(kind))equip.push(b);
-   else hq.push(b);
- });
- function group(title,items){
-   if(!items.length)return;
-   var t=document.createElement("div");t.className="leftGroupTitle";t.textContent=title;rail.appendChild(t);
-   var g=document.createElement("div");g.className="leftMiniGrid";rail.appendChild(g);
-   items.forEach(function(b){g.appendChild(b)});
- }
- // keep the most operational HQ controls first, then compact map/equipment groups
- hq.forEach(function(b){rail.appendChild(b)});
- group("🗺️ מפה ורישום",map);
- group("🚒 כוחות וציוד",equip);
-});
-</script></body>`)};
+window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"></body>`)};
 function coordsFor(x){let w=workers.find(z=>z.name===x.worker_name&&z.latitude!=null&&z.longitude!=null);if(w)return[+w.latitude,+w.longitude];let m=String(x.details||"").match(/LOC\|(-?\d+(?:\.\d+)?)\|(-?\d+(?:\.\d+)?)/);return m?[+m[1],+m[2]]:null}
 function renderSOS(){sosLayer.clearLayers();let all=reqForEvent().filter(x=>["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&!["טופל","נמחק"].includes(x.status));activeSOS=all[0]||null;let b=$("dangerBanner");if(!activeSOS){if(b)b.style.display="none";return}let c=coordsFor(activeSOS);b.style.display="flex";$("dangerName").textContent=`🚨 סכנה / חירום — ${activeSOS.worker_name||"עובד"}`;$("dangerMeta").textContent=`${activeSOS.request_type} • ${activeSOS.status||"חדש"}${c?` • ${c[0].toFixed(5)}, ${c[1].toFixed(5)}`:" • מיקום ממתין"}`;if(c){let ic=L.divIcon({className:"",html:`<div class="sosLabel">🆘 ${esc(activeSOS.worker_name||"עובד")}</div><div class="sosPulse"></div>`,iconSize:[120,55],iconAnchor:[60,45]});L.marker(c,{icon:ic,zIndexOffset:5000}).addTo(sosLayer);map.setView(c,16)}}
 async function setSOS(st){if(!activeSOS)return;let r=await cloud.from("worker_requests").update({status:st}).eq("id",activeSOS.id);if(r.error)alert(r.error.message);else live()}
@@ -588,7 +562,33 @@ window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiu
  q('plDraw')?.addEventListener('click',()=>click('freeDraw')); q('plArea')?.addEventListener('click',()=>click('measureArea')); q('plDist')?.addEventListener('click',()=>click('measureDist')); q('plUndo')?.addEventListener('click',()=>click('undo')); q('plErase')?.addEventListener('click',()=>click('erase')); q('plStop')?.addEventListener('click',()=>click('stopDraw')); q('plLocate')?.addEventListener('click',()=>click('locate'));
 });
 </script>
-</body></html>
+<script id="left-groups-v3-build">
+window.addEventListener("DOMContentLoaded",function(){
+ var rail=document.getElementById("premiumLeft");
+ if(!rail||rail.dataset.grouped==="1")return;
+ rail.dataset.grouped="1";
+ var buttons=Array.from(rail.querySelectorAll(":scope > button"));
+ var mapIds=new Set(["plDraw","plArea","plDist","plUndo","plErase","plStop","plLocate"]);
+ var mapKinds=new Set(["fire","firebreak","escape","assembly","hazard"]);
+ var equipKinds=new Set(["water","engine"]);
+ var map=[],equip=[],hq=[];
+ buttons.forEach(function(b){
+   var kind=b.dataset.l||b.dataset.p||"";
+   if(mapIds.has(b.id)||mapKinds.has(kind))map.push(b);
+   else if(equipKinds.has(kind))equip.push(b);
+   else hq.push(b);
+ });
+ function group(title,items){
+   if(!items.length)return;
+   var t=document.createElement("div");t.className="leftGroupTitle";t.textContent=title;rail.appendChild(t);
+   var g=document.createElement("div");g.className="leftMiniGrid";rail.appendChild(g);
+   items.forEach(function(b){g.appendChild(b)});
+ }
+ hq.forEach(function(b){rail.appendChild(b)});
+ group("🗺️ מפה ורישום",map);
+ group("🚒 כוחות וציוד",equip);
+});
+</script></body></html>
 
 
 
