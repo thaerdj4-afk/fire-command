@@ -575,36 +575,40 @@ window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiu
 </script>
 <script id="left-groups-v3-build">
 window.addEventListener("DOMContentLoaded",function(){
- var rail=document.getElementById("premiumLeft"); if(!rail||rail.dataset.completeGroups==="1")return;
- rail.dataset.completeGroups="1";
+ var rail=document.getElementById("premiumLeft"); if(!rail||rail.dataset.completeGroups==="2")return;
+ rail.dataset.completeGroups="2";
  var panel=document.getElementById("panel");
  var cards=panel?Array.from(panel.querySelectorAll(":scope > .card")):[];
  var mapCard=cards.find(function(c){var h=c.querySelector("h3");return h&&(h.textContent||"").includes("מפה ורישום")});
  var equipCard=cards.find(function(c){var h=c.querySelector("h3");return h&&(h.textContent||"").includes("כוחות וציוד")});
- function title(txt){var t=document.createElement("div");t.className="leftGroupTitle";t.textContent=txt;rail.appendChild(t)}
+ function title(txt){var t=document.createElement("div");t.className="leftGroupTitle";t.textContent=txt;rail.appendChild(t);return t}
  function grid(){var g=document.createElement("div");g.className="leftMiniGrid";rail.appendChild(g);return g}
- // Map: use existing compact HQ buttons first, then move every missing original control.
- title("🗺️ מפה ורישום"); var mg=grid();
+ function cloneButton(src){
+   var b=src.cloneNode(true);
+   if(b.id)b.removeAttribute("id");
+   b.addEventListener("click",function(){src.click()});
+   return b;
+ }
+ // Keep existing operational compact tools, then add ALL original map buttons that are not already represented.
+ title("🗺️ מפה ורישום");var mg=grid();
  var compact=Array.from(rail.querySelectorAll(":scope > button"));
  compact.forEach(function(b){mg.appendChild(b)});
+ var represented=new Set();
+ Array.from(mg.querySelectorAll("button")).forEach(function(b){
+   var k=b.dataset.l||b.dataset.p||b.dataset.a||b.id||"";if(k)represented.add(k)
+ });
  if(mapCard){
-   Array.from(mapCard.querySelectorAll("button")).forEach(function(b){
-     var duplicate=false,kind=b.dataset.l||b.dataset.p||b.dataset.a||"";
-     if(b.id&&["freeDraw","measureArea","measureDist","undo","erase","stopDraw","locate"].includes(b.id))duplicate=true;
-     if(kind&&["fire","firebreak","escape","assembly","hazard","water","engine"].includes(kind))duplicate=true;
-     if(!duplicate)mg.appendChild(b);
+   var base=mapCard.querySelector("#base");if(base){var w=document.createElement("div");w.style.gridColumn="1 / -1";w.appendChild(base);mg.prepend(w)}
+   Array.from(mapCard.querySelectorAll("button")).forEach(function(src){
+     var k=src.dataset.l||src.dataset.p||src.dataset.a||src.id||"";
+     if(!represented.has(k)){mg.appendChild(cloneButton(src));represented.add(k)}
    });
-   var base=mapCard.querySelector("#base"); if(base){var wrap=document.createElement("div");wrap.style.gridColumn="1 / -1";wrap.appendChild(base);mg.prepend(wrap)}
  }
- // Equipment: move every original equipment button one by one, except types already represented above.
- title("🚒 כוחות וציוד"); var eg=grid();
+ // Equipment must contain EVERY original equipment symbol, even if a similar symbol exists in map tools.
+ title("🚒 כוחות וציוד");var eg=grid();
  if(equipCard){
    var unit=equipCard.querySelector("#unit");if(unit){unit.style.gridColumn="1 / -1";eg.appendChild(unit)}
-   Array.from(equipCard.querySelectorAll("button")).forEach(function(b){
-     var kind=b.dataset.p||"";
-     if(["engine","water","hazard"].includes(kind))return;
-     eg.appendChild(b);
-   });
+   Array.from(equipCard.querySelectorAll("button")).forEach(function(src){eg.appendChild(cloneButton(src))});
  }
 });
 </script></body></html>
