@@ -240,6 +240,22 @@ $("copyEventNumber").onclick = async () => {
       }`
     );
 
+    html = html.replace('</head>', `<style>
+      /* Experimental compact command layout */
+      .sidebar{width:300px!important}
+      .card{border-radius:14px!important}
+      .card h3{font-size:15px!important}
+      .row button{min-height:36px}
+      #map{min-width:0}
+      @media (min-width:1100px){
+        main{grid-template-columns:112px minmax(0,1fr) 330px!important}
+        .sidebar:first-child{width:112px!important}
+        .sidebar:first-child .card{padding:6px!important}
+        .sidebar:first-child h3,.sidebar:first-child .small,.sidebar:first-child input{font-size:10px!important}
+        .sidebar:first-child button{font-size:10px!important;padding:7px 3px!important}
+        .sidebar:last-child{width:330px!important}
+      }
+    </style></head>`);
     document.open();
     document.write(html);
     document.close();
