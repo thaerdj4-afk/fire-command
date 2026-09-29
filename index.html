@@ -148,6 +148,16 @@ $("copyEventNumber").onclick = async () => {
 `);
 
     replaceRequired(
+      '<div class="card"><h3>🧭 גזרות</h3><div class="small">סמן גבול גזרה על המפה או בחר נקודת מפגש לכל גזרה.</div><div class="row"><button data-s="א">א׳</button><button data-s="ב">ב׳</button><button data-s="ג">ג׳</button></div><div class="row"><button onclick="setSectorPoint(\'א\')">📍 נקודת גזרה א</button><button onclick="setSectorPoint(\'ב\')">📍 נקודת גזרה ב</button><button onclick="setSectorPoint(\'ג\')">📍 נקודת גזרה ג</button></div><button class="green" type="button" onclick="addCustomSector()">➕ גזרה חדשה — כתוב שם ובחר מיקום</button><div id="sectorSetup"></div></div>',
+      '<div class="card"><h3>🧭 גזרות</h3><div class="small">כל הגזרות במקום אחד — בחר גזרה לניהול.</div><div id="sectorSetup"></div><button class="green" type="button" onclick="addCustomSector()">➕ הוסף גזרה</button></div>'
+    );
+
+    replaceRequired(
+      'function renderSectorSetup(){let box=$("sectorSetup");if(!box)return;box.innerHTML=sectorNames().map(k=>{let c=sectorConfig(k),p=sectorPosition(k);return \`<div class="worker"><b>גזרה \${k}</b> • \${esc(c.manager||"ללא מנהל")} • \${p?"📍 "+(+p[0]).toFixed(5)+", "+(+p[1]).toFixed(5):"מיקום לא הוגדר"}<div class="row"><button onclick="setSectorManager(\'\${k}\')">👤 מנהל גזרה</button><button onclick="setSectorPoint(\'\${k}\')">📍 בחר מיקום במפה</button></div></div>\`}).join("")}',
+      'function renderSectorSetup(){let box=$("sectorSetup");if(!box)return;box.innerHTML=sectorNames().map(k=>{let c=sectorConfig(k),p=sectorPosition(k),n=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k)).length;return \`<details class="worker" \${k==="א"?"open":""}><summary style="cursor:pointer;font-weight:800;font-size:16px">גזרה \${esc(k)} <span class="small">• 👤 \${esc(c.manager||"ללא מנהל")} • 👥 \${n}</span></summary><div class="small" style="margin-top:8px">\${p?"📍 נקודה הוגדרה":"📍 נקודה לא הוגדרה"}</div><div class="row" style="margin-top:8px"><button data-s="\${esc(k)}">✏️ גבולות</button><button onclick="setSectorPoint(\'\${k}\')">📍 נקודת גזרה</button><button onclick="setSectorManager(\'\${k}\')">👤 מנהל</button><button type="button" onclick="document.getElementById(\'workers\')?.scrollIntoView({behavior:\'smooth\'})">👥 עובדים</button></div></details>\`}).join("");box.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];b.dataset.sectorActive="1";window._sectorDrawName=b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}'
+    );
+
+    replaceRequired(
       'let workerPhones=new Map(),phoneLoadError="";',
       'let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";'
     );
