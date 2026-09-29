@@ -173,6 +173,11 @@ $("copyEventNumber").onclick = async () => {
     );
 
     replaceRequired(
+      'localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();setSectorPoint(k)};',
+      'localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();renderWorkers();setSectorPoint(k)};'
+    );
+
+    replaceRequired(
       'window.assignSector=async(id,k)=>{',
       'window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{'
     );
