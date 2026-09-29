@@ -241,7 +241,7 @@ main{height:calc(100vh - 142px)!important;min-height:540px!important}
 
 <script>
 (()=>{"use strict";const $=x=>document.getElementById(x),URL="https://jvubjwzzikfwsektifzi.supabase.co",KEY="sb_publishable_2sysk85O-l18YM_EAIaMJg_RAks_tpW",cloud=window.supabase.createClient(URL,KEY);
-const map=L.map("map",{doubleClickZoom:false}).setView([32.9,35.65],10),ops=L.featureGroup().addTo(map),wl=L.layerGroup().addTo(map);
+const map=L.map("map",{doubleClickZoom:false}).setView([32.9,35.65],10),ops=L.featureGroup().addTo(map),wl=L.layerGroup().addTo(map);window.__hqMap=map;
 const tiles={street:L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}),sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),hybrid:L.layerGroup([L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),topo:L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17}),dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20})};let bt=tiles.hybrid;bt.addTo(map);
 let ev=null,started=null,mode=null,lineKind=null,linePts=[],polyKind=null,polyPts=[],preview=null,eraseMode=false,stack=[],workers=[],requests=[],chan=null,lastWind=null,freeDrawing=false,freePts=[],measureMode=null,measurePts=[],counts={engine:0,person:0,blower:0,water:0},lastFireAreaM2=0;
 const markerSvg={person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M6 21v-3c0-4 2-6 6-6s6 2 6 6v3"/></svg>',engine:'<svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',water:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/></svg>',assembly:'<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3 19c.5-4 2.2-6 5-6s4.5 2 5 6M11 19c.5-4 2.2-6 5-6s4.5 2 5 6"/></svg>',hazard:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg>',cmd:'<svg viewBox="0 0 24 24"><path d="M4 20V8l8-5 8 5v12z"/><path d="M8 20v-7h8v7M12 3v5"/></svg>',blower:'<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 10h8v4h-8M4 12H2"/></svg>',backpack:'<svg viewBox="0 0 24 24"><path d="M7 8V6c0-2 2-3 5-3s5 1 5 3v2M5 8h14v13H5zM8 12h8"/></svg>',floatpump:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>',subpump:'<svg viewBox="0 0 24 24"><rect x="7" y="5" width="10" height="14" rx="2"/><path d="M10 2h4v3M12 19v3M9 11h6"/></svg>',hydrant:'<svg viewBox="0 0 24 24"><path d="M8 21V9h8v12M6 9h12M9 5h6v4M4 13h4M16 13h4"/></svg>',fill:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M12 9v6M9 12h6"/></svg>'};function markerHtml(k){if(k==='fire')return '<div class="fireMarker"><i class="spark s1"></i><i class="spark s2"></i><i class="flame"></i></div>';let c=k==='hazard'?' danger':(k==='water'||k==='fill'||k==='hydrant')?' water':k==='assembly'?' safe':'';return `<div class="mapSvgMarker${c}">${markerSvg[k]||markerSvg.cmd}</div>`}const esc=s=>String(s??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
@@ -745,9 +745,10 @@ async function doSearch(term){
   box.innerHTML=a.map((x,i)=>'<button type="button" data-i="'+i+'">'+escText(x.display_name)+'</button>').join("");
   box.querySelectorAll("button").forEach(b=>b.onclick=()=>{
    const x=a[+b.dataset.i],lat=+x.lat,lon=+x.lon;
-   if(searchMarker)map.removeLayer(searchMarker);
-   searchMarker=L.marker([lat,lon]).addTo(map).bindPopup("📍 "+escText(x.display_name)).openPopup();
-   map.flyTo([lat,lon],15,{animate:true,duration:.8}); box.style.display="none";
+   const hqMap=window.__hqMap;if(!hqMap){box.innerHTML='<div style="padding:9px">המפה עדיין לא מוכנה</div>';return}
+   if(searchMarker)hqMap.removeLayer(searchMarker);
+   searchMarker=L.marker([lat,lon]).addTo(hqMap).bindPopup("📍 "+escText(x.display_name)).openPopup();
+   hqMap.flyTo([lat,lon],15,{animate:true,duration:.8}); box.style.display="none";
   });
  }catch(e){box.innerHTML='<div style="padding:9px">לא ניתן לחפש כרגע</div>'}
 }
