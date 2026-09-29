@@ -718,6 +718,8 @@ window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiu
 "use strict";
 const q=id=>document.getElementById(id);
 let searchMarker=null, windSamples=[];
+function trendFuel(){let f={type:"לא ידוע",factor:1};try{f=JSON.parse(document.documentElement.dataset.hqFuel||"{\"type\":\"לא ידוע\",\"factor\":1}")}catch{}return f}
+function trendRisk(x){const f=trendFuel(),ff=+f.factor||1,wind=Math.max(+x.w||0,(+x.g||0)*.72),dry=Math.max(0,1-(+x.h||50)/100),rain=+x.rain||0,score=Math.max(0,Math.min(100,(wind*1.45+dry*42-rain*10)*ff));return {score:Math.round(score),color:score>=65?"#ff4b3e":score>=38?"#ffd34d":"#54d879",label:score>=65?"גבוה":score>=38?"בינוני":"נמוך"}}
 function escText(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function doSearch(term){
  const box=q("mapSearchResults"); if(!box||!term.trim())return;
@@ -755,14 +757,14 @@ function draw(){
  for(let i=0;i<24;i+=3){let x=left+i*((W-left-right)/23);out+='<line x1="'+x+'" y1="'+top+'" x2="'+x+'" y2="'+(H-bottom)+'" stroke="rgba(255,255,255,.12)" stroke-width="1"/>'}
  if(data.length<2){out+='<text x="380" y="62" text-anchor="middle" fill="#a9beb5" font-size="16" font-weight="700">ממתין לנתוני תחזית...</text>';svg.innerHTML=out;return}
  const max=Math.max(35,...data.flatMap(x=>[+x.w||0,+x.g||0])),px=i=>left+i*((W-left-right)/23),py=v=>top+(H-top-bottom)*(1-(+v||0)/max);
- let fuel={factor:1};try{fuel=JSON.parse(document.documentElement.dataset.hqFuel||"{\"factor\":1}")}catch{};const risk=x=>{const ff=+fuel.factor||1,wind=Math.max(+x.w||0,(+x.g||0)*.72),dry=Math.max(0,1-(+x.h||50)/100),rain=+x.rain||0,score=Math.max(0,Math.min(100,(wind*1.45+dry*42-rain*10)*ff));return {color:score>=65?"#ff4b3e":score>=38?"#ffd34d":"#54d879"}};for(let i=0;i<data.length-1;i++){const a=data[i],b=data[i+1],r=risk(a);out+='<line x1="'+px(i)+'" y1="'+py(a.w)+'" x2="'+px(i+1)+'" y2="'+py(b.w)+'" stroke="'+r.color+'" stroke-width="5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'}
+ for(let i=0;i<data.length-1;i++){const a=data[i],b=data[i+1],r=trendRisk(a);out+='<line x1="'+px(i)+'" y1="'+py(a.w)+'" x2="'+px(i+1)+'" y2="'+py(b.w)+'" stroke="'+r.color+'" stroke-width="5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'}
  data.forEach((x,i)=>{if(i%3===0||i===23){let label=i===0?"עכשיו":String(x.t||"").slice(11,16);out+='<text x="'+px(i)+'" y="112" text-anchor="middle" fill="#d9e9e2" font-size="12" font-weight="700">'+label+'</text>'}});
  svg.innerHTML=out;
 }function refresh(){
  const ws=parseFloat(q("ws")?.textContent)||0,wg=parseFloat(q("wg")?.textContent)||0,hum=parseFloat(document.documentElement.dataset.hqHumidity)||0;
  q("ftDir").textContent=q("wd")?.textContent||"—";q("ftWind").textContent=ws?Math.round(ws)+" קמ״ש":"—";q("ftGust").textContent=wg?Math.round(wg)+" קמ״ש":"—";q("ftHumidity").textContent=hum?Math.round(hum)+"%":"—";
  const p=measuredProgress();q("ftProgress").textContent=p==null?"אין מספיק נתונים":p+" מ׳";
- let fd=[];try{fd=JSON.parse(document.documentElement.dataset.hqForecast24h||"[]")}catch{};let fuel={type:"לא ידוע",factor:1};try{fuel=JSON.parse(document.documentElement.dataset.hqFuel||"{\"type\":\"לא ידוע\",\"factor\":1}")}catch{};const localRisk=x=>{const ff=+fuel.factor||1,wind=Math.max(+x.w||0,(+x.g||0)*.72),dry=Math.max(0,1-(+x.h||50)/100),rain=+x.rain||0,score=Math.max(0,Math.min(100,(wind*1.45+dry*42-rain*10)*ff));return {score:Math.round(score),color:score>=65?"#ff4b3e":score>=38?"#ffd34d":"#54d879",label:score>=65?"גבוה":score>=38?"בינוני":"נמוך"}};let peak=fd.length?fd.map(localRisk).sort((a,b)=>b.score-a.score)[0]:null;q("fireTrendStatus").textContent=fd.length?("שטח: "+(fuel.type||"לא ידוע")+(peak?" • שיא 24ש׳: "+peak.label:"")):"ממתין למוקד אש";
+ let fd=[];try{fd=JSON.parse(document.documentElement.dataset.hqForecast24h||"[]")}catch{};const fuel=trendFuel(),peak=fd.length?fd.map(trendRisk).sort((a,b)=>b.score-a.score)[0]:null;q("fireTrendStatus").textContent=fd.length?("שטח: "+(fuel.type||"לא ידוע")+(peak?" • שיא 24ש׳: "+peak.label:"")):"ממתין למוקד אש";
  if(ws&&(windSamples.length===0||Date.now()-windSamples[windSamples.length-1].t>55000)){windSamples.push({t:Date.now(),w:ws,g:wg,h:hum});if(windSamples.length>24)windSamples.shift()}
  draw();
 }
