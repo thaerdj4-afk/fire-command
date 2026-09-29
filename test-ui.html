@@ -256,6 +256,25 @@ $("copyEventNumber").onclick = async () => {
         .sidebar:last-child{width:330px!important}
       }
     </style></head>`);
+    /* TEST UI: keep the map big and reduce visual overload without changing the live page */
+    html = html.replace('</head>', `<style id="simple-test-ui">
+      @media (min-width:900px){
+        main{grid-template-columns:92px minmax(0,1fr) 320px!important}
+        main>.sidebar:first-child{width:92px!important;overflow-y:auto!important}
+        main>.sidebar:last-child{width:320px!important;overflow-y:auto!important}
+        main>.sidebar:first-child .card{padding:6px!important;margin-bottom:6px!important}
+        main>.sidebar:first-child h3{font-size:0!important;margin:2px 0 6px!important}
+        main>.sidebar:first-child h3::first-letter{font-size:18px!important}
+        main>.sidebar:first-child button{font-size:0!important;min-width:36px!important;min-height:36px!important;padding:5px!important}
+        main>.sidebar:first-child button::first-letter{font-size:18px!important}
+        main>.sidebar:first-child .row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important}
+        #map{min-width:0!important}
+        #hqEventHub{margin-bottom:7px!important}
+        .sectorHub{margin-bottom:7px!important}
+      }
+      .sectorHub button{min-height:38px!important}
+      #workers .worker{cursor:pointer}
+    </style></head>`);
     document.open();
     document.write(html);
     document.close();
