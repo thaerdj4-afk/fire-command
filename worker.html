@@ -75,7 +75,7 @@ $('eventLink').value=eventId?location.href:'';
 $('consent').checked=hasEventConsent();
 $('join').disabled=false;
 $('name').value=session?.name||params.get('name')||localStorage.getItem('fireWorkerName:'+eventId)||'';$('phone').value=session?.phone||localStorage.getItem('fireWorkerPhone:'+eventId)||'';if(session?.equipment?.length){document.querySelectorAll('#equipment input').forEach(x=>x.checked=session.equipment.includes(x.value))}
-(async()=>{try{if(!await checkEvent())return;if(session?.finished){$('rejoin').hidden=false;show('ended');return}if(session?.token){worker={id:session.id};show('inside');sharing=session.sharing;await poll();if(session.finished)return;if(session.sharing&&!remoteStopped){if(bridge)bridge.resumeLocation(eventId,session.name);else await startGPS()}}else{$('join').disabled=false}}catch(e){text('entryError',errorText(e))}})();setInterval(poll,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
+(async()=>{try{if(!session?.token){$('join').disabled=false;text('eventName','הזן מספר אירוע וקוד גישה מהחפ״ק');return;}if(!await checkEvent())return;if(session?.finished){$('rejoin').hidden=false;show('ended');return}if(session?.token){worker={id:session.id};show('inside');sharing=session.sharing;await poll();if(session.finished)return;if(session.sharing&&!remoteStopped){if(bridge)bridge.resumeLocation(eventId,session.name);else await startGPS()}}else{$('join').disabled=false}}catch(e){text('entryError',errorText(e))}})();setInterval(poll,5000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
 })();</script></main></body></html>
 
 
