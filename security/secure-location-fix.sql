@@ -37,3 +37,19 @@ begin
  update public.worker_access_sessions set worker_id=v_worker,last_used_at=pg_catalog.now() where id=v_session;
  return v_worker;
 end $function$;
+
+create or replace function public.worker_secure_send_request(p_worker_id uuid,p_session_token text,p_type text,p_details text default '')
+returns boolean language plpgsql security definer set search_path=''
+as $function$
+declare v_worker public.workers%rowtype;
+begin
+ if not public.worker_secure_session_worker_valid(p_worker_id,p_session_token) then return false; end if;
+ if p_type is null or p_type not in ('WhatsApp opt-in','ציוד עובד','⛽ דלק למשאבה','💧 מים','🍴 אוכל',
+ '🧰 ציוד / עזרה','פציעה / רפואי','🚒 תגבור','SOS / סכנה','אישור קבלת הודעה','תמונה מהשטח') then return false; end if;
+ if length(coalesce(p_details,''))>250000 then return false; end if;
+ select * into v_worker from public.workers where id=p_worker_id and status<>'סיים';
+ if not found then return false; end if;
+ insert into public.worker_requests(worker_id,event_id,worker_name,request_type,details,status)
+ values(v_worker.id,v_worker.event_id,v_worker.name,p_type,p_details,'חדש');
+ return true;
+end $function$;

@@ -22,7 +22,7 @@ Record APK SHA/commit, device model, OS version, WebView version and each result
 | Clean install and app launch | Embedded branch login opens | Pending device |
 | Permission denied / approximate / precise | Honest state; allowed mode works | Pending device |
 | GPS with screen on and locked for 10 min | HQ receives fresh coordinates | Pending device |
-| Revoke/expire session while sharing | No new coordinate writes | Backend rollback tests pass; device pending |
+| Revoke/expire session while sharing | No new coordinate writes | 17 backend rollback tests pass; device pending |
 | SOS with/without GPS and with network failure | No false success; HQ receives alert | Browser mocks and backend rollback pass; device pending |
 | HQ message/reply/sector and acknowledgment | Correct worker receives it | Browser/backend pass; duplicate-name blocker |
 | HQ stop and event finish | Tracking stops; cannot restart without authority | Browser/backend pass; device pending |

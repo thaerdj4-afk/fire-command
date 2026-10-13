@@ -13,9 +13,9 @@ Branch: `worker-security-staging`. Production `main` and live HQ files remain un
 - Worker registration and GPS backend runtime errors were reproduced and fixed in
   secure RPCs only (`pg_catalog.nullif` and nonexistent `isfinite(float8)`).
 - Server rejects coordinate updates while an active HQ stop command exists.
-- Backend: 14 rollback-only tests pass after the secure RPC fixes were applied.
+- Backend: 17 rollback-only tests pass after the secure RPC fixes were applied.
   No test event, worker, message or SOS was committed or broadcast to live HQ.
-- Browser: 13 behavioral tests passed locally using Chromium headless shell.
+- Browser: 15 behavioral tests passed locally using Chromium headless shell.
   See `security/tests/worker-browser.cjs` and Actions execution results.
   Mock-browser tests do not replace native or real-device tests.
 
@@ -27,7 +27,8 @@ Branch: `worker-security-staging`. Production `main` and live HQ files remain un
   execution is already denied for both anonymous and authenticated roles.
 - Duplicate names can receive another worker's legacy HQ message; live HQ currently
   addresses messages/stop commands by name. It is preserved per user instruction.
-- Secure request type validation and IP/device gateway throttling require completion.
+- IP/device gateway throttling requires completion. Secure RPC request types now
+  reject forged HQ messages, stop commands and sector assignments.
 - Real Android device tests, signed production AAB, signing-lineage verification,
   Play Console declarations and privacy policy are incomplete.
 

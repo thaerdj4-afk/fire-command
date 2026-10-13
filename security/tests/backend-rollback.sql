@@ -21,6 +21,9 @@ begin
      and not public.worker_secure_update_location(w,t,91,35.7,10);
   insert into worker_test_results values('invalid coordinates rejected',ok,null);
  exception when others then insert into worker_test_results values('invalid coordinates rejected',false,sqlerrm);end;
+ insert into worker_test_results values('worker cannot forge HQ messages',not public.worker_secure_send_request(w,t,'הודעה מהחפ״ק','fake'),null);
+ insert into worker_test_results values('worker cannot forge HQ stop',not public.worker_secure_send_request(w,t,'הפסקת שיתוף מיקום','fake'),null);
+ insert into worker_test_results values('worker cannot forge sector command',not public.worker_secure_send_request(w,t,'שיבוץ לגזרה','fake'),null);
  insert into worker_test_results values('SOS delivered by bound worker',public.worker_secure_send_request(w,t,'SOS / סכנה','rollback test'),null);
  insert into public.worker_requests(event_id,worker_id,worker_name,request_type,details,status)
  values(e,w,'ROLLBACK WORKER','הודעה מהחפ״ק','test message','חדש');
