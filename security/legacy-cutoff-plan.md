@@ -29,8 +29,8 @@ break those workers. The secure client alone does not protect the legacy API.
 - Preserve `admin_workers`, `admin_requests_read`, `command_update_requests` and
   all authenticated admin policies on `fire_events`.
 - `worker_bind_secure_session(uuid,uuid,text)` lets a new token bind an arbitrary
-  existing worker; secure registration does not use it. Revoke it after checking
-  dependencies. Legacy name-based `worker_inbox` must be included in cutoff.
+  existing worker, but EXECUTE is already denied to anon/authenticated on inspection.
+  Preserve this denial. Legacy name-based `worker_inbox` must be included in cutoff.
 
 No policy revocations, legacy-function replacements, HQ edits, production deploys,
 or merges were performed by this staging continuation.
