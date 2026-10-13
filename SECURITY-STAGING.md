@@ -9,7 +9,8 @@ Branch: `worker-security-staging`. Production `main` and live HQ files remain un
 - Android sources are tracked. The staging APK embeds the checked-out worker asset
   and installs as `com.firecommand.worker.staging` separately from production.
 - APK/AAB compilation and Android lint passed on run 38466538068.
-  Android 16 emulator clean-launch smoke test is being added; real GPS remains pending.
+  Android 16 emulator clean-launch smoke test passed on run 38467024432;
+  real GPS remains pending. Full evidence is in `security/TEST-RESULTS.md`.
 - Native GPS now uses the bound worker ID + token with secure RPCs, without persisting
   token in native preferences or automatically restarting without credentials.
 - Worker registration and GPS backend runtime errors were reproduced and fixed in

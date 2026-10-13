@@ -19,7 +19,7 @@ Record APK SHA/commit, device model, OS version, WebView version and each result
 
 | Test | Required result | Current evidence |
 |---|---|---|
-| Clean install and app launch | Embedded branch login opens | Pending device |
+| Clean install and app launch | Embedded branch login opens | Android 16 emulator passed; real phone pending |
 | Permission denied / approximate / precise | Honest state; allowed mode works | Pending device |
 | GPS with screen on and locked for 10 min | HQ receives fresh coordinates | Pending device |
 | Revoke/expire session while sharing | No new coordinate writes | 17 backend rollback tests pass; device pending |
