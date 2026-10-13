@@ -49,3 +49,32 @@ jobs:
             android-app/app/build/outputs/bundle/release/app-release.aab
             android-app/app/build/reports/lint-results*.html
           if-no-files-found: error
+  android-smoke:
+    needs: test-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Fire-Command-Worker-SECURITY-STAGING-${{ github.sha }}
+          path: staging-build
+      - name: Enable emulator KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Android 16 clean-launch smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: bash security/tests/android-smoke.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Android-36-smoke-evidence-${{ github.sha }}
+          path: smoke-evidence/
+          if-no-files-found: warn
