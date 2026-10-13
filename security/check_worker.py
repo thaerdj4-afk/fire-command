@@ -15,6 +15,17 @@ checks = {
     "No legacy event lookup without code": "worker_event_by_number" not in source,
     "Secure session checked on GPS updates": "worker_secure_update_location" in source,
 }
+native = worker.parent / "android-app/app/src/main/java/com/firecommand/worker"
+service = (native / "LocationService.java").read_text()
+activity = (native / "MainActivity.java").read_text()
+checks.update({
+    "Native GPS uses secure session RPC": "worker_secure_update_location" in service and '"p_session_token"' in service,
+    "Native GPS has no direct table endpoints": not re.search(r"/rest/v1/(workers|worker_requests)(?:[?\"/])", service),
+    "Android loads embedded worker asset": "WebViewAssetLoader" in activity and "appassets.androidplatform.net/assets/worker.html" in activity,
+    "Legacy native bridge removed": "public void startLocation(" not in activity and "public void resumeLocation(" not in activity,
+    "Native service cannot restart without credentials": "return START_STICKY" not in service,
+    "Worker has no remote script dependencies": '<script src=' not in source,
+})
 for title, ok in checks.items():
     print(("PASS" if ok else "BLOCK") + " " + title)
 if not all(checks.values()):

@@ -1,20 +1,34 @@
 # Worker security staging
 
-This branch is isolated from production `main` and the live HQ.
+Branch: `worker-security-staging`. Production `main` and live HQ files remain unchanged.
 
-## Verified backend preparation
-- Event access codes stored as password hashes in `worker_event_access_codes`.
-- Session tokens stored hashed in `worker_access_sessions`.
-- Attempt tracking in `worker_access_attempts`.
-- RPCs: `verify_worker_event_access`, `worker_start_secure_session`, `worker_secure_session_valid`, `worker_bind_secure_session`, `worker_secure_session_worker_valid`, `worker_secure_update_location`.
+## Continuation on 2026-10-13
 
-## SECURITY BLOCKERS — DO NOT DEPLOY TO PLAY
-- Anonymous `workers` SELECT and UPDATE policies currently allow `true`, exposing names, phone numbers and GPS.
-- Anonymous `worker_requests` INSERT permits arbitrary requests.
-- Legacy `worker_inbox` uses worker name without session authorization.
-- Worker frontend uses legacy direct database calls, not secure RPCs.
-- The session-binding RPC must not be exposed to arbitrary existing worker IDs: replace it with a single atomic, server-side join/registration flow before rollout.
-- Rate limiting keyed only by event number is insufficient for distributed brute-force protection; add IP/device throttling at an edge gateway.
-- No completed Android signed AAB, real-device testing, penetration testing, or Play Store review.
+- Secure browser client uses session-bound registration, profile, location, requests,
+  status, finish and inbox RPCs. No direct worker/request table operations.
+- Android sources are tracked. The staging APK embeds the checked-out worker asset
+  and installs as `com.firecommand.worker.staging` separately from production.
+- Native GPS now uses the bound worker ID + token with secure RPCs, without persisting
+  token in native preferences or automatically restarting without credentials.
+- Worker registration and GPS backend runtime errors were reproduced and fixed in
+  secure RPCs only (`pg_catalog.nullif` and nonexistent `isfinite(float8)`).
+- Server rejects coordinate updates while an active HQ stop command exists.
+- Backend: 14 rollback-only tests pass after the secure RPC fixes were applied.
+  No test event, worker, message or SOS was committed or broadcast to live HQ.
+- Browser tests: see `security/tests/worker-browser.cjs` and Actions execution results.
+  Mock-browser tests do not replace native or real-device tests.
 
-Never store secrets or Android signing keys in this repository. Do not merge until the full worker data flow is protected and verified.
+## Release blockers
+
+- Legacy anonymous workers SELECT/INSERT/UPDATE and requests INSERT remain open.
+  `request_insert_authenticated` allows any authenticated user to insert requests.
+- Legacy arbitrary session binding and name-based inbox remain callable.
+- Duplicate names can receive another worker's legacy HQ message; live HQ currently
+  addresses messages/stop commands by name. It is preserved per user instruction.
+- Secure request type validation and IP/device gateway throttling require completion.
+- Real Android device tests, signed production AAB, signing-lineage verification,
+  Play Console declarations and privacy policy are incomplete.
+
+The branch is not ready for Google Play or production rollout. See
+`security/legacy-cutoff-plan.md` and `security/PLAY-RELEASE.md`.
+Never commit secrets or signing keys. Do not merge until blockers are resolved.
