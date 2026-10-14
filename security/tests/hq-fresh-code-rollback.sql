@@ -22,6 +22,10 @@ begin
  insert into code_test_results values('code changes on next HQ entry',c1<>c2);
  insert into code_test_results values('old entry code no longer accepted',not public.verify_worker_event_access('7000000000000000003',c1));
  insert into code_test_results values('latest entry code accepted',public.verify_worker_event_access('7000000000000000003',c2));
+ insert into code_test_results select 'eight digit starts secure worker session',count(*)=1 from public.worker_start_secure_session('7000000000000000003',c2);
+ insert into code_test_results values('seven digits rejected',not public.verify_worker_event_access('7000000000000000003','1234567'));
+ for i in 1..19 loop perform public.verify_worker_event_access('7000000000000000003','wrong-code-value');end loop;
+ insert into code_test_results values('brute force limit remains active',not public.verify_worker_event_access('7000000000000000003',c2));
  insert into code_test_results values('joined worker session remains valid',public.worker_secure_session_worker_valid(w,t));
  insert into code_test_results select 'worker location and state untouched',status='בדרך' and latitude=33.2 and longitude=35.7 from public.workers where id=w;
  insert into code_test_results select 'code stored hashed and expires',code_hash<>c2 and expires_at>now() and disabled_at is null from public.worker_event_access_codes where event_id=e;

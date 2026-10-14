@@ -12,3 +12,6 @@ APK SHA256: dc741c06bed583fb9e4e45847d5153defe92e206840fe966ed6f9394bbbfe864
 - Backend migration applied: HQ generates eight-digit cryptographic numeric codes; legacy long codes still accepted until rotated. Existing worker sessions are never revoked by HQ code refresh.
 - Eitan database evidence belongs to ended events 100031 and 100036. No historical rows deleted. HQ loading/rendering corrected.
 - Android16 clean-launch workflow status is available in linked run. Actual device GPS/SOS/background and production signing remain release gates. Debug builds do not have guaranteed stable signing across runs.
+
+Android 16 corrected smoke run passed: https://github.com/thaerdj4-afk/fire-command/actions/runs/38625429143
+The exact original v18 APK was installed and verified: secure login visible, no location service before authorization, no main-thread fatal exception. Initial smoke automation failed on a missing ripgrep dependency and logcat command; portable Python checks and retried adb shell logcat fixed the harness.
