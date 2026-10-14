@@ -10,15 +10,19 @@ const eventId='11111111-1111-4111-8111-111111111111', workerId='22222222-2222-42
  let browser;try{browser=await chromium.launch({headless:true,channel:'chromium',timeout:20000,...(process.env.WORKER_CHROMIUM_PATH?{executablePath:process.env.WORKER_CHROMIUM_PATH}:{})})}catch(e){await new Promise(r=>server.close(r));throw e;}let passes=0;
  async function fixture(options={}){
   const page=await browser.newPage();const state={valid:true,locationOK:true,eventStatus:'active',workerStatus:'בדרך',inbox:[],calls:[],...options};
-  await page.addInitScript(({eventId,workerId,token,saved,native})=>{
-   window.__ticks=[];window.setInterval=fn=>{window.__ticks.push(fn);return 1;};window.__watchCount=0;window.__clears=0;window.__nativeStarts=[];window.__nativeStops=0;
+  await page.addInitScript(({eventId,workerId,token,saved,native,trusted})=>{
+   if(trusted)localStorage.setItem('workerTrustedDeviceV1',JSON.stringify({id:workerId,token}));window.__ticks=[];window.setInterval=fn=>{window.__ticks.push(fn);return 1;};window.__watchCount=0;window.__clears=0;window.__nativeStarts=[];window.__nativeStops=0;
    Object.defineProperty(navigator,'geolocation',{value:{watchPosition(success,error){window.__gps=success;window.__gpsError=error;window.__watchCount++;return 1},clearWatch(){window.__clears++;window.__gps=null;}}});
    if(native)window.FireWorker={startSecureLocation(...args){window.__nativeStarts.push(args)},stopLocation(){window.__nativeStops++},locationMessage(){return 'waiting'}};
    if(saved){localStorage.setItem('workerSessionV13secure:'+eventId,JSON.stringify({name:'Test Worker',phone:'972500000000',id:workerId,token,sharing:true,finished:false}));localStorage.setItem('workerConsent:'+eventId,'yes');}
-  },{eventId,workerId,token,saved:options.saved,native:options.native});
+  },{eventId,workerId,token,saved:options.saved,native:options.native,trusted:options.trusted});
   await page.route('https://jvubjwzzikfwsektifzi.supabase.co/rest/v1/rpc/*',async route=>{
    const name=route.request().url().split('/').pop(),args=route.request().postDataJSON();state.calls.push({name,args});let data;
    switch(name){
+    case 'worker_device_profile':data={id:workerId,name:'Test Worker',phone:'972524477147',status:state.trustStatus||'approved',fingerprint:'ABC12345',equipment:['בלי ציוד']};break;
+    case 'worker_device_events':data=[{id:eventId,name:'TRUST EVENT',event_number:'100001',response:'pending'}];break;
+    case 'worker_device_respond':data=true;break;
+    case 'worker_device_join_event':data=state.trustDenied?null:{event_id:eventId,worker_id:workerId,session_token:token,expires_at:'2099-01-01T00:00:00Z'};break;
     case 'worker_start_secure_session':data=state.denied?[]:[{event_id:eventId,session_token:token,expires_at:'2099-01-01T00:00:00Z'}];break;
     case 'worker_event_state':data=[{name:'TEST EVENT',status:state.eventStatus}];break;
     case 'worker_secure_register':data=workerId;break;
@@ -57,6 +61,9 @@ const eventId='11111111-1111-4111-8111-111111111111', workerId='22222222-2222-42
   await test('Finish clears sharing and sends secure finish status',async()=>{const f=await fixture();await f.join();await f.page.waitForSelector('#inside',{state:'visible'});await f.page.click('#finish');await f.page.waitForSelector('#ended',{state:'visible'});assert(f.state.calls.some(x=>x.name==='worker_secure_set_status'&&x.args.p_status==='סיים'));assert((await f.page.evaluate(()=>window.__clears))>0);await f.page.close()});
   await test('Android secure bridge receives bound token and skips browser GPS',async()=>{const f=await fixture({native:true});await f.join();await f.page.waitForSelector('#inside',{state:'visible'});assert.deepEqual(await f.page.evaluate(()=>window.__nativeStarts[0]),[eventId,workerId,token]);assert.equal(await f.page.evaluate(()=>window.__watchCount),0);await f.page.close()});
   await test('Eight-digit numeric code reaches session RPC and enters worker view',async()=>{const f=await fixture({code:'12345678'});await f.join();await f.page.waitForSelector('#inside',{state:'visible'});assert.equal(f.state.calls.find(x=>x.name==='worker_start_secure_session').args.p_code,'12345678');await f.page.close()});
+  await test('Approved identity opens home without GPS; joins active event without access code after consent',async()=>{const f=await fixture({trusted:true});await f.page.waitForSelector('#trustedHome',{state:'visible'});await f.page.waitForSelector('#trustedEvents button');assert.equal(await f.page.evaluate(()=>__watchCount),0);await f.page.locator('#trustedEvents button').first().click();assert(await f.page.isHidden('#eventSecretPanel'));await f.page.waitForFunction(()=>document.querySelector('#name').value==='Test Worker');assert.equal(await f.page.inputValue('#name'),'Test Worker');await f.page.check('#consent');await f.page.click('#join');await f.page.waitForSelector('#inside',{state:'visible'});assert(f.state.calls.some(x=>x.name==='worker_device_join_event'));assert(!f.state.calls.some(x=>x.name==='worker_start_secure_session'));assert.equal(await f.page.evaluate(()=>__watchCount),1);await f.page.close()});
+  await test('Pending approved-worker request displays fingerprint and cannot list events or start GPS',async()=>{const f=await fixture({trusted:true,trustStatus:'pending'});await f.page.waitForFunction(()=>document.querySelector('#trustedStatus').textContent.includes('ABC12345'));assert(!f.state.calls.some(x=>x.name==='worker_device_events'));assert.equal(await f.page.locator('#trustedEvents button').count(),0);assert.equal(await f.page.evaluate(()=>__watchCount),0);await f.page.close()});
+  await test('Declining an invitation saves response without joining or starting GPS',async()=>{const f=await fixture({trusted:true});await f.page.waitForSelector('#trustedEvents button');await f.page.locator('#trustedEvents button').nth(1).click();assert(f.state.calls.some(x=>x.name==='worker_device_respond'&&x.args.p_response==='declined'));assert(!f.state.calls.some(x=>x.name==='worker_device_join_event'));assert.equal(await f.page.evaluate(()=>__watchCount),0);await f.page.close()});
   console.log(`${passes} browser behavioral tests passed. Native Android/device behavior is not covered.`);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e.message);process.exitCode=1});

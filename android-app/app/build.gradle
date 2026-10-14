@@ -7,8 +7,8 @@ android {
       applicationIdSuffix '.staging'
     minSdk 26
     targetSdk 36
-    versionCode 18
-    versionName '18.0-security-staging'
+    versionCode 19
+    versionName '19.0-trusted-staging'
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
@@ -16,4 +16,21 @@ android {
   }
 }
 
-dependencies { implementation 'androidx.webkit:webkit:1.14.0' }
+// Firebase client config contains public app identifiers only. Server keys never enter the APK.
+def clientConfig = file('google-services.json')
+if (clientConfig.exists()) {
+  def cfg = new groovy.json.JsonSlurper().parse(clientConfig)
+  def app = cfg.client.find { it.client_info.android_client_info.package_name == 'com.firecommand.worker.staging' }
+  if (app == null) throw new GradleException('Firebase config must match the staging package')
+  android.defaultConfig {
+    resValue 'string', 'google_app_id', app.client_info.mobilesdk_app_id
+    resValue 'string', 'google_api_key', app.api_key[0].current_key
+    resValue 'string', 'gcm_defaultSenderId', cfg.project_info.project_number
+    resValue 'string', 'project_id', cfg.project_info.project_id
+  }
+}
+dependencies {
+ implementation 'androidx.webkit:webkit:1.14.0'
+ implementation platform('com.google.firebase:firebase-bom:35.0.0')
+ implementation 'com.google.firebase:firebase-messaging'
+}

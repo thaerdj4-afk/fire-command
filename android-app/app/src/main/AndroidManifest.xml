@@ -14,7 +14,11 @@
     android:label="אפליקציית עובד"
     android:supportsRtl="true"
     android:theme="@android:style/Theme.Material.Light.NoActionBar">
+    <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="worker_fire_invites_v1"/>
+    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/worker_notification"/>
+    <service android:name=".WorkerMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT"/></intent-filter></service>
     <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop">
+      <intent-filter><action android:name="com.firecommand.worker.OPEN_INVITATION"/><category android:name="android.intent.category.DEFAULT"/></intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>

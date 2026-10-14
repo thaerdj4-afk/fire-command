@@ -14,7 +14,7 @@ import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
   static final String BASE="https://appassets.androidplatform.net/assets/worker.html";
-  WebView web; String currentEvent="",pendingEvent="",pendingName="",pendingWorker="",pendingToken="";
+  volatile boolean trustedDocument=false; WebView web; String currentEvent="",pendingEvent="",pendingName="",pendingWorker="",pendingToken="";
   ValueCallback<Uri[]> fileCallback; Uri cameraUri;
   boolean starting=false, explicitStart=true;
   @Override public void onCreate(Bundle state){
@@ -27,8 +27,10 @@ public class MainActivity extends Activity {
     web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(true);
     web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
     web.addJavascriptInterface(new Bridge(),"FireWorker");
+    WorkerPush.initialize(this);
     final WebViewAssetLoader assets=new WebViewAssetLoader.Builder().addPathHandler("/assets/",new WebViewAssetLoader.AssetsPathHandler(this)).build();
     web.setWebViewClient(new WebViewClient(){
+      @Override public void onPageStarted(WebView v,String url,android.graphics.Bitmap icon){trustedDocument=local(Uri.parse(url));}
       @Override public WebResourceResponse shouldInterceptRequest(WebView view,WebResourceRequest request){return assets.shouldInterceptRequest(request.getUrl());}
       @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
         Uri uri=request.getUrl();
@@ -59,18 +61,25 @@ public class MainActivity extends Activity {
         return true;
       }
     });
-    String incoming=eventFrom(getIntent().getData());
+    String incoming=eventFromIntent(getIntent());
     currentEvent=incoming.isEmpty()?getSharedPreferences("worker",MODE_PRIVATE).getString("event",""):incoming;
     loadEvent(currentEvent);
   }
   boolean local(Uri u){return u!=null&&"https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())&&"/assets/worker.html".equals(u.getPath());}
   boolean trusted(Uri u){return "https".equals(u.getScheme())&&"thaerdj4-afk.github.io".equals(u.getHost())&&"/fire-command/worker.html".equals(u.getPath());}
   String eventFrom(Uri u){if(u==null||(!trusted(u)&&!local(u)))return "";String e=u.getQueryParameter("event");return e!=null&&e.matches("[0-9a-fA-F]{8}-[0-9a-fA-F-]{27}")?e:"";}
+  String eventFromIntent(Intent intent){String fromUrl=eventFrom(intent.getData());if(!fromUrl.isEmpty())return fromUrl;String extra=intent.getStringExtra("event_id");if(extra==null)return "";try{return java.util.UUID.fromString(extra).toString();}catch(Exception e){return "";}}
   void loadEvent(String event){currentEvent=event;web.loadUrl(BASE+"?native=1"+(event.isEmpty()?"":"&event="+Uri.encode(event)));}
-  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String next=eventFrom(intent.getData());if(next.isEmpty()||next.equals(currentEvent))return;
+  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String next=eventFromIntent(intent);if(next.isEmpty()||next.equals(currentEvent))return;
     new AlertDialog.Builder(this).setMessage("לעבור לאירוע החדש? שיתוף המיקום באירוע הקודם יופסק.").setPositiveButton("מעבר",(d,w)->{stopNative();loadEvent(next);}).setNegativeButton("ביטול",null).show();
   }
   class Bridge {
+    @JavascriptInterface public String trustedIdentity(){if(!trustedDocument)return "";android.content.SharedPreferences p=getSharedPreferences("worker_identity",MODE_PRIVATE);String id=p.getString("id",""),token=p.getString("token","");if(id.isEmpty()||token.isEmpty())return "";try{return new JSONObject().put("id",id).put("token",token).toString();}catch(Exception e){return "";}}
+    @JavascriptInterface public boolean saveTrustedIdentity(String id,String token){if(!trustedDocument||id==null||token==null||!id.matches("[0-9a-fA-F-]{36}")||!token.matches("[0-9a-f]{64}"))return false;boolean ok=getSharedPreferences("worker_identity",MODE_PRIVATE).edit().putString("id",id).putString("token",token).commit();if(ok)WorkerPush.sync(MainActivity.this);return ok;}
+    @JavascriptInterface public String pushToken(){return trustedDocument?getSharedPreferences("worker_identity",MODE_PRIVATE).getString("push",""):"";}
+    @JavascriptInterface public String pushStatus(){if(!trustedDocument)return "";if(!WorkerPush.configured(MainActivity.this))return "התראות כשהאפליקציה סגורה ממתינות להגדרת Firebase";if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return "יש לאשר הרשאת התראות";return pushToken().isEmpty()?"מחבר לשירות ההתראות…":"הרשאת התראות פעילה; צליל לפי הגדרות המכשיר";}
+    @JavascriptInterface public void enablePushNotifications(){if(!trustedDocument)return;runOnUiThread(()->{if(!WorkerPush.configured(MainActivity.this)){toast("שירות ההתראות עדיין לא הוגדר");return;}WorkerPush.initialize(MainActivity.this);if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},101);});}
+
     @JavascriptInterface public void startSecureLocation(String event,String id,String token){runOnUiThread(()->{if(event==null||id==null||token==null||!local(Uri.parse(web.getUrl()==null?"":web.getUrl()))||!id.matches("[0-9a-fA-F-]{36}")||!token.matches("[0-9a-f]{64}"))return;stopNative();pendingWorker=id;pendingToken=token;prepare(event,id,true);});}
     
     @JavascriptInterface public boolean isLocationSharing(){return getSharedPreferences("worker",MODE_PRIVATE).getBoolean("sharing",false);}
