@@ -29,6 +29,7 @@ do $$declare a jsonb;b jsonb;t text;d uuid;d2 uuid;e uuid;e2 uuid;m uuid;j jsonb
  insert into trust_results values('revoke approval works',public.hq_decide_worker_device(d,'revoked'));
  insert into trust_results values('revocation immediately invalidates linked event session',not public.worker_secure_session_worker_valid(w,j->>'session_token'));
  insert into trust_results values('revoked device cannot list active events',public.worker_device_events(d,t)='[]');
+ insert into trust_results select 'revoke removes live worker position and finishes participation',status='סיים' and latitude is null and longitude is null from public.workers where id=w;
  insert into trust_results values('anon cannot dispatch push',not has_function_privilege('anon','public.service_claim_worker_invitation_push(uuid)','execute'));
  insert into trust_results values('tables have RLS and no direct anonymous read',not has_table_privilege('anon','public.worker_trusted_devices','select') and (select relrowsecurity from pg_class where oid='public.worker_trusted_devices'::regclass));
  update public.fire_events set status='ended' where id=e;

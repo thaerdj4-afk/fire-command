@@ -89,7 +89,7 @@ create function public.worker_device_join_event(p_device_id uuid,p_device_token 
 declare d public.worker_trusted_devices;w uuid;sid uuid;t text;until_at timestamptz;
 begin
  select * into d from public.worker_trusted_devices where id=worker_trust_internal.device(p_device_id,p_device_token) for update;
- if not found then raise exception 'Device not approved' using errcode='42501';end if;
+ if not found or d.status<>'approved' or d.expires_at<=now() then raise exception 'Device not approved' using errcode='42501';end if;
  perform 1 from public.fire_events where id=p_event_id and status='active' for share;if not found then raise exception 'Event not active';end if;
  select s.worker_id into w from public.worker_trusted_session_links l join public.worker_access_sessions s on s.id=l.session_id where l.device_id=d.id and s.event_id=p_event_id and s.worker_id is not null order by s.created_at desc limit 1;
  if w is not null and exists(select 1 from public.workers where id=w and finish_source='חפ״ק') then raise exception 'Participation closed by HQ';end if;
@@ -115,6 +115,7 @@ begin
  update public.worker_trusted_devices set status=p_status,team=coalesce(p_team,''),approved_by=case when p_status='approved' then auth.uid() else approved_by end,
  approved_at=case when p_status='approved' then now() else approved_at end,revoked_at=case when p_status='revoked' then now() else null end where id=p_device_id;
  if p_status='revoked' then
+ update public.workers w set status='סיים',finished_at=now(),finish_source='חפ״ק',latitude=null,longitude=null,location_updated_at=now() where w.id in (select s.worker_id from public.worker_trusted_session_links l join public.worker_access_sessions s on s.id=l.session_id where l.device_id=p_device_id) and w.status<>'סיים';
  update public.worker_access_sessions s set revoked_at=now() from public.worker_trusted_session_links l where l.session_id=s.id and l.device_id=p_device_id and s.revoked_at is null;
  update public.worker_invitation_push_queue set status='cancelled',updated_at=now() where device_id=p_device_id and status in ('queued','sending','failed','unconfigured','no_token');
  end if;return true;
