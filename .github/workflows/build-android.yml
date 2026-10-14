@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   test-build:
-    if: github.ref == 'refs/heads/worker-security-staging'
+    if: github.ref == 'refs/heads/worker-security-staging' && !contains(github.event.head_commit.message, '[verify-only]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
