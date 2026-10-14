@@ -1,0 +1,7 @@
+const fs=require('fs'),zlib=require('zlib'),crypto=require('crypto'),vm=require('vm'),assert=require('node:assert/strict');
+const code=fs.readFileSync('maps/landcover/cover.js','utf8'),c={window:{},Map};vm.createContext(c);vm.runInContext(code,c);const cover=c.window.HQRegionalCover;
+const meta=JSON.parse(fs.readFileSync('maps/landcover/metadata.json')),raw=zlib.gunzipSync(fs.readFileSync('maps/landcover/north-region-2021.bin.gz'));
+assert.equal(raw.length,meta.width*meta.height);assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),meta.sha256_raw);for(const value of new Set(raw))assert(value===0||cover.classes[value]);
+const fake={meta:{width:3,height:3,west:0,north:3,display_resolution_degrees:1},data:Uint8Array.from([10,10,20,10,30,40,80,0,50])};assert.equal(cover.sample(fake,1.5,1.5).at_point.type,'עשבוני');assert.equal(cover.sample(fake,.5,1.5),null);assert.equal(cover.sample(fake,10,10),null);assert.equal(cover.cell(fake,NaN,1),null);assert.equal(cover.sample(fake,1.5,1.5).nearby[0].code,10);
+assert(!code.includes('terrascope'));assert(!code.includes('supabase'));assert(!code.includes('?lat='));assert(!code.includes('&lng='));assert(code.includes("fetch('maps/landcover/metadata.json')"));assert(code.includes("fetch('maps/landcover/north-region-2021.bin.gz')"));
+console.log('PASS complete regional checksum, valid classes, local categorical sampling/mix, nodata/outside handling, fixed URL downloads without coordinates; source 2021 and display approx100m');

@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8');for(const x of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi))if(x[1].trim())new Function(x[1]);
+const source=html.slice(html.indexOf('function compactFireWindMarker('),html.indexOf('function drawWindZone('));const c={mapLayers:new Map(),L:{divIcon:x=>x,marker:(coords,options)=>({coords,options})}};vm.createContext(c);vm.runInContext(source,c);
+for(const [from,to] of [[0,180],[90,270],[180,0],[270,90]]){const m=c.compactFireWindMarker(33,35,from,200,300,'#ff9b3b');assert.deepEqual(Array.from(m.options.icon.iconSize),[72,72]);assert(m.options.icon.html.includes('rotate('+to+'deg)'));assert(m.options.icon.html.includes('🔥'));assert.equal(m.options.interactive,false)}
+c.mapLayers.set('fire',{_kind:'fire',getLatLng:()=>({lat:33,lng:35})});assert(!c.compactFireWindMarker(33,35,90,20,30,'#ff9b3b').options.icon.html.includes('🔥'));
+assert(!source.includes('polyline'));console.log('PASS compact 72px marker, downwind cardinal directions, no duplicate fire origin, no geographic shaft; inline scripts compile');
