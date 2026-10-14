@@ -1,0 +1,32 @@
+create temp table code_test_results(name text,passed boolean) on commit drop;
+do $test$
+declare e uuid;w uuid;manager uuid;c1 text;c2 text;t text:=repeat('e',64);
+begin
+ insert into public.fire_events(name,event_number,status) overriding system value values('HQ CODE ROLLBACK TEST',7000000000000000003,'active') returning id into e;
+ insert into public.workers(event_id,name,status,latitude,longitude) values(e,'ROLLBACK WORKER','בדרך',33.2,35.7) returning id into w;
+ insert into public.worker_access_sessions(event_id,worker_id,token_hash,expires_at) values(e,w,encode(extensions.digest(t,'sha256'),'hex'),now()+interval '1 hour');
+ perform set_config('request.jwt.claim.sub','',true);
+ begin perform public.hq_fresh_worker_event_code(e);insert into code_test_results values('anonymous denied',false);
+ exception when insufficient_privilege then insert into code_test_results values('anonymous denied',true);end;
+ perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
+ begin perform public.hq_fresh_worker_event_code(e);insert into code_test_results values('unapproved identity denied',false);
+ exception when insufficient_privilege then insert into code_test_results values('unapproved identity denied',true);end;
+ select user_id into manager from public.hq_managers limit 1;
+ if manager is null then select user_id into manager from public.user_roles where role='admin' limit 1;end if;
+ if manager is null then raise exception 'No approved manager available for rollback test';end if;
+ perform set_config('request.jwt.claim.sub',manager::text,true);
+ c1:=public.hq_fresh_worker_event_code(e);
+ insert into code_test_results values('approved HQ manager gets random code',c1~'^[0-9a-f]{32}$');
+ insert into code_test_results values('new entry code accepted',public.verify_worker_event_access('7000000000000000003',c1));
+ c2:=public.hq_fresh_worker_event_code(e);
+ insert into code_test_results values('code changes on next HQ entry',c1<>c2);
+ insert into code_test_results values('old entry code no longer accepted',not public.verify_worker_event_access('7000000000000000003',c1));
+ insert into code_test_results values('latest entry code accepted',public.verify_worker_event_access('7000000000000000003',c2));
+ insert into code_test_results values('joined worker session remains valid',public.worker_secure_session_worker_valid(w,t));
+ insert into code_test_results select 'worker location and state untouched',status='בדרך' and latitude=33.2 and longitude=35.7 from public.workers where id=w;
+ insert into code_test_results select 'code stored hashed and expires',code_hash<>c2 and expires_at>now() and disabled_at is null from public.worker_event_access_codes where event_id=e;
+ update public.fire_events set status='ended' where id=e;
+ begin perform public.hq_fresh_worker_event_code(e);insert into code_test_results values('closed event rejected',false);
+ exception when raise_exception then insert into code_test_results values('closed event rejected',true);end;
+end $test$;
+select * from code_test_results;
