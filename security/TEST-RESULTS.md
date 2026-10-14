@@ -90,3 +90,17 @@ production signing and Google Play publication still require completion.
 
 The delivered APK is for installing and verifying the real-phone path. No claim
 is made that locked-screen GPS, real SOS delivery or Play readiness has passed.
+
+
+# Approved app branding — APK v17, 2026-10-14
+
+- User approved the generated authority/fire/map-pin artwork with the exact name
+  `אפליקציית עובד` before integration.
+- Source commit: `1044dd28e6e204d302727fab69b8d1992fbf2e64`.
+- Build, Android lint and Android 16 clean-launch smoke passed:
+  https://github.com/thaerdj4-afk/fire-command/actions/runs/38618312633
+- Approved image pixels were compared against the packaged APK resource and match exactly.
+- Delivered APK SHA-256: `69619e63fc1dfe821895bdeae9d68b0d745026cdc2a8bda3f3a8f9f553360a86`.
+- Package remains `com.firecommand.worker.staging`; production HQ is unchanged.
+- Changes are launcher branding, application/page title and version code only.
+- Native GPS/SOS on the real phone, legacy cutoff and signed Play release remain pending.
