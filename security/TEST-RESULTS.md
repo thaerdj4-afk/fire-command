@@ -61,3 +61,32 @@ The emulator test is a clean-launch smoke test, not proof of native GPS/SOS or
 real-device readiness. This branch is not ready for production or Google Play.
 
 See [release preparation](PLAY-RELEASE.md) and [legacy cutoff plan](legacy-cutoff-plan.md).
+
+
+# Continuation verified 2026-10-14 — APK v16
+
+Source commit: `b4ea27106b07d6aa9abfb70991462913d6a00333`.
+[Successful v16 build, lint and Android 16 emulator run](https://github.com/thaerdj4-afk/fire-command/actions/runs/38615999497).
+
+- 27 database rollback tests passed (17 baseline + 10 inbox/admin identity tests).
+- 18 browser tests passed (15 worker + 3 admin page).
+- APK compilation, unsigned staging AAB, Android lint and Android 16 clean-launch
+  smoke checks passed. Native GPS/SOS on a real phone remain untested.
+- APK v16 adds a recognizable flame icon and remains a separate staging package.
+- APK SHA-256: `cb18ce28fb2629c5fdf86c4de56a9a7faf366ee20adbb9d2006345cb2f04ba10`.
+
+Backend changes applied only to the new protected path:
+- Protected inbox hides ambiguous name-only messages when active names repeat and
+  hides legacy messages older than the worker's current participation.
+- `admin_send_secure_worker_message` derives event and name from the worker ID on
+  the server and requires an approved admin role. Anonymous EXECUTE is denied.
+- Isolated `worker-access-admin.html` now displays worker IDs and sends through
+  this protected manager endpoint. Test requests were rolled back, never broadcast.
+
+Live `index.html` and `main` remain unchanged. Legacy anonymous table access and
+legacy inbox are still open until worker migration and real-phone tests complete.
+The prepared guarded cutoff SQL was not applied. IP/device gateway throttling,
+production signing and Google Play publication still require completion.
+
+The delivered APK is for installing and verifying the real-phone path. No claim
+is made that locked-screen GPS, real SOS delivery or Play readiness has passed.
