@@ -1,0 +1,21 @@
+{
+  "source": "ESA WorldCover 2021 v200",
+  "source_resolution_m": 10,
+  "display_resolution_degrees": 0.001,
+  "display_resolution_approx_m": 100,
+  "resampling": "categorical mode",
+  "west": 34,
+  "east": 36,
+  "south": 30,
+  "north": 34,
+  "width": 2000,
+  "height": 4000,
+  "nodata": 0,
+  "sha256_raw": "8cb49981250367a2865429321c0a807aa513a1eaf6ebfc4cae7b924fd7851feb",
+  "sha256_gzip": "085405786c6c630bbe9aa31a46aab4babb55db4512a22ab45660f6eb0d2ef175",
+  "attribution": "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium",
+  "source_urls": [
+    "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N30E033_Map.tif",
+    "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33E033_Map.tif"
+  ]
+}
