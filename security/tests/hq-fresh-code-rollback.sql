@@ -16,7 +16,7 @@ begin
  if manager is null then raise exception 'No approved manager available for rollback test';end if;
  perform set_config('request.jwt.claim.sub',manager::text,true);
  c1:=public.hq_fresh_worker_event_code(e);
- insert into code_test_results values('approved HQ manager gets random code',c1~'^[0-9a-f]{32}$');
+ insert into code_test_results values('approved HQ manager gets random code',c1~'^[0-9]{8}$');
  insert into code_test_results values('new entry code accepted',public.verify_worker_event_access('7000000000000000003',c1));
  c2:=public.hq_fresh_worker_event_code(e);
  insert into code_test_results values('code changes on next HQ entry',c1<>c2);

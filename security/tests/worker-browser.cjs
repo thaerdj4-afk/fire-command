@@ -34,7 +34,7 @@ const eventId='11111111-1111-4111-8111-111111111111', workerId='22222222-2222-42
   page.on('dialog',d=>d.accept());const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+server.address().port+'/worker.html'+(options.saved?'?event='+eventId:''));
   await page.waitForFunction(()=>!document.querySelector('#join').disabled);
-  async function join(consent=true){await page.fill('#name','Test Worker');await page.fill('#phone','٠٥٢٤٤٧٧١٤٧');await page.fill('#eventLink','100001');await page.fill('#eventSecret','abcdefghijkl');await page.check('input[value="בלי ציוד"]');if(consent)await page.check('#consent');await page.click('#join');}
+  async function join(consent=true){await page.fill('#name','Test Worker');await page.fill('#phone','٠٥٢٤٤٧٧١٤٧');await page.fill('#eventLink','100001');await page.fill('#eventSecret',options.code||'abcdefghijkl');await page.check('input[value="בלי ציוד"]');if(consent)await page.check('#consent');await page.click('#join');}
   async function tick(){await page.evaluate(async()=>{for(const fn of window.__ticks)await fn()});}
   async function gps(){await page.evaluate(async()=>{if(window.__gps)await window.__gps({coords:{latitude:33.2,longitude:35.7,accuracy:9}})});}
   return {page,state,errors,join,tick,gps};
@@ -56,6 +56,7 @@ const eventId='11111111-1111-4111-8111-111111111111', workerId='22222222-2222-42
   await test('Event closure stops GPS and presents ended view',async()=>{const f=await fixture();await f.join();await f.page.waitForSelector('#inside',{state:'visible'});f.state.eventStatus='ended';await f.tick();assert(await f.page.isVisible('#ended'));assert((await f.page.evaluate(()=>window.__clears))>0);await f.page.close()});
   await test('Finish clears sharing and sends secure finish status',async()=>{const f=await fixture();await f.join();await f.page.waitForSelector('#inside',{state:'visible'});await f.page.click('#finish');await f.page.waitForSelector('#ended',{state:'visible'});assert(f.state.calls.some(x=>x.name==='worker_secure_set_status'&&x.args.p_status==='סיים'));assert((await f.page.evaluate(()=>window.__clears))>0);await f.page.close()});
   await test('Android secure bridge receives bound token and skips browser GPS',async()=>{const f=await fixture({native:true});await f.join();await f.page.waitForSelector('#inside',{state:'visible'});assert.deepEqual(await f.page.evaluate(()=>window.__nativeStarts[0]),[eventId,workerId,token]);assert.equal(await f.page.evaluate(()=>window.__watchCount),0);await f.page.close()});
+  await test('Eight-digit numeric code reaches session RPC and enters worker view',async()=>{const f=await fixture({code:'12345678'});await f.join();await f.page.waitForSelector('#inside',{state:'visible'});assert.equal(f.state.calls.find(x=>x.name==='worker_start_secure_session').args.p_code,'12345678');await f.page.close()});
   console.log(`${passes} browser behavioral tests passed. Native Android/device behavior is not covered.`);
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e.message);process.exitCode=1});

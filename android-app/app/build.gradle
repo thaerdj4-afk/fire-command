@@ -7,8 +7,8 @@ android {
       applicationIdSuffix '.staging'
     minSdk 26
     targetSdk 36
-    versionCode 17
-    versionName '17.0-security-staging'
+    versionCode 18
+    versionName '18.0-security-staging'
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
