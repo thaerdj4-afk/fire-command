@@ -28,8 +28,9 @@ Branch: `worker-security-staging`. Production `main` and live HQ files remain un
   `request_insert_authenticated` allows any authenticated user to insert requests.
 - Legacy name-based inbox remains callable. Arbitrary session binding was inspected:
   execution is already denied for both anonymous and authenticated roles.
-- Duplicate names can receive another worker's legacy HQ message; live HQ currently
-  addresses messages/stop commands by name. It is preserved per user instruction.
+- Protected inbox now blocks ambiguous same-name legacy messages and older
+  participation messages. The isolated admin page can address messages by worker ID.
+  Live HQ remains unchanged; duplicate-name delivery there requires the ID-based admin page.
 - IP/device gateway throttling requires completion. Secure RPC request types now
   reject forged HQ messages, stop commands and sector assignments.
 - Real Android device tests, signed production AAB, signing-lineage verification,
@@ -38,3 +39,10 @@ Branch: `worker-security-staging`. Production `main` and live HQ files remain un
 The branch is not ready for Google Play or production rollout. See
 `security/legacy-cutoff-plan.md` and `security/PLAY-RELEASE.md`.
 Never commit secrets or signing keys. Do not merge until blockers are resolved.
+
+## 2026-10-14 continuation
+
+- 10 additional database rollback tests passed for duplicate-name privacy and admin messaging.
+- APK v16 adds a recognizable icon; new build/emulator results are recorded in Actions.
+- `security/legacy-cutoff-guarded.sql` prepares cutoff but defaults to refusing execution.
+  It was not applied; the live field system retains its existing permissions.

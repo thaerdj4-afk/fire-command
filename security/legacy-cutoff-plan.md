@@ -13,8 +13,9 @@ break those workers. The secure client alone does not protect the legacy API.
    a separate test project. Confirm `public.is_admin()` with actual approved users.
 4. Resolve duplicate-name inbox addressing. Live HQ currently sends messages and
    remote-stop commands with `worker_name` only; secure inbox retains that compatibility.
-   Worker-ID messages require a separately reviewed HQ change, outside this task's
-   permission to preserve the live HQ.
+   The isolated admin page now supports worker-ID messages. Protected inbox refuses
+   ambiguous name-only messages. Live HQ remains unchanged; use the isolated page
+   for duplicate-name workers until a separately reviewed HQ migration.
 5. Add gateway throttling for access-code attempts. Event-only throttling can be
    abused to deny legitimate access. The database code endpoint must not remain
    directly callable if a gateway is meant to enforce IP/device throttling.
@@ -34,3 +35,7 @@ break those workers. The secure client alone does not protect the legacy API.
 
 No policy revocations, legacy-function replacements, HQ edits, production deploys,
 or merges were performed by this staging continuation.
+
+The prepared `legacy-cutoff-guarded.sql` fails closed unless migration/device/HQ
+readiness is explicitly recorded; it also refuses cutoff with active workers lacking
+protected sessions. It has not been applied. Back up all existing policies first.
