@@ -1,6 +1,8 @@
 name: Build stable signed worker
 on:
   workflow_dispatch:
+  push:
+    branches: [worker-stable-updates]
 permissions:
   contents: read
 jobs:
