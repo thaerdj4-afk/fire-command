@@ -14,7 +14,7 @@ The Edge Function worker-invitation-push requires a signed-in manager, validates
 
 ## Firebase activation still required
 
-The current test APK has the Messaging SDK, notification channel, permission button, token registration and notification-opening code. It has no Firebase client configuration, so closed-app push delivery and sound are not yet enabled or verified.
+TEST v22 adds the uploaded public Firebase Android configuration for fire-command-worker / com.firecommand.worker.staging. The Messaging SDK, notification channel, permission button, token registration and notification-opening code are present. The server sender secret and physical-phone push receipt/sound are still not configured or verified.
 
 1. Add a Firebase Android app for com.firecommand.worker.staging and place its **public client configuration** in android-app/app/google-services.json. The Gradle file validates the package and embeds only public client identifiers.
 2. Set FCM_SERVICE_ACCOUNT_JSON as a private Edge Function secret for a service account with permission to send FCM messages in the same Firebase project. Do not paste or commit the private key.
