@@ -18,3 +18,12 @@ An initial v20 browser job caught an assertion racing the async decline response
 Not verified/activated: Firebase client/server configuration and actual push receipt/sound, real-phone GPS/SOS/background behavior, production signing/Play and legacy cutoff. The delivered installer is TEST v20, not a production release. v20 and v18 debug certificates differ, so they cannot update in place.
 
 Land cover is ESA WorldCover 2021, derived with categorical mode from 10 m source data to an approximately 100 m display grid. It is historical cover, not current fuel moisture or a live vegetation survey. The spread-potential indicator is an application heuristic, not a validated spread-rate model or measured metres.
+
+## Continuation verification — 2026-10-15
+
+Public HQ source matches the tested file byte-for-byte. Re-ran all 20 worker
+browser scenarios, 3 admin browser scenarios, push-dispatch mocks and the static
+security gate successfully. The APK and operational data were not changed.
+Physical-device acceptance remains NOT RUN, with an explicit evidence template
+in DEVICE-ACCEPTANCE.md. Firebase plugin remains uninstalled; there is no verified
+account connection or client configuration. No notification or real SOS was sent.

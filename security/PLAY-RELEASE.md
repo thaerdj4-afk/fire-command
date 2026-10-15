@@ -24,7 +24,7 @@ Record APK SHA/commit, device model, OS version, WebView version and each result
 | GPS with screen on and locked for 10 min | HQ receives fresh coordinates | Pending device |
 | Revoke/expire session while sharing | No new coordinate writes | 17 backend rollback tests pass; device pending |
 | SOS with/without GPS and with network failure | No false success; HQ receives alert | Browser mocks and backend rollback pass; device pending |
-| HQ message/reply/sector and acknowledgment | Correct worker receives it | Browser/backend pass; duplicate-name blocker |
+| HQ message/reply/sector and acknowledgment | Correct worker receives it | Identity-scoped inbox browser/backend checks pass; device pending |
 | HQ stop and event finish | Tracking stops; cannot restart without authority | Browser/backend pass; device pending |
 | Switch event while permission dialog pending | No old event GPS write | Pending device |
 | Process death/reopen | Revalidation before sharing resumes | Pending device |
@@ -46,9 +46,32 @@ Record APK SHA/commit, device model, OS version, WebView version and each result
    WhatsApp sending unless an authorized messaging integration actually exists.
 8. Add store icon, screenshots, Hebrew/Arabic listing, support contact and release notes.
 
-Official references checked 2026-10-13:
+Official references checked 2026-10-15:
 - https://support.google.com/googleplay/android-developer/answer/11926878
 - https://developer.android.com/build/releases/agp-8-10-0-release-notes
 - https://developer.android.com/develop/ui/views/layout/webapps/load-local-content
 
 This file is a preparation checklist, not approval or a claim of Play readiness.
+
+## Current v20 status — 2026-10-15
+
+The final public HQ source matches the tested local index byte-for-byte (SHA256
+`e131d8ac6b0b690c5a2dab9bec3bc8ce43f2c85c035756193d597b9eb985a43e`).
+The delivered v20 artifact is unchanged; see TRUSTED-WORKER-RESULTS.md for its digest
+and successful Android 16 workflow. No production signing or Play upload occurred.
+
+Firebase is not connected and the APK contains no Firebase client configuration.
+Notification receipt, sound and deep-link delivery on a physical phone are unverified.
+Use DEVICE-ACCEPTANCE.md to record actual evidence; an emulator launch is insufficient.
+
+The manifest uses a user-started location foreground service and does not request
+ACCESS_BACKGROUND_LOCATION. This alone does not exempt background-like use from
+Play location review. Show the actual minimized/locked-screen behavior and prominent
+location disclosure in the review demonstration. The current consent text describes
+event sharing but still needs an explicit minimized/locked-screen explanation before
+a production build. Do not mark that requirement complete based on this checklist.
+
+Additional official sources:
+- https://support.google.com/googleplay/android-developer/answer/9799150
+- https://support.google.com/googleplay/android-developer/answer/10144311
+- https://developer.android.com/privacy-and-security/about
