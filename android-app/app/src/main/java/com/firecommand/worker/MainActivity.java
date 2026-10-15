@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
     String incoming=eventFromIntent(getIntent());
     currentEvent=incoming.isEmpty()?getSharedPreferences("worker",MODE_PRIVATE).getString("event",""):incoming;
     loadEvent(currentEvent);
+    WorkerUpdates.check(this);
   }
   boolean local(Uri u){return u!=null&&"https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())&&"/assets/worker.html".equals(u.getPath());}
   boolean trusted(Uri u){return "https".equals(u.getScheme())&&"thaerdj4-afk.github.io".equals(u.getHost())&&"/fire-command/worker.html".equals(u.getPath());}

@@ -7,8 +7,23 @@ android {
       applicationIdSuffix '.staging'
     minSdk 26
     targetSdk 36
-    versionCode 22
-    versionName '22.0-firebase-staging'
+    versionCode 23
+    versionName '23.0-stable-updates'
+  }
+  signingConfigs {
+    stableRelease {
+      if (System.getenv('WORKER_KEYSTORE_PATH')) {
+        storeFile file(System.getenv('WORKER_KEYSTORE_PATH'))
+        storePassword System.getenv('WORKER_STORE_PASSWORD')
+        keyAlias System.getenv('WORKER_KEY_ALIAS')
+        keyPassword System.getenv('WORKER_KEY_PASSWORD')
+      }
+    }
+  }
+  buildTypes {
+    release {
+      if (System.getenv('WORKER_KEYSTORE_PATH')) signingConfig signingConfigs.stableRelease
+    }
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
