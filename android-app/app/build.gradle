@@ -7,8 +7,8 @@ android {
       applicationIdSuffix '.staging'
     minSdk 26
     targetSdk 36
-    versionCode 21
-    versionName '21.0-consent-staging'
+    versionCode 22
+    versionName '22.0-firebase-staging'
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_17
