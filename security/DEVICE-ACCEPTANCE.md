@@ -1,11 +1,11 @@
-# Physical-device acceptance — TEST v20
+# Physical-device acceptance — TEST v21
 
 Status: NOT RUN. Do not populate results from browser mocks or emulator launch.
 Use a dedicated demonstration event and consenting test worker; never trigger a real
 operational SOS or broadcast. Keep the live HQ and active operational events unchanged.
 
-Artifact SHA256: 897b224ba4da7c5980b2f1522fe511b3f5250eba34d4b8ec33345a0def4d383d
-Build commit: f79a6e28b55249c86f9db0b4b03d72a7feb37abe
+Artifact SHA256: b24c8e869caae8652feaaa40b71322a29b3d5d2c343dcf6759b5370d87f36957
+Build commit: 130cafd29d986643f71c0b9d4e2bc8aa7d7c453b
 Package: com.firecommand.worker.staging
 Device / Android / WebView / tester / local time: UNRECORDED
 Only the previous TEST staging copy may need removal for a certificate mismatch.
