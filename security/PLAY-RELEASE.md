@@ -67,9 +67,9 @@ Use DEVICE-ACCEPTANCE.md to record actual evidence; an emulator launch is insuff
 The manifest uses a user-started location foreground service and does not request
 ACCESS_BACKGROUND_LOCATION. This alone does not exempt background-like use from
 Play location review. Show the actual minimized/locked-screen behavior and prominent
-location disclosure in the review demonstration. The current consent text describes
-event sharing but still needs an explicit minimized/locked-screen explanation before
-a production build. Do not mark that requirement complete based on this checklist.
+location disclosure in the review demonstration. The staging consent text now explicitly describes collection and HQ sharing during
+participation, including minimized and locked-screen operation, and the stop-sharing
+button. Physical-device rendering and the review demonstration remain unverified.
 
 Additional official sources:
 - https://support.google.com/googleplay/android-developer/answer/9799150
