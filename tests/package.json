@@ -1,1 +1,10 @@
-{"name":"fire-command-hq-regression","private":true,"scripts":{"test":"node hq-compact.test.cjs"},"devDependencies":{"linkedom":"0.18.12"}}
+{
+  "name": "fire-command-hq-regression",
+  "private": true,
+  "scripts": {
+    "test": "node hq-compact.test.cjs && node hq-vegetation.test.cjs"
+  },
+  "devDependencies": {
+    "linkedom": "0.18.12"
+  }
+}
