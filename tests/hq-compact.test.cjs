@@ -5,7 +5,7 @@ const {window}=parseHTML(source),document=window.document;
 const scripts=[...document.querySelectorAll('script:not([src])')].map(x=>x.textContent);
 for(const [i,s]of scripts.entries())new vm.Script(s,{filename:'inline-'+i});
 const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(ids.length,new Set(ids).size);
-assert.equal(document.querySelectorAll('#premiumLeft button').length,26);
+assert.equal(document.querySelectorAll('#premiumLeft .toolGrid button').length,26);
 for(const attr of ['data-p','data-l','data-a']){const values=[...document.querySelectorAll('#premiumLeft ['+attr+']')].map(b=>b.getAttribute(attr));assert.equal(values.length,new Set(values).size,attr+' has duplicate tools')}
 for(const id of ['freeDraw','measureArea','measureDist','undo','erase','stopDraw','locate','unit','base','history','finish','clear','snapshot','workerLink','trustedInviteOpen','requests','workers','photosPanel'])assert(document.getElementById(id),id+' missing');
 console.log('PASS all 26 unique tools, secondary features, IDs and script syntax retained');
@@ -50,7 +50,7 @@ console.log('PASS right panel tabs show one pane and preserve controls');
  console.log('PASS 1,000 square meters displays 1.00 dunam');
  c.setTimeout=fn=>fn();c.map.invalidateSize=()=>{};let pointCallback=null,cancelled=0;
  c.map.once=(event,fn)=>{pointCallback=fn};c.map.off=(event,fn)=>{if(fn===pointCallback)cancelled++};c.map.dragging={enable:()=>{}};
- c.preview=null;c.linePts=[];c.freePts=[];c.measurePts=[];c.commitCurrent=()=>false;
+ c.preview=null;c.linePts=[];c.freePts=[];c.measurePts=[];c.commitCurrent=()=>false;c.cancelFreeStroke=()=>{};
  vm.runInContext(take('function stop(){','function pMode('),c);
  vm.runInContext(take('window.setSectorPoint=k=>','window.sendSelectedWorkerToSector='),c);
  c.setSectorPoint('ב');assert(pointCallback);c.stop();assert.equal(cancelled,1);

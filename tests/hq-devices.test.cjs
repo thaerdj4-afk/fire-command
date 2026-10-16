@@ -1,0 +1,18 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const {parseHTML}=require('linkedom'),source=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),{document}=parseHTML(source).window;
+let resize=0;const ui={document,matchMedia:()=>({matches:true}),addEventListener:()=>{},__hqMap:{invalidateSize:()=>resize++}};ui.window=ui;vm.createContext(ui);vm.runInContext(document.getElementById('hq-responsive-drawers').textContent,ui);
+document.getElementById('menu').onclick();assert(document.getElementById('panel').classList.contains('open'));assert.equal(document.getElementById('menu').getAttribute('aria-expanded'),'true');
+document.getElementById('mobileTools').onclick();assert(!document.getElementById('panel').classList.contains('open'));assert(document.getElementById('premiumLeft').classList.contains('mobileOpen'));
+document.getElementById('hqToolsClose').onclick();assert(!document.getElementById('premiumLeft').classList.contains('mobileOpen'));assert.equal(document.getElementById('mobileTools').getAttribute('aria-expanded'),'false');
+console.log('PASS compact management/tools drawers are mutually exclusive and close correctly');
+const main=[...document.querySelectorAll('script:not([src])')].map(x=>x.textContent).find(x=>x.includes('let freePointerId='));
+const callbacks=new Map(),saved=[];let dragging=true,touchZoom=true;
+const surface={addEventListener:(k,f)=>callbacks.set(k,f),setPointerCapture:()=>{},releasePointerCapture:()=>{}};
+const c={freeDrawing:true,ev:{id:'event1'},freePts:[],preview:null,alert:()=>{},map:{getContainer:()=>surface,mouseEventToLatLng:e=>({lat:e.clientY,lng:e.clientX}),removeLayer:()=>{},dragging:{enable:()=>dragging=true,disable:()=>dragging=false},touchZoom:{enabled:()=>touchZoom,enable:()=>touchZoom=true,disable:()=>touchZoom=false}},L:{polyline:points=>({points,addTo(){return this},setLatLngs(){}})},add:(shape,kind)=>saved.push({shape,kind})};vm.createContext(c);vm.runInContext(main.slice(main.indexOf('let freePointerId='),main.indexOf('async function enterHQ')),c);
+const event=(id,x=1,y=1)=>({pointerId:id,button:0,isPrimary:true,clientX:x,clientY:y,preventDefault(){},stopPropagation(){}});
+callbacks.get('pointerdown')(event(1));assert(!dragging);callbacks.get('pointerup')(event(1));assert(dragging&&touchZoom);assert.equal(saved.length,0);
+callbacks.get('pointerdown')(event(2));callbacks.get('pointermove')(event(2,4,5));callbacks.get('pointerup')(event(2));assert.equal(saved.length,1);assert.equal(saved[0].kind,'free-fire');assert.equal(saved[0].shape.points.length,2);assert(dragging&&touchZoom);
+callbacks.get('pointerdown')(event(3));callbacks.get('pointermove')(event(3,4,5));callbacks.get('pointercancel')(event(3));assert.equal(saved.length,1);assert(dragging&&touchZoom);
+callbacks.get('pointerdown')(event(4));callbacks.get('pointermove')(event(4,4,5));c.ev={id:'event2'};callbacks.get('pointerup')(event(4));assert.equal(saved.length,1);
+c.freeDrawing=false;callbacks.get('pointerdown')(event(5));assert(dragging&&touchZoom);
+console.log('PASS pointer drawing saves completed strokes only; tap/cancel/event-switch do not save; map gestures restored');
