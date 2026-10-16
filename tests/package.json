@@ -1,0 +1,1 @@
+{"name":"fire-command-hq-regression","private":true,"scripts":{"test":"node hq-compact.test.cjs"},"devDependencies":{"linkedom":"0.18.12"}}

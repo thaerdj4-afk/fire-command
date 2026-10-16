@@ -225,22 +225,45 @@ main{height:calc(100vh - 142px)!important;min-height:540px!important}
 #headerLiveWeather .hw small{display:block;font-size:10px;line-height:1.2;color:#c8d8e5}
 @media(max-width:650px){#headerLiveWeather .hw small{display:block;font-size:10px}#headerLiveWeather .hw{padding:5px 7px}}
 dialog.trustedHQDialog{width:min(92vw,560px);max-height:80dvh;overflow:auto;color:#f4f9ff;background:#092439;border:1px solid #386680;border-radius:16px;padding:18px}dialog.trustedHQDialog::backdrop{background:#000a}dialog.trustedHQDialog p{margin:6px 0}dialog.trustedHQDialog input[type=checkbox]{width:auto}
-</style></head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div class="hqTitle"><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><div id="headerLiveWeather"><span class="hw timer"><span class="hwValue">⏱ <b id="time">00:00:00</b></span><small>זמן האירוע</small></span><span class="hw"><span class="hwValue">🧭 <b id="ftDir">—</b></span><small>כיוון רוח</small></span><span class="hw"><span class="hwValue">🌬 <b id="ftWind">—</b></span><small>מהירות רוח</small></span><span class="hw"><span class="hwValue">💨 <b id="ftGust">—</b></span><small>משבי רוח</small></span><span class="hw"><span class="hwValue">💧 <b id="ftHumidity">—</b></span><small>לחות</small></span><span class="hw progress"><span class="hwValue">🔥 <b id="ftProgress">ממתין למוקד</b></span><small>פוטנציאל התפשטות</small></span><b class="liveBadge">LIVE • חפ״ק</b></div></header><div id="desktopWeatherBand" dir="rtl"><div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 תחזית רוח • 24 שעות</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><svg id="fireTrendCanvas" viewBox="0 0 760 120" preserveAspectRatio="none" aria-label="תחזית רוח לשש שעות"></svg><div class="ftLegend"><span>מהירות רוח</span><span>משבים</span><span>לחות</span></div></div></div><main>
-<div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div>
-<button data-p="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/></svg></span><span>מוקד אש</span></button><button class="primary" id="plDraw"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10-3.5-3.5-10 10L4 20z"/><path d="M13.5 6.5l3.5 3.5"/></svg></span><span>ציור / סימון</span></button><button data-l="fire"><span class="cmdIcon fire"><svg viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"/><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"/></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"/></svg></span><span>קו הגנה / פס אש</span></button><button data-l="escape"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="9" cy="5" r="2"/><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"/></svg></span><span>מסלול בריחה</span></button><button data-p="assembly"><span class="cmdIcon safe"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"/></svg></span><span>נקודת כינוס</span></button><button data-p="water"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"/></svg></span><span>מקור מים</span></button><button data-p="engine"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8V5h7v3M17 11V7h2"/></svg></span><span>כבאית / רכב</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg></span><span>אזור סכנה</span></button><button id="plArea"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M5 5l13-2 3 13-8 5-10-6z"/><circle cx="5" cy="5" r="1"/><circle cx="18" cy="3" r="1"/><circle cx="21" cy="16" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="3" cy="15" r="1"/></svg></span><span>פוליגון שריפה / מדידת שטח</span></button><button id="plDist"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M4 17L17 4l3 3L7 20z"/><path d="M14 7l3 3M11 10l2 2M8 13l3 3"/></svg></span><span>מדידת מרחק</span></button><button id="plUndo"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M5 12h8c4 0 7 2 7 6"/></svg></span><span>בטל צעד</span></button><button id="plErase"><span class="cmdIcon "><svg viewBox="0 0 24 24"><path d="M8 4l12 12-5 5H9L3 15z"/><path d="M6 12l6 6M15 21h6"/></svg></span><span>מחיקה רציפה</span></button><button id="plStop"><span class="cmdIcon "><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></span><span>סיום כלי</span></button><button id="plLocate"><span class="cmdIcon info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span>המיקום שלי</span></button><div class="leftGroupTitle">🗺️ מפה ורישום</div><div class="leftMiniGrid"><div class="leftFull"><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></div><button data-p="fire" class="red">🔥 מוקד</button><button data-l="fire">🔥 קו אש</button><button data-l="firebreak">🧯 פס אש</button><button data-l="access">🚙 דרך גישה</button><button data-l="escape" class="green">🏃 מילוט</button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ מסוכן</button><button data-p="assembly">🟢 כינוס</button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 מדידת שטח שריפה</button><button id="measureDist">📏 מדידת מרחק</button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחק</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small leftFull">קו: קליק ראשון מתחיל, כל קליק מוסיף נקודה, קליק כפול מסיים.</div><div id="measureResult" class="small leftFull"></div><div class="leftGroupTitle">🚒 כוחות וציוד</div><div class="leftMiniGrid"><input class="leftFull" id="unit" placeholder="שם עובד / צוות / כלי"><button data-p="person">👤 עובד</button><button data-p="engine">🚒 כבאית</button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="water">💧 מים</button><button data-p="cmd">📍 חפ״ק</button><button data-p="hazard">⚠ מפגע</button></div></div>
+</style>
+<style id="compact-hq-20261016">
+html,body{min-width:0!important;height:100%;overflow:hidden!important}
+main{padding:10px 340px 10px 184px!important;height:calc(100dvh - 142px)!important;min-height:280px!important}
+#premiumLeft{width:164px!important;padding:9px!important}#panel{width:320px!important;padding:9px!important}
+#premiumLeft .toolGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:7px 0}
+#premiumLeft .toolGrid button{width:100%;min-width:0;min-height:52px!important;font-size:11px!important;line-height:1.25;padding:7px 4px!important;margin:0!important;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:5px}
+#premiumLeft .toolGrid .cmdIcon{width:22px;height:22px}#premiumLeft input,#premiumLeft select{width:100%!important;max-width:none!important;font-size:12px!important}
+#premiumLeft .ptitle{font-size:14px!important}.toolGroup{border-top:1px solid #1c4e6b;margin-top:9px;padding-top:9px}.toolGroup summary{font-size:13px;font-weight:bold;cursor:pointer;padding:7px 2px}
+.areaReadout{border:1px solid #756132;border-radius:9px;background:#332b13;color:#ffe0a3;padding:9px;font-size:12px;line-height:1.6;margin:9px 0;overflow-wrap:anywhere}#drawmsg{font-size:11px!important;line-height:1.5;padding:8px 0}
+#hqPanelTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:sticky;top:-9px;z-index:2;padding:10px 0;background:#04131f}
+#hqPanelTabs button{font-size:12px;padding:10px 2px;min-width:0}#hqPanelTabs [aria-selected=true]{background:#0b4e78!important;border-color:#55b7ff!important}
+#panel [role=tabpanel][hidden]{display:none!important}#panel [role=tabpanel]>.card{display:block!important}
+#hqEventHub .worker{padding:6px!important}#hqEventHub #eventName{width:100%;font-size:14px;padding:9px}
+#hqEventHub>button#start{width:100%;margin-top:6px}.eventExtra{border-top:1px solid #23495f;margin-top:9px;padding-top:8px}.eventExtra>summary{cursor:pointer;font-size:12px;padding:6px;font-weight:bold}
+#trustedHQCard .row{gap:6px}#trustedHQCard .row button{flex:1;padding:9px 5px;font-size:12px}#trustedHQNote.hasMessage{border:1px solid #42748d;background:#10334a;padding:10px;border-radius:8px;font-size:12px;line-height:1.6;color:#f4f9ff}
+#sectorTabs{display:flex!important;flex-wrap:wrap}#sectorTabs button{flex:1 0 38px;min-height:40px;font-size:15px}#sectorTabs [aria-pressed=true]{border:2px solid #55b7ff;background:#123f72!important}
+.sectorActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.sectorActions button{min-height:42px;font-size:12px}.sectorShare,.sectorAdvanced{border-top:1px solid #294b60;margin-top:12px;padding-top:10px}.sectorShare summary,.sectorAdvanced summary{cursor:pointer;padding:7px 0;font-size:13px}.sectorShare select{width:100%;margin:8px 0}.sectorAdvanced button{width:100%}
+#photosPanel .photos{overflow-x:auto}#desktopWeatherBand{padding-left:184px!important;padding-right:340px!important}#mapSearchBox{width:min(520px,calc(100% - 570px))!important}
+@media(min-width:761px) and (max-width:1050px){main{padding-left:154px!important;padding-right:294px!important}#premiumLeft{width:134px!important}#panel{width:274px!important}#desktopWeatherBand{padding-left:154px!important;padding-right:294px!important}#mapSearchBox{width:calc(100% - 470px)!important}#hqPanelTabs button{font-size:11px}}
+@media(max-width:760px){
+ header{height:110px!important;align-items:stretch!important;flex-direction:column!important;padding:7px 10px!important;gap:6px!important}header .hqTitle{min-width:0!important}header h1{font-size:16px!important}header .sub{font-size:8px!important}
+ #headerLiveWeather{width:100%;max-width:100%;overflow-x:auto;flex-shrink:0;min-height:48px}#headerLiveWeather .hw{min-height:42px;padding:4px 7px!important}#headerLiveWeather .hw small{font-size:9px}#headerLiveWeather .liveBadge{display:none}
+ #desktopWeatherBand{height:74px!important;padding:3px 7px!important}#desktopWeatherBand #fireTrendBox{height:68px!important}main{height:calc(100dvh - 184px)!important;min-height:0!important;padding:54px 6px 6px!important}
+ #panel{display:none!important;top:49px!important;left:7px!important;right:7px!important;width:auto!important;max-height:calc(100% - 56px)!important;padding:10px!important}#panel.open{display:block!important}
+ #premiumLeft{display:none;top:49px!important;left:7px;right:7px;width:auto!important;max-height:calc(100% - 56px);bottom:auto}#premiumLeft.mobileOpen{display:block}
+ #premiumLeft .toolGrid{grid-template-columns:repeat(4,minmax(0,1fr))}#premiumLeft .toolGrid button{font-size:11px!important;min-height:57px!important}
+ #mapSearchBox{top:59px!important;width:calc(100% - 30px)!important}#mapSearchForm{padding:4px}#mapSearchInput{padding:7px;font-size:12px}#count{top:auto!important;bottom:14px!important;left:14px!important;max-width:calc(100% - 28px)}
+ #dangerBanner{top:110px!important;left:8px!important;right:8px!important}#hqPanelTabs{top:-10px}
+}
+</style>
+</head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div class="hqTitle"><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><div id="headerLiveWeather"><span class="hw timer"><span class="hwValue">⏱ <b id="time">00:00:00</b></span><small>זמן האירוע</small></span><span class="hw"><span class="hwValue">🧭 <b id="ftDir">—</b></span><small>כיוון רוח</small></span><span class="hw"><span class="hwValue">🌬 <b id="ftWind">—</b></span><small>מהירות רוח</small></span><span class="hw"><span class="hwValue">💨 <b id="ftGust">—</b></span><small>משבי רוח</small></span><span class="hw"><span class="hwValue">💧 <b id="ftHumidity">—</b></span><small>לחות</small></span><span class="hw progress"><span class="hwValue">🔥 <b id="ftProgress">ממתין למוקד</b></span><small>פוטנציאל התפשטות</small></span><b class="liveBadge">LIVE • חפ״ק</b></div></header><div id="desktopWeatherBand" dir="rtl"><div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 תחזית רוח • 24 שעות</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><svg id="fireTrendCanvas" viewBox="0 0 760 120" preserveAspectRatio="none" aria-label="תחזית רוח ל־24 שעות"></svg><div class="ftLegend"><span>מהירות רוח</span><span>משבים</span><span>לחות</span></div></div></div><main>
+<div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <span class="small">LIVE MAP</span></div><div class="toolGrid coreTools"><button data-p="fire"><span class="cmdIcon fire"><svg viewbox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"></path></svg></span><span>מוקד אש</span></button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">📐 שטח בדונם</button><button data-p="water"><span class="cmdIcon info"><svg viewbox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"></path><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"></path></svg></span><span>מקור מים</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewbox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 9v5M12 17h.01"></path></svg></span><span>נקודת מפגע</span></button><button id="undo">↩️ בטל</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small" role="status">בחר כלי והתחל לסמן במפה.</div><div id="measureResult" class="areaReadout" role="status">📐 מדידת שטח בדונם • 1 דונם = 1,000 מ״ר</div><details class="toolGroup"><summary>🗺 כלים נוספים</summary><div class="toolGrid"><button data-l="fire"><span class="cmdIcon fire"><svg viewbox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"></path><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"></path></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewbox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"></path></svg></span><span>קו הגנה / פס אש</span></button><button data-l="access">🚙 דרך גישה</button><button data-l="escape"><span class="cmdIcon safe"><svg viewbox="0 0 24 24"><circle cx="9" cy="5" r="2"></circle><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"></path></svg></span><span>מסלול בריחה</span></button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ אזור סכנה</button><button data-p="assembly"><span class="cmdIcon safe"><svg viewbox="0 0 24 24"><circle cx="8" cy="8" r="2.5"></circle><circle cx="16" cy="8" r="2.5"></circle><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"></path></svg></span><span>נקודת כינוס</span></button><button id="measureDist">📏 מדידת מרחק</button><button id="erase">🗑️ מחק</button></div></details><details class="toolGroup"><summary>🚒 כוחות וציוד</summary><input id="unit" placeholder="שם עובד / צוות / כלי" aria-label="שם הסימון במפה"><div class="toolGrid"><button data-p="person">👤 עובד</button><button data-p="engine"><span class="cmdIcon "><svg viewbox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="18" cy="18" r="2"></circle><path d="M6 8V5h7v3M17 11V7h2"></path></svg></span><span>כבאית / רכב</span></button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="cmd">📍 חפ״ק</button></div></details><details class="toolGroup"><summary>🌐 סוג מפה</summary><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></details></div>
 
 <div id="dangerBanner" dir="rtl"><div class="dangerIcon">⚠️</div><div class="dangerText"><b id="dangerName">עובד בסכנה</b><small id="dangerMeta">SOS מהשטח • ממתין לטיפול</small></div><div class="dangerActions"><button class="share" id="dangerShare">📍 שלח מיקום</button><button class="done" id="dangerProgress">🟡 בטיפול</button><button class="done" id="dangerDone">✓ טופל</button><button id="dangerDelete">🗑 טופל ומחק דיווח</button></div></div>
 <div id="premiumBottom" dir="rtl"><div class="pbox"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotos"></div></div><div class="pbox" id="fieldReqMini"><h3>🆘 בקשות מהשטח</h3></div><div class="pbox"><h3>📋 יומן אירוע</h3><div class="eventMini" id="eventMini"><span>🟢 אירוע פעיל</span></div></div></div>
 
 <button id="menu">☰ ניהול</button><button id="mobileTools" style="display:none" type="button">🗺 כלים</button><div id="top" style="display:none"><span>🌬 <b id="wd">—</b></span><span>מהירות <b id="ws">—</b></span><span>משבים <b id="wg">—</b></span></div><div id="count">🚒 0 | 👥 0 | 💨 0 | 💧 0</div>
-<div id="panel">
-<div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" id="hqWorkerAccess" style="padding:9px;margin-top:7px"><b>🔐 קוד כניסה לעובדים</b><input id="hqWorkerCode" readonly dir="ltr" autocomplete="off" placeholder="ייפתח עם האירוע" style="width:100%;font-family:monospace;font-size:15px;margin-top:5px"><div class="row" style="margin-top:5px"><button id="hqCopyWorkerCode" type="button" disabled>📋 העתק קוד</button><button id="hqNewWorkerCode" type="button" disabled>↻ קוד חדש</button></div><div id="hqWorkerCodeNote" class="small" role="status" style="margin-top:5px">פתח אירוע פעיל לקבלת קוד</div></div><div class="worker" id="trustedHQCard" style="padding:9px;margin-top:7px"><div class="row"><button id="trustedRosterOpen" type="button" aria-haspopup="dialog">👥 עובדים מאושרים (<span id="trustedRosterCount">…</span>)</button><button id="trustedInviteOpen" type="button" class="green" aria-haspopup="dialog">📣 הזעקת עובדים</button></div><div class="row" style="margin-top:7px"><button id="trustedAcceptedOpen" type="button">✅ משתתפים <b id="trustedAccepted">0</b></button><button id="trustedPendingOpen" type="button">⏳ טרם ענו <b id="trustedPending">0</b></button><button id="trustedDeclinedOpen" type="button">❌ לא זמינים <b id="trustedDeclined">0</b></button></div><div id="trustedHQNote" class="small" role="status" style="margin-top:6px"></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="start" class="green">▶ פתיחת אירוע</button><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div></div>
-<div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div>
-<div class="card"><h3>👥 כוחות LIVE</h3><div id="workers" class="small">אין עובדים פעילים.</div></div>
-<div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div>
-<div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div>
-<div class="card"><h3>🌬 רוח והתראות</h3><button id="landCoverToggle" type="button" aria-pressed="false">🌿 הצג כיסוי קרקע</button><div id="landCoverInfo" class="small" style="margin:7px 0">סמן מוקד אש לזיהוי כיסוי הקרקע.</div><details class="small" style="margin:7px 0"><summary>מקרא כיסוי הקרקע • 2021</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0"><span><i style="display:inline-block;width:9px;height:9px;background:#006400;margin-left:4px"></i>עצים / חורש</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffbb22;margin-left:4px"></i>שיחים / בתה</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffff4c;margin-left:4px"></i>עשבוני</span><span><i style="display:inline-block;width:9px;height:9px;background:#f096ff;margin-left:4px"></i>חקלאי</span><span><i style="display:inline-block;width:9px;height:9px;background:#fa0000;margin-left:4px"></i>בנוי</span><span><i style="display:inline-block;width:9px;height:9px;background:#b4b4b4;margin-left:4px"></i>חשוף / דליל</span><span><i style="display:inline-block;width:9px;height:9px;background:#0064c8;margin-left:4px"></i>מים</span><span><i style="display:inline-block;width:9px;height:9px;background:#0096a0;margin-left:4px"></i>צמחייה לחה</span></div>מקור לווייני 10 מ׳ • תצוגה כ־100 מ׳ • לא סקר צמחייה עדכני</details><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div>
-<div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></div><div id="map"></div>
+<div id="panel"><div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><button id="start" class="green">▶ פתיחת אירוע</button><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div><details class="eventExtra"><summary>🔗 קוד כניסה ושיתוף</summary><div class="worker" id="hqWorkerAccess" style="padding:9px;margin-top:7px"><b>🔐 קוד כניסה לעובדים</b><input id="hqWorkerCode" readonly dir="ltr" autocomplete="off" placeholder="ייפתח עם האירוע" style="width:100%;font-family:monospace;font-size:15px;margin-top:5px"><div class="row" style="margin-top:5px"><button id="hqCopyWorkerCode" type="button" disabled>📋 העתק קוד</button><button id="hqNewWorkerCode" type="button" disabled>↻ קוד חדש</button></div><div id="hqWorkerCodeNote" class="small" role="status" style="margin-top:5px">פתח אירוע פעיל לקבלת קוד</div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div></details><details class="eventExtra"><summary>⋮ פעולות אירוע</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div></details></div><div id="hqPanelTabs" role="tablist" aria-label="ניהול האירוע"><button type="button" role="tab" id="hqTab-workers" data-hq-tab="workers" aria-controls="hqPane-workers" aria-selected="true" tabindex="0">👥 עובדים</button><button type="button" role="tab" id="hqTab-sectors" data-hq-tab="sectors" aria-controls="hqPane-sectors" aria-selected="false" tabindex="-1">📍 גזרות</button><button type="button" role="tab" id="hqTab-requests" data-hq-tab="requests" aria-controls="hqPane-requests" aria-selected="false" tabindex="-1">🆘 בקשות</button><button type="button" role="tab" id="hqTab-more" data-hq-tab="more" aria-controls="hqPane-more" aria-selected="false" tabindex="-1">⋯ עוד</button></div><section id="hqPane-workers" role="tabpanel" aria-labelledby="hqTab-workers"><div class="worker" id="trustedHQCard" style="padding:9px;margin-top:7px"><div class="row"><button id="trustedRosterOpen" type="button" aria-haspopup="dialog">👥 עובדים מאושרים (<span id="trustedRosterCount">…</span>)</button><button id="trustedInviteOpen" type="button" class="green" aria-haspopup="dialog">📣 הזעקת עובדים</button></div><div class="row" style="margin-top:7px"><button id="trustedAcceptedOpen" type="button">✅ משתתפים <b id="trustedAccepted">0</b></button><button id="trustedPendingOpen" type="button">⏳ טרם ענו <b id="trustedPending">0</b></button><button id="trustedDeclinedOpen" type="button">❌ לא זמינים <b id="trustedDeclined">0</b></button></div><div id="trustedHQNote" class="small" role="status" style="margin-top:6px"></div></div><div class="card"><h3>👥 כוחות LIVE</h3><div id="workers" class="small">אין עובדים פעילים.</div></div></section><section id="hqPane-sectors" role="tabpanel" aria-labelledby="hqTab-sectors" hidden><div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div></section><section id="hqPane-requests" role="tabpanel" aria-labelledby="hqTab-requests" hidden><div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div><div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div></section><section id="hqPane-more" role="tabpanel" aria-labelledby="hqTab-more" hidden><div class="card"><h3>🌬 רוח והתראות</h3><button id="landCoverToggle" type="button" aria-pressed="false">🌿 הצג כיסוי קרקע</button><div id="landCoverInfo" class="small" style="margin:7px 0">סמן מוקד אש לזיהוי כיסוי הקרקע.</div><details class="small" style="margin:7px 0"><summary>מקרא כיסוי הקרקע • 2021</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0"><span><i style="display:inline-block;width:9px;height:9px;background:#006400;margin-left:4px"></i>עצים / חורש</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffbb22;margin-left:4px"></i>שיחים / בתה</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffff4c;margin-left:4px"></i>עשבוני</span><span><i style="display:inline-block;width:9px;height:9px;background:#f096ff;margin-left:4px"></i>חקלאי</span><span><i style="display:inline-block;width:9px;height:9px;background:#fa0000;margin-left:4px"></i>בנוי</span><span><i style="display:inline-block;width:9px;height:9px;background:#b4b4b4;margin-left:4px"></i>חשוף / דליל</span><span><i style="display:inline-block;width:9px;height:9px;background:#0064c8;margin-left:4px"></i>מים</span><span><i style="display:inline-block;width:9px;height:9px;background:#0096a0;margin-left:4px"></i>צמחייה לחה</span></div>מקור לווייני 10 מ׳ • תצוגה כ־100 מ׳ • לא סקר צמחייה עדכני</details><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div><div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></section></div><div id="map"></div>
 <div id="mapSearchBox" dir="rtl"><form id="mapSearchForm"><input id="mapSearchInput" autocomplete="off" placeholder="🔎 חיפוש מיקום... לדוגמה גמלא"><button type="submit">חפש</button></form><div id="mapSearchResults"></div></div>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -284,7 +307,7 @@ window.createHQTrustedWorkers=function(cloud){
  const $=id=>document.getElementById(id);let event=null,epoch=0,roster=[],responses=[],lastLoad=0,rosterLoaded=false,rosterLoading=false;const authorized=()=>document.documentElement.classList.contains('hq-authorized');
  function element(tag,text){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e}
  async function rpc(name,args={}){if(!authorized())throw Error('יש להתחבר לחפ״ק');const r=await cloud.rpc(name,args);if(r.error)throw r.error;return r.data}
- function message(value){$('trustedHQNote').textContent=value}
+ function message(value){$('trustedHQNote').textContent=value;$('trustedHQNote').classList.toggle('hasMessage',!!value)}
  function reset(){epoch++;event=null;roster=[];responses=[];lastLoad=0;rosterLoaded=false;for(const id of ['trustedRosterDialog','trustedInviteDialog','trustedResponseDialog'])$(id)?.close();for(const id of ['trustedRosterRows','trustedInviteRows','trustedResponseRows'])$(id).replaceChildren();$('trustedRosterCount').textContent='…';for(const id of ['trustedAccepted','trustedPending','trustedDeclined'])$(id).textContent='0';message('פתח רשימת עובדים לאישור והרשמה')}
  function counts(){for(const [id,state]of [['trustedAccepted','accepted'],['trustedPending','pending'],['trustedDeclined','declined']])$(id).textContent=responses.filter(x=>x.response===state&&x.approved).length}
  async function summary(){if(!authorized()||!event?.id)return;const run=epoch,id=event.id;try{const data=await rpc('hq_event_invitation_status',{p_event_id:id});if(run!==epoch||id!==event?.id)return;responses=data||[];counts();lastLoad=Date.now()}catch(e){message(e.message)}}
@@ -320,7 +343,7 @@ function style(k){return k==="escape"?{color:"#38d878",weight:5,dashArray:"10 7"
 const mapLayers=new Map(),pendingMap=new Set();
 function mapShape(l,k){let ll=l.getLatLngs?.(),points=ll?(Array.isArray(ll[0])?ll[0]:ll).map(x=>[x.lat,x.lng]):null;return {kind:k,geometry:l instanceof L.Marker?"point":l instanceof L.Polygon?"polygon":"line",points:points||[[l.getLatLng().lat,l.getLatLng().lng]],label:l._label||""}}
 function makeMapLayer(row){let d=row.data,pts=d.points;if(!Array.isArray(pts)||!pts.length)return null;let l;if(d.geometry==="point"){let k=d.kind;l=L.marker(pts[0],{icon:L.divIcon({html:markerHtml(k),className:"",iconSize:k==="fire"?[36,40]:[38,38],iconAnchor:k==="fire"?[18,20]:[19,19]})}).bindTooltip(`${esc(d.label||k)} • ${pts[0][0].toFixed(5)}, ${pts[0][1].toFixed(5)}`)}else if(d.geometry==="polygon")l=L.polygon(pts,d.kind==="fire-polygon"?{color:"#ff5a36",weight:3,fillColor:"#ff5a36",fillOpacity:.18}:{color:d.kind.startsWith("sector")?"#9b7cff":d.kind==="danger"?"#ff3b3b":"#666",fillOpacity:.22});else l=L.polyline(pts,d.kind==="measured-distance"?{color:"#ffd166",weight:4,dashArray:"8 6"}:d.kind==="free-fire"?{color:"#ff4242",weight:5}:style(d.kind));l._kind=d.kind;l._id=row.id;l._label=d.label;return l}
-function recountMap(){counts={engine:0,person:0,blower:0,water:0};lastFireAreaM2=0;ops.eachLayer(l=>{if(counts[l._kind]!=null)counts[l._kind]++;if(l._kind==="fire-polygon"||l._kind==="burned"){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];lastFireAreaM2=areaM2(a)}});counter()}
+function recountMap(){counts={engine:0,person:0,blower:0,water:0};lastFireAreaM2=0;ops.eachLayer(l=>{if(counts[l._kind]!=null)counts[l._kind]++;if(l._kind==="fire-polygon"||l._kind==="burned"){let a=l.getLatLngs();if(Array.isArray(a[0]))a=a[0];lastFireAreaM2=areaM2(a);l.bindTooltip?.(`📐 שטח משוער: ${(lastFireAreaM2/1000).toFixed(2)} דונם`)}});if(!measureMode)$("measureResult").textContent=lastFireAreaM2?`📐 שטח שריפה אחרון: ${(lastFireAreaM2/1000).toFixed(2)} דונם • ${Math.round(lastFireAreaM2).toLocaleString("he-IL")} מ״ר`:"📐 מדידת שטח בדונם • 1 דונם = 1,000 מ״ר";counter()}
 function removeMapLayer(l){ops.removeLayer(l);stack=stack.filter(x=>x!==l);if(l._id){mapLayers.delete(l._id);if(ev)cloud.from("map_items").delete().eq("id",l._id).eq("event_id",ev.id).then(({error})=>{if(error)alert("שגיאה במחיקת סימון: "+error.message)})}recountMap()}
 async function syncMap(){if(!ev)return;let eventId=ev.id;let {data,error}=await cloud.from("map_items").select("id,data").eq("event_id",eventId).order("created_at",{ascending:true});if(error){$("drawmsg").textContent="❌ סנכרון מפה: "+error.message;return}if(ev?.id!==eventId)return;let ids=new Set((data||[]).map(x=>x.id));for(let [id,l] of mapLayers)if(!ids.has(id)&&!pendingMap.has(id)){ops.removeLayer(l);mapLayers.delete(id);stack=stack.filter(x=>x!==l)}for(let row of data||[])if(!mapLayers.has(row.id)){let l=makeMapLayer(row);if(l){ops.addLayer(l);mapLayers.set(row.id,l);stack.push(l)}}recountMap();renderSectorSetup();let savedFire=[...mapLayers.values()].filter(l=>l._kind==="fire"&&l.getLatLng);if(savedFire.length){let fp=savedFire[savedFire.length-1].getLatLng();weather(fp.lat,fp.lng)}}
 function add(l,k){if(!ev){alert("פתח אירוע קודם כדי לשמור סימונים");return}l._kind=k;l._id=crypto.randomUUID();pendingMap.add(l._id);ops.addLayer(l);mapLayers.set(l._id,l);stack.push(l);let row={id:l._id,event_id:ev.id,data:mapShape(l,k)};cloud.from("map_items").insert(row).then(({error})=>{pendingMap.delete(l._id);if(error){ops.removeLayer(l);mapLayers.delete(l._id);stack=stack.filter(x=>x!==l);recountMap();alert("הסימון לא נשמר: "+error.message)}})}
@@ -329,7 +352,7 @@ function commitCurrent(){
  if(lineKind&&linePts.length>=2){if(preview){map.removeLayer(preview);preview=null}add(L.polyline([...linePts],style(lineKind)),lineKind);linePts=[];$("drawmsg").textContent="הקו נשמר • אפשר לצייר קו נוסף.";return true}
  if(polyKind&&polyPts.length>=3){if(preview){map.removeLayer(preview);preview=null}let k=polyKind,pts=[...polyPts];add(L.polygon(pts,{color:k.startsWith("sector")?"#9b7cff":k==="danger"?"#ff3b3b":"#666",fillOpacity:.22}),k);if(k==="burned")showArea(pts);polyPts=[];$("drawmsg").textContent="השטח נשמר • אפשר לצייר שטח נוסף.";return true}
  return false}
-function stop(){commitCurrent();map.getContainer().style.cursor="";mode=lineKind=polyKind=null;linePts=[];polyPts=[];eraseMode=false;freeDrawing=false;freePts=[];measureMode=null;measurePts=[];if(preview){map.removeLayer(preview);preview=null}document.querySelectorAll("#premiumLeft button").forEach(x=>x.classList.remove("toolActive"));$("drawmsg").textContent="הכלי הסתיים • כל הסימונים נשמרו במפה."}
+function stop(){commitCurrent();if(sectorPointHandler){map.off("click",sectorPointHandler);sectorPointHandler=null}map.dragging.enable();map.getContainer().style.cursor="";mode=lineKind=polyKind=null;linePts=[];polyPts=[];eraseMode=false;freeDrawing=false;freePts=[];measureMode=null;measurePts=[];if(preview){map.removeLayer(preview);preview=null}document.querySelectorAll("#premiumLeft button").forEach(x=>{x.classList.remove("toolActive");if(x.hasAttribute("aria-pressed"))x.setAttribute("aria-pressed","false")});$("drawmsg").textContent="הכלי הסתיים • כל הסימונים נשמרו במפה."}
 function pMode(k){stop();mode=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="לחץ על המפה להצבה • הכלי נשאר פעיל עד סיום כלי."}function lMode(k){stop();lineKind=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="כל קליק מוסיף נקודה • קליק כפול שומר קו • אפשר לצייר עוד קו."}function aMode(k){stop();polyKind=k;map.getContainer().style.cursor="crosshair";$("drawmsg").textContent="לחץ על נקודות הגבול • קליק כפול שומר • הכלי נשאר פעיל."}
 
 function areaM2(latlngs){let R=6378137,a=0;if(latlngs.length<3)return 0;for(let i=0;i<latlngs.length;i++){let p1=latlngs[i],p2=latlngs[(i+1)%latlngs.length];a+=(p2.lng-p1.lng)*Math.PI/180*(2+Math.sin(p1.lat*Math.PI/180)+Math.sin(p2.lat*Math.PI/180));}return Math.abs(a*R*R/2)}
@@ -341,7 +364,7 @@ map.on("dblclick",e=>{L.DomEvent.stopPropagation(e.originalEvent);if(measureMode
 
 map.on("mousedown",e=>{if(freeDrawing){freePts=[e.latlng];if(preview)map.removeLayer(preview);preview=L.polyline(freePts,{color:"#ff4242",weight:5}).addTo(map);map.dragging.disable()}});
 map.on("mousemove",e=>{if(freeDrawing&&freePts.length){freePts.push(e.latlng);preview.setLatLngs(freePts)}});
-map.on("mouseup",e=>{if(freeDrawing&&freePts.length>1){if(preview)map.removeLayer(preview);add(L.polyline(freePts,{color:"#ff4242",weight:5}),"free-fire");freePts=[];preview=null;map.dragging.enable()}});
+map.on("mouseup",e=>{if(freeDrawing&&freePts.length){if(preview)map.removeLayer(preview);if(freePts.length>1)add(L.polyline(freePts,{color:"#ff4242",weight:5}),"free-fire");freePts=[];preview=null;map.dragging.enable()}});
 
 ops.on("click",e=>{if(eraseMode){let fireMarker=e.layer&&e.layer._kind==="fire";removeMapLayer(e.layer);if(fireMarker&&typeof fireSpreadLayer!=="undefined")fireSpreadLayer.clearLayers();$("drawmsg").textContent="🧽 מצב מחיקה פעיל • לחץ על פריט נוסף למחיקה • ESC לסיום.";L.DomEvent.stopPropagation(e.originalEvent)}});
 function counter(){$("count").textContent=`🚒 ${counts.engine} | 👥 ${workers.filter(w=>w.status!=="סיים").length+counts.person} | 💨 ${counts.blower} | 💧 ${counts.water}`}
@@ -360,11 +383,31 @@ function fresh(w){if(w.latitude==null||w.longitude==null)return["⚫","שיתו�
 function sectorMarker(k){return [...mapLayers.values()].find(x=>x._kind==="sector-point "+k)}
 function sectorConfig(k){let saved={};try{saved=JSON.parse(localStorage.getItem("sector:"+ev?.id+":"+k)||"{}")}catch{}let marker=sectorMarker(k);return {...saved,manager:marker?marker._label||"":saved.manager||""}}
 function sectorPosition(k){let marker=sectorMarker(k);if(marker){let p=marker.getLatLng();return [p.lat,p.lng]}let c=sectorConfig(k);if(c.lat!==undefined&&Number.isFinite(+c.lat)&&Number.isFinite(+c.lng))return [+c.lat,+c.lng];let l=[...mapLayers.values()].find(x=>x._kind==="sector "+k);if(l?.getBounds){let p=l.getBounds().getCenter();return [p.lat,p.lng]}return null}
-function sectorNames(){let names=new Set(["א","ב","ג"]);for(let l of mapLayers.values()){let k=String(l._kind||"");if(k.startsWith("sector-point "))names.add(k.slice(13))}try{for(let k of JSON.parse(localStorage.getItem("sectorNames:"+ev?.id)||"[]"))if(k)names.add(k)}catch{}return [...names]}
+function sectorNames(){let names=new Set(["א","ב","ג"]);for(let l of mapLayers.values()){let k=String(l._kind||"");if(k.startsWith("sector-point "))names.add(k.slice(13));else if(k.startsWith("sector "))names.add(k.slice(7))}try{for(let k of JSON.parse(localStorage.getItem("sectorNames:"+ev?.id)||"[]"))if(k)names.add(k)}catch{}return [...names]}
 window.addCustomSector=()=>{if(!ev)return alert("פתח אירוע קודם");let raw=prompt("שם הגזרה החדשה (למשל: צפונית, נחל, גזרה ד):","");if(raw===null)return;let k=raw.trim();if(!/^[\p{L}\p{N} _-]{1,30}$/u.test(k))return alert("כתוב שם גזרה עד 30 אותיות או מספרים");let names=sectorNames();if(names.includes(k))return setSectorPoint(k);names.push(k);localStorage.setItem("sectorNames:"+ev.id,JSON.stringify(names));renderSectorSetup();renderWorkers();setSectorPoint(k)};
-let activeSectorTab="א";window.selectSectorTab=k=>{activeSectorTab=k;renderSectorSetup()};function renderSectorSetup(){let box=$("sectorSetup"),tabs=$("sectorTabs");if(!box||!tabs)return;let names=sectorNames();if(!names.includes(activeSectorTab))activeSectorTab=names[0]||"א";tabs.innerHTML=names.map(k=>`<button type="button" data-sector-tab="${esc(k)}" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px;${k===activeSectorTab?"border:2px solid #2d9cff;background:#123f72":""}">${esc(k)}׳</button>`).join("")+`<button class="green" type="button" data-sector-add="1" style="font-size:17px;font-weight:900;min-height:42px;padding:6px 4px">＋</button>`;tabs.querySelectorAll("[data-sector-tab]").forEach(b=>b.addEventListener("click",()=>{activeSectorTab=b.dataset.sectorTab;renderSectorSetup()}));let addBtn=tabs.querySelector("[data-sector-add]");if(addBtn)addBtn.addEventListener("click",()=>addCustomSector());let k=activeSectorTab,c=sectorConfig(k),p=sectorPosition(k),ws=workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")===String(k));box.innerHTML=`<div class="worker" style="padding:10px;border-radius:14px"><div class="row" style="justify-content:space-between;align-items:center"><b style="font-size:17px">📍 גזרה ${esc(k)}</b><span class="small">👤 ${esc(c.manager||"ללא מנהל")} • 👥 ${ws.length}</span></div><div class="row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px"><button data-sector-border="${esc(k)}" class="green" style="min-height:42px;font-weight:800;padding:6px 4px">✏️ גבולות</button><button onclick="setSectorPoint('${k}')" class="red" style="min-height:42px;font-weight:800;padding:6px 4px">📍 נקודת גזרה</button><button onclick="setSectorManager('${k}')" style="min-height:42px;font-weight:800;padding:6px 4px">👤 מנהל גזרה</button><button type="button" onclick="document.getElementById('workers')?.scrollIntoView({behavior:'smooth'})" style="min-height:42px;font-weight:800;padding:6px 4px">👥 עובדים בגזרה (${ws.length})</button></div><div class="small" style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px">${p?"✅ נקודת גזרה מוגדרת • "+(+p[0]).toFixed(5)+", "+(+p[1]).toFixed(5):"⚠ נקודת גזרה עדיין לא הוגדרה"}<br>מנהל: ${esc(c.manager||"לא הוגדר")}<br>עובדים: ${ws.length?ws.map(w=>esc(w.name)).join(", "):"אין עובדים משויכים"}</div><div style="margin-top:8px;padding:8px;border:1px solid #35506b;border-radius:12px"><b>📍 שלח מיקום גזרה לעובד</b><div class="row" style="margin-top:8px"><select id="sectorWorkerPick" style="flex:1"><option value="">בחר עובד</option>${workers.filter(w=>w.status!=="סיים"&&String(w.sector||"")!==String(k)).map(w=>`<option value="${esc(String(w.id))}">${esc(w.name)}${w.sector?" • גזרה "+esc(w.sector):""}</option>`).join("")}</select><button class="green" type="button" onclick="sendSelectedWorkerToSector('${k}')">📲 שלח לאפליקציה</button></div></div></div>`;box.querySelectorAll("[data-sector-border]").forEach(b=>b.onclick=()=>{stop();polyKind="sector";polyPts=[];window._sectorDrawName=b.dataset.sectorBorder;$("drawmsg").textContent="גזרה "+b.dataset.sectorBorder+": סמן גבולות על המפה";map.getContainer().style.cursor="crosshair"})}
+let activeSectorTab="א",sectorPointHandler=null;
+window.selectSectorTab=k=>{activeSectorTab=k;renderSectorSetup()};
+function renderSectorSetup(){
+ const box=$('sectorSetup'),tabs=$('sectorTabs');if(!box||!tabs)return;
+ const names=sectorNames();if(!names.includes(activeSectorTab))activeSectorTab=names[0]||'';
+ tabs.innerHTML=names.map(k=>`<button type="button" data-sector-tab="${esc(k)}" aria-pressed="${k===activeSectorTab}">${esc(k)}${k.length===1?'׳':''}</button>`).join('')+'<button class="green" type="button" data-sector-add="1" aria-label="הוספת גזרה">＋</button>';
+ tabs.querySelectorAll('[data-sector-tab]').forEach(b=>b.onclick=()=>{activeSectorTab=b.dataset.sectorTab;renderSectorSetup()});tabs.querySelector('[data-sector-add]').onclick=()=>addCustomSector();
+ if(!activeSectorTab){box.innerHTML='<p>אין גזרות. לחץ ＋ להוספת גזרה.</p>';return}
+ const k=activeSectorTab,c=sectorConfig(k),point=sectorPosition(k),ws=workers.filter(w=>w.status!=='סיים'&&String(w.sector||'')===String(k));
+ box.innerHTML=`<div class="worker" data-sector-name="${esc(k)}"><h3>📍 גזרה ${esc(k)}</h3><p class="small">👤 ${esc(c.manager||'ללא מנהל')} • 👥 ${ws.length} עובדים</p><div class="sectorActions"><button id="sectorBorder" class="green">✏️ גבולות</button><button id="sectorPoint">📍 נקודת גזרה</button><button id="sectorManager">👤 מנהל גזרה</button><button id="sectorWorkers">👥 עובדים בגזרה (${ws.length})</button></div><p class="small">${point?'✅ נקודת גזרה: '+Number(point[0]).toFixed(5)+', '+Number(point[1]).toFixed(5):'⚠ יש להגדיר נקודת גזרה'}<br>${ws.length?ws.map(w=>esc(w.name)).join(', '):'אין עובדים משויכים'}</p><details open class="sectorShare"><summary>📍 שיבוץ ושיתוף גזרה</summary><select id="sectorWorkerPick" aria-label="בחירת עובד לשיבוץ או שיתוף"><option value="">בחר עובד</option>${workers.filter(w=>w.status!=='סיים').map(w=>`<option value="${esc(String(w.id))}">${esc(w.name)}${w.sector?' • גזרה '+esc(w.sector):''}</option>`).join('')}</select><div class="sectorActions"><button id="sectorSend" class="green">📲 שיבוץ לאפליקציה</button><button id="sectorWhatsApp">💬 WhatsApp לעובד</button><button id="sectorGroupShare">📍 שיתוף למספר עובדים</button></div></details><details class="sectorAdvanced"><summary>אפשרויות גזרה</summary><button id="sectorDelete" class="red">🗑 מחק גזרה ${esc(k)}</button></details></div>`;
+ $('sectorBorder').onclick=()=>{if(!ev)return alert('פתח אירוע קודם');stop();polyKind='sector '+k;polyPts=[];$('drawmsg').textContent='גזרה '+k+': סמן גבולות על המפה • קליק כפול לשמירה';map.getContainer().style.cursor='crosshair';if(matchMedia('(max-width:760px)').matches)$('panel').classList.remove('open')};
+ $('sectorPoint').onclick=()=>setSectorPoint(k);$('sectorManager').onclick=()=>setSectorManager(k);
+ $('sectorWorkers').onclick=()=>{window.setHQTab?.('workers');$('workers').scrollIntoView({behavior:'smooth'})};
+ $('sectorSend').onclick=()=>sendSelectedWorkerToSector(k);$('sectorWhatsApp').onclick=()=>shareSectorWhatsApp(k);$('sectorGroupShare').onclick=()=>shareSectorGroup(k);$('sectorDelete').onclick=()=>deleteSector(k);
+}
 window.setSectorManager=k=>{if(!ev)return alert("פתח אירוע קודם");let v=prompt("שם מנהל גזרה "+k+":",sectorConfig(k).manager||"");if(v===null)return;let c=sectorConfig(k);c.manager=v.trim();localStorage.setItem("sector:"+ev.id+":"+k,JSON.stringify(c));let old=sectorMarker(k);if(old){let ll=old.getLatLng();removeMapLayer(old);let mark=L.marker(ll,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+k+'</div>',className:"",iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager;add(mark,"sector-point "+k)}renderSectorSetup()};
-window.setSectorPoint=k=>{if(!ev)return alert("פתח אירוע קודם");stop();$("panel").classList.remove("open");$("premiumLeft").classList.remove("mobileOpen");$("drawmsg").textContent="גע פעם אחת במפה כדי לקבוע נקודת מפגש לגזרה "+k;map.getContainer().style.cursor="crosshair";setTimeout(()=>map.invalidateSize(),100);map.once("click",e=>{let old=sectorMarker(k);if(old)removeMapLayer(old);let c=sectorConfig(k);c.lat=e.latlng.lat;c.lng=e.latlng.lng;localStorage.setItem("sector:"+ev.id+":"+k,JSON.stringify(c));let mark=L.marker(e.latlng,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+k+'</div>',className:"",iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager||"";add(mark,"sector-point "+k);renderSectorSetup();$("drawmsg").textContent="נקודת גזרה "+k+" נשמרה";map.getContainer().style.cursor=""})};
+window.setSectorPoint=k=>{
+ if(!ev)return alert('פתח אירוע קודם');stop();const eventId=ev.id;
+ localStorage.setItem('deletedSectors:'+eventId,JSON.stringify(deletedSectorNames().filter(x=>x!==k)));
+ $('panel').classList.remove('open');$('premiumLeft').classList.remove('mobileOpen');$('drawmsg').textContent='גע פעם אחת במפה כדי לקבוע נקודת מפגש לגזרה '+k;map.getContainer().style.cursor='crosshair';setTimeout(()=>map.invalidateSize(),100);
+ sectorPointHandler=e=>{sectorPointHandler=null;if(ev?.id!==eventId)return;let old=sectorMarker(k);if(old)removeMapLayer(old);let c=sectorConfig(k);c.lat=e.latlng.lat;c.lng=e.latlng.lng;localStorage.setItem('sector:'+eventId+':'+k,JSON.stringify(c));let mark=L.marker(e.latlng,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+esc(k)+'</div>',className:'',iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager||'';add(mark,'sector-point '+k);renderSectorSetup();$('drawmsg').textContent='נקודת גזרה '+k+' נשמרה';map.getContainer().style.cursor=''};
+ map.once('click',sectorPointHandler);
+};
 window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{let w=workers.find(x=>String(x.id)===String(id));if(!ev||!w)return;let p=sectorPosition(k),c=sectorConfig(k);if(!p)return alert("הגדר קודם מיקום לגזרה "+k);let manager=c.manager||"";let r=await cloud.from("workers").update({sector:k}).eq("id",w.id).eq("event_id",ev.id);if(r.error)return alert("❌ "+r.error.message);let details="SECTOR_ASSIGN|"+JSON.stringify({sector:k,manager,lat:+p[0],lng:+p[1]});let m=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"שיבוץ לגזרה",details,status:"חדש"});if(m.error)return alert("הגזרה נשמרה, אבל ההודעה לא נשלחה: "+m.error.message);await live();alert("✓ נשלח ל"+w.name+": גזרה "+k)};
 window.workerWhatsApp=id=>{let w=workers.find(x=>String(x.id)===String(id));if(!w||!ev)return;let digits=workerPhones.get(w.name);if(!digits)return alert("העובד צריך להזין מספר WhatsApp ולאשר קבלת הודעות באפליקציה");let sector=w.sector||"",pos=sector?sectorPosition(sector):null,mgr=sector?sectorConfig(sector).manager:"",message="שלום "+w.name+",\nאירוע: "+(ev.name||"שריפה")+(sector?"\nשובצת לגזרה "+sector:"")+(mgr?"\nמנהל הגזרה: "+mgr:"")+(pos?"\nניווט לגזרה: https://www.google.com/maps/dir/?api=1&destination="+(+pos[0]).toFixed(6)+","+(+pos[1]).toFixed(6):"")+"\nקישור עובד: "+workerUrl();let typed=prompt("הודעת WhatsApp ל"+w.name+" — אפשר לערוך:",message);if(typed===null||!typed.trim())return;open("https://wa.me/"+digits+"?text="+encodeURIComponent(typed),"_blank")};
 let workerPhones=new Map(),workerEquipment=new Map(),phoneLoadError="";
@@ -544,12 +587,12 @@ function drawWindForecast24(lat,lng){
  compactFireWindMarker(lat,lng,now.d,now.w,now.g,risk.color).addTo(fireSpreadLayer);
 }async function weather(lat,lng){const cover=detectFuelAt(lat,lng);try{let r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m,temperature_2m,precipitation&forecast_hours=24&wind_speed_unit=kmh&timezone=Asia%2FJerusalem`),j=await r.json(),w=j.current;if(!w||![w.wind_speed_10m,w.wind_direction_10m,w.wind_gusts_10m,w.relative_humidity_2m].every(Number.isFinite))throw Error("Incomplete weather");$("wd").textContent=hd(w.wind_direction_10m);$("ws").textContent=Math.round(w.wind_speed_10m)+" קמ״ש";$("wg").textContent=Math.round(w.wind_gusts_10m)+" קמ״ש";document.documentElement.dataset.hqHumidity=Math.round(w.relative_humidity_2m??0);let hh=j.hourly||{},ht=hh.time||[];document.documentElement.dataset.hqForecast24h=JSON.stringify(ht.slice(0,24).map((t,i)=>({t,w:+(hh.wind_speed_10m?.[i]??w.wind_speed_10m??0),d:+(hh.wind_direction_10m?.[i]??w.wind_direction_10m??0),g:+(hh.wind_gusts_10m?.[i]??w.wind_gusts_10m??0),h:+(hh.relative_humidity_2m?.[i]??w.relative_humidity_2m??0),temp:+(hh.temperature_2m?.[i]??0),rain:+(hh.precipitation?.[i]??0)})));document.documentElement.dataset.hqForecast6h=document.documentElement.dataset.hqForecast24h;cover.finally(()=>{document.dispatchEvent(new CustomEvent("hq-weather-updated"));drawWindForecast24(lat,lng)});$("forecast").innerHTML=`עכשיו: ${hd(w.wind_direction_10m)} • ${Math.round(w.wind_speed_10m)} קמ״ש • משבים ${Math.round(w.wind_gusts_10m)}<br><span class="small">תחזית ההתפשטות על המפה היא אינדיקציה בלבד ותלויה גם בטופוגרפיה, דלק ולחות.</span>`;drawWindZone(lat,lng,w.wind_direction_10m,w.wind_speed_10m);if(lastWind!=null){let d=Math.abs(w.wind_direction_10m-lastWind);d=Math.min(d,360-d);$("windAlert").innerHTML=d>=45?`<div class="alert">⚠ שינוי משמעותי בכיוון הרוח: ${Math.round(d)}°</div>`:""}lastWind=w.wind_direction_10m}catch{document.documentElement.dataset.hqForecast24h="[]";document.documentElement.dataset.hqHumidity="";for(const id of ["wd","ws","wg"])$(id).textContent="—";windLayer.clearLayers();fireSpreadLayer.clearLayers();compactFireWindMarker(lat,lng,null,0,0,"#a5bac8").addTo(fireSpreadLayer);$("forecast").textContent="לא ניתן לקבל נתוני רוח — לא מוצג כיוון משוער"}}
 $("closeSummary").onclick=()=>$("summaryModal").style.display="none";$("menu").onclick=()=>{$("premiumLeft").classList.remove("mobileOpen");$("panel").classList.toggle("open")};$("mobileTools").onclick=()=>{$("panel").classList.remove("open");$("premiumLeft").classList.toggle("mobileOpen")};$("start").onclick=start;$("finish").onclick=finish;$("copy").onclick=async()=>{let u=workerUrl();if(!u)return alert("פתח אירוע קודם");try{await navigator.clipboard.writeText(u);alert("הקישור הועתק")}catch{prompt("העתק:",u)}};$("openWorker").onclick=()=>{let u=workerUrl();if(u)open(u,"_blank");else alert("פתח אירוע קודם")};
-$("freeDraw").onclick=()=>{let on=!freeDrawing;stop();freeDrawing=on;$("drawmsg").textContent=on?"✏️ העט פעיל: לחץ וגרור על המפה. לחץ סיום כלי כשמסיימים.":"העט נעצר."};$("measureArea").onclick=()=>{stop();measureMode="area";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="🔥 פוליגון שריפה: סמן גבול • קליק כפול או סיום כלי לשמירה וחישוב דונם."};$("measureDist").onclick=()=>{stop();measureMode="dist";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="📏 סמן נקודות • קליק כפול או סיום כלי לשמירת המדידה."};$("undo").onclick=()=>{let l=stack[stack.length-1];if(l)removeMapLayer(l)};$("erase").onclick=()=>{stop();eraseMode=true;map.getContainer().style.cursor="not-allowed";$("drawmsg").textContent="🧽 מצב מחיקה פעיל • לחץ על כמה פריטים שתרצה • סיום כלי/ESC לסיום."};$("stopDraw").onclick=stop;$("clear").onclick=()=>{if(confirm("לנקות מפה?")){if(!ev)return alert("אין אירוע פעיל");cloud.from("map_items").delete().eq("event_id",ev.id).then(({error})=>{if(error)return alert(error.message);ops.clearLayers();mapLayers.clear();wl.clearLayers();sosLayer.clearLayers();windLayer.clearLayers();if(typeof fireSpreadLayer!=="undefined")fireSpreadLayer.clearLayers();if(window._myLoc){map.removeLayer(window._myLoc);window._myLoc=null}if(preview){map.removeLayer(preview);preview=null}stack=[];linePts=[];polyPts=[];freePts=[];measurePts=[];lastFireAreaM2=0;recountMap()})}};$("locate").onclick=()=>{if(!navigator.geolocation)return alert("המכשיר לא תומך במיקום");$("drawmsg").textContent="⏳ מאתר מיקום...";let ok=p=>{let ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,17);if(window._myLoc)map.removeLayer(window._myLoc);window._myLoc=L.circleMarker(ll,{radius:9,color:"#fff",weight:3,fillColor:"#1d9bf0",fillOpacity:1}).addTo(map).bindTooltip("המיקום שלי").openTooltip();$("drawmsg").textContent="📍 המיקום שלי נמצא • דיוק "+Math.round(p.coords.accuracy)+" מ׳"};navigator.geolocation.getCurrentPosition(ok,e=>{if(e.code===1)return alert("צריך לאשר הרשאת מיקום לדפדפן ולהפעיל מיקום במכשיר");navigator.geolocation.getCurrentPosition(ok,e2=>alert("לא ניתן לקבל מיקום: "+e2.message),{enableHighAccuracy:false,timeout:30000,maximumAge:60000})},{enableHighAccuracy:true,timeout:20000,maximumAge:15000})};
+$("freeDraw").onclick=()=>{let on=!freeDrawing;stop();freeDrawing=on;$("drawmsg").textContent=on?"✏️ העט פעיל: לחץ וגרור על המפה. לחץ סיום כלי כשמסיימים.":"העט נעצר.";activeBtn(on?$("freeDraw"):null)};$("measureArea").onclick=()=>{stop();measureMode="area";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="🔥 פוליגון שריפה: סמן גבול • קליק כפול או סיום כלי לשמירה וחישוב דונם.";activeBtn($("measureArea"))};$("measureDist").onclick=()=>{stop();measureMode="dist";map.getContainer().style.cursor="crosshair";$("measureResult").textContent="";$("drawmsg").textContent="📏 סמן נקודות • קליק כפול או סיום כלי לשמירת המדידה.";activeBtn($("measureDist"))};$("undo").onclick=()=>{let l=stack[stack.length-1];if(l)removeMapLayer(l)};$("erase").onclick=()=>{stop();eraseMode=true;map.getContainer().style.cursor="not-allowed";$("drawmsg").textContent="🧽 מצב מחיקה פעיל • לחץ על כמה פריטים שתרצה • סיום כלי/ESC לסיום.";activeBtn($("erase"))};$("stopDraw").onclick=stop;$("clear").onclick=()=>{if(confirm("לנקות מפה?")){if(!ev)return alert("אין אירוע פעיל");cloud.from("map_items").delete().eq("event_id",ev.id).then(({error})=>{if(error)return alert(error.message);ops.clearLayers();mapLayers.clear();wl.clearLayers();sosLayer.clearLayers();windLayer.clearLayers();if(typeof fireSpreadLayer!=="undefined")fireSpreadLayer.clearLayers();if(window._myLoc){map.removeLayer(window._myLoc);window._myLoc=null}if(preview){map.removeLayer(preview);preview=null}stack=[];linePts=[];polyPts=[];freePts=[];measurePts=[];lastFireAreaM2=0;recountMap()})}};$("locate").onclick=()=>{if(!navigator.geolocation)return alert("המכשיר לא תומך במיקום");$("drawmsg").textContent="⏳ מאתר מיקום...";let ok=p=>{let ll=[p.coords.latitude,p.coords.longitude];map.setView(ll,17);if(window._myLoc)map.removeLayer(window._myLoc);window._myLoc=L.circleMarker(ll,{radius:9,color:"#fff",weight:3,fillColor:"#1d9bf0",fillOpacity:1}).addTo(map).bindTooltip("המיקום שלי").openTooltip();$("drawmsg").textContent="📍 המיקום שלי נמצא • דיוק "+Math.round(p.coords.accuracy)+" מ׳"};navigator.geolocation.getCurrentPosition(ok,e=>{if(e.code===1)return alert("צריך לאשר הרשאת מיקום לדפדפן ולהפעיל מיקום במכשיר");navigator.geolocation.getCurrentPosition(ok,e2=>alert("לא ניתן לקבל מיקום: "+e2.message),{enableHighAccuracy:false,timeout:30000,maximumAge:60000})},{enableHighAccuracy:true,timeout:20000,maximumAge:15000})};
 async function reportPdf(report){if(!report)return alert("אין נתוני סיכום");let host=document.createElement("div");host.dir="rtl";host.style.cssText="position:fixed;left:-10000px;top:0;width:794px;background:#fff;color:#111;padding:34px;font-family:Arial,sans-serif";let ws=report.weather||{},workersR=report.workers||[],reqR=report.requests||[],photosR=(report.photos||[]);host.innerHTML=`<h1 style="text-align:center">סיכום אירוע שריפה</h1><h2>${esc(report.name||"אירוע שריפה")}</h2><p><b>תחילת אירוע:</b> ${report.started_at?new Date(report.started_at).toLocaleString("he-IL"):"—"} &nbsp; <b>סיום:</b> ${report.ended_at?new Date(report.ended_at).toLocaleString("he-IL"):"—"}</p><p><b>משך:</b> ${Math.floor((report.duration_ms||0)/3600000)} שעות ${Math.floor(((report.duration_ms||0)%3600000)/60000)} דקות</p><p><b>שטח שרוף:</b> ${(report.fire_area_dunam||0).toFixed(2)} דונם • ${(report.fire_area_m2||0).toLocaleString("he-IL")} מ״ר</p><p><b>רוח:</b> ${esc(ws.direction||"—")} • ${esc(ws.speed||"—")} • משבים ${esc(ws.gusts||"—")}</p>${report.map_image?`<h3>מפת האירוע בסיום</h3><img src="${report.map_image}" style="width:100%;max-height:390px;object-fit:contain;border:1px solid #bbb">`:""}<h3>כוחות ועובדים</h3><table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><tr><th>שם</th><th>סטטוס</th><th>גזרה</th><th>הגיע</th><th>תחילת עבודה</th><th>סיים</th></tr>${workersR.map(w=>`<tr><td>${esc(w.name||"")}</td><td>${esc(w.status||"")}</td><td>${esc(w.sector||"")}</td><td>${w.arrived_at?new Date(w.arrived_at).toLocaleTimeString("he-IL"):"—"}</td><td>${w.work_started_at?new Date(w.work_started_at).toLocaleTimeString("he-IL"):"—"}</td><td>${w.finished_at?new Date(w.finished_at).toLocaleTimeString("he-IL"):"—"}</td></tr>`).join("")}</table><h3>בקשות / SOS</h3><table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><tr><th>עובד</th><th>דיווח</th><th>סטטוס</th><th>שעה</th></tr>${reqR.map(x=>`<tr><td>${esc(x.worker_name||"")}</td><td>${esc(x.request_type||"")}</td><td>${esc(x.status||"")}</td><td>${x.created_at?new Date(x.created_at).toLocaleTimeString("he-IL"):"—"}</td></tr>`).join("")}</table>${photosR.length?`<h3>תמונות מהשטח</h3>${photosR.map(x=>`<div style="margin:12px 0"><b>${esc(x.worker_name||"")}</b> • ${x.created_at?new Date(x.created_at).toLocaleString("he-IL"):""}<br><img src="${x.src}" style="max-width:100%;max-height:300px"></div>`).join("")}`:""}<h3>הערות / לקחים</h3><div style="height:90px;border:1px solid #aaa"></div>`;document.body.appendChild(host);try{let canvas=await html2canvas(host,{scale:1.5,useCORS:true,backgroundColor:"#fff"}),img=canvas.toDataURL("image/jpeg",.92),pdf=new jspdf.jsPDF("p","mm","a4"),pw=210,ph=297,iw=pw,ih=canvas.height*iw/canvas.width,y=0;while(y<ih){if(y>0)pdf.addPage();pdf.addImage(img,"JPEG",0,-y,iw,ih);y+=ph}pdf.save(`סיכום-${(report.name||"אירוע").replace(/[^א-תA-Za-z0-9_-]+/g,"-")}.pdf`)}finally{host.remove()}}
 window.downloadHistoryPdf=async id=>{let r=await cloud.from("fire_events").select("report_data").eq("id",id).maybeSingle();if(r.error)return alert(r.error.message);reportPdf(r.data?.report_data)};
 $("snapshot").onclick=()=>alert(`תמונת מצב\nכוחות פעילים: ${workers.filter(w=>w.status!=="סיים").length}\nבקשות: ${requests.length}\nכבאיות: ${counts.engine}\nמפוחים: ${counts.blower}\nמים: ${counts.water}`);
 $("history").onclick=async()=>{let r=await cloud.from("fire_events").select("*").eq("status","ended").order("ended_at",{ascending:false}).limit(20);$("past").innerHTML=r.error?esc(r.error.message):(r.data||[]).map(e=>`<div class="past"><b>${esc(e.name||"אירוע")}</b><br>${new Date(e.started_at).toLocaleString("he-IL")} → ${e.ended_at?new Date(e.ended_at).toLocaleString("he-IL"):"—"}<br><button onclick="downloadHistoryPdf('${e.id}')">הורד סיכום אירוע PDF</button></div>`).join("")||"אין אירועים קודמים."};
-const activeBtn=b=>{document.querySelectorAll('#premiumLeft button').forEach(x=>x.classList.remove('toolActive'));b?.classList.add('toolActive')};document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{pMode(b.dataset.p);activeBtn(b)});document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lMode(b.dataset.l);activeBtn(b)});document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{aMode(b.dataset.a);activeBtn(b)});document.querySelectorAll('#premiumLeft button').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('premiumLeft').classList.remove('mobileOpen')}));document.querySelectorAll('#panel [data-p],#panel [data-l],#panel [data-a],#panel [data-s],#panel #freeDraw,#panel #measureArea,#panel #measureDist').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('panel').classList.remove('open')}));document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector "+b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": לחץ נקודות גבול • קליק כפול מסיים."});
+const activeBtn=b=>{document.querySelectorAll('#premiumLeft button').forEach(x=>{x.classList.remove('toolActive');if(x.hasAttribute('aria-pressed'))x.setAttribute('aria-pressed','false')});if(b){b.classList.add('toolActive');b.setAttribute('aria-pressed','true')}};document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{pMode(b.dataset.p);activeBtn(b)});document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lMode(b.dataset.l);activeBtn(b)});document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{aMode(b.dataset.a);activeBtn(b)});document.querySelectorAll('#premiumLeft button').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('premiumLeft').classList.remove('mobileOpen')}));document.querySelectorAll('#panel [data-p],#panel [data-l],#panel [data-a],#panel [data-s],#panel #freeDraw,#panel #measureArea,#panel #measureDist').forEach(b=>b.addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches)$('panel').classList.remove('open')}));document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{stop();polyKind="sector "+b.dataset.s;$("drawmsg").textContent="גזרה "+b.dataset.s+": לחץ נקודות גבול • קליק כפול מסיים."});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")stop()});
 $("base").onchange=()=>{map.removeLayer(bt);bt=tiles[$("base").value];bt.addTo(map);bt.bringToBack?.()};setInterval(()=>{if(started){let s=Math.floor((Date.now()-started)/1000),m=Math.floor(s/60),h=Math.floor(m/60);$("time").textContent=`${String(h).padStart(2,"0")}:${String(m%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}},1000);
 let liveRefreshBusy=false;
@@ -578,214 +621,43 @@ window.workerWhatsApp = id => {
 
   location.href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
 };
-const oldSectorSetup = renderSectorSetup;
-renderSectorSetup = function () {
-  oldSectorSetup();
-  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
-    const sector = sectorNames()[i];
-    const select = document.createElement("select");
-    select.add(new Option("בחר עובד", ""));
-    workers
-      .filter(w => w.status !== "סיים")
-      .forEach(w => select.add(new Option(w.name, w.id)));
-
-    const button = document.createElement("button");
-    button.textContent = "📍 שתף גזרה לעובד";
-    button.onclick = () => {
-      const worker = workers.find(w => String(w.id) === select.value);
-      if (!worker) return alert("בחר עובד");
-      const phone = workerPhones.get(worker.name);
-      if (!phone) return alert("העובד צריך לשמור מספר WhatsApp באפליקציה");
-      const point = sectorPosition(sector);
-      if (!point) return alert("קודם בחר נקודה במפה לגזרה " + sector);
-      const manager = sectorConfig(sector).manager || "";
-      const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
-        Number(point[0]).toFixed(6) + "," + Number(point[1]).toFixed(6);
-      const message = "שלום " + worker.name + ", גזרה " + sector +
-        (manager ? "\nמנהל הגזרה: " + manager : "") +
-        "\nמיקום וניווט: " + maps;
-      location.href = "https://wa.me/" + phone +
-        "?text=" + encodeURIComponent(message);
-    };
-    card.querySelector(".row").append(select, button);
-  });
+const namesBeforeDelete = sectorNames;
+function deletedSectorNames(){try{return JSON.parse(localStorage.getItem('deletedSectors:'+ev?.id)||'[]')}catch{return []}}
+sectorNames=function(){const deleted=deletedSectorNames();return namesBeforeDelete().filter(name=>!deleted.includes(name))};
+window.shareSectorWhatsApp=function(name){
+ const selected=$('sectorWorkerPick')?.value,worker=workers.find(w=>String(w.id)===selected);
+ if(!ev||!worker)return alert('בחר עובד קודם');
+ const phone=workerPhones.get(worker.name),point=sectorPosition(name);
+ if(!phone)return alert('העובד צריך לשמור מספר WhatsApp באפליקציה');
+ if(!point)return alert('הגדר קודם נקודת גזרה '+name);
+ const manager=sectorConfig(name).manager||'';
+ const text='שלום '+worker.name+', גזרה '+name+(manager?'\nמנהל הגזרה: '+manager:'')+'\nמיקום וניווט:\nhttps://www.google.com/maps/dir/?api=1&destination='+Number(point[0]).toFixed(6)+','+Number(point[1]).toFixed(6);
+ window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
 };
-const previousShareSetup = renderSectorSetup;
-renderSectorSetup = function () {
-  previousShareSetup();
-
-  let box = document.getElementById("easySectorShare");
-  if (!box) {
-    box = document.createElement("div");
-    box.id = "easySectorShare";
-    box.className = "card";
-        box.innerHTML = `<h3>📍 שליחת מיקום גזרה לעובד</h3>
-      <select id="easyWorker"></select>
-      <select id="easySector"></select>
-            <button id="easySend" class="green">📲 פתח WhatsApp</button>`;
-    document.getElementById("workerLink").closest(".card").after(box);
-    document.getElementById("easySend").onclick = () => {
-      const workerId = document.getElementById("easyWorker").value;
-      const sector = document.getElementById("easySector").value;
-            if (!workerId || !sector) return alert("בחר עובד וגזרה");
-      const card = document.querySelectorAll("#sectorSetup .worker")[
-        sectorNames().indexOf(sector)
-      ];
-      const select = card?.querySelector(".row select");
-      const button = [...(card?.querySelectorAll(".row button") || [])]
-        .find(b => b.textContent.includes("שתף גזרה לעובד"));
-            if (!select || !button) return alert("לא ניתן להכין את שיתוף הגזרה");
-      select.value = workerId;
-      button.click();
-    };
-  }
-
-  const workerSelect = document.getElementById("easyWorker");
-  const sectorSelect = document.getElementById("easySector");
-  const workerValue = workerSelect.value;
-  const sectorValue = sectorSelect.value;
-
-    workerSelect.replaceChildren(new Option("בחר עובד", ""));
-  workers.filter(w => w.status !== "סיים")
-    .forEach(w => workerSelect.add(new Option(w.name, w.id)));
-  workerSelect.value = workerValue;
-
-    sectorSelect.replaceChildren(new Option("בחר גזרה", ""));
-  sectorNames().forEach(name => sectorSelect.add(new Option(name, name)));
-  sectorSelect.value = sectorValue;
-
-  document.querySelectorAll("#sectorSetup .worker .row").forEach(row => {
-    const oldSelect = row.querySelector("select");
-    const oldButton = [...row.querySelectorAll("button")]
-      .find(b => b.textContent.includes("שתף גזרה לעובד"));
-    if (oldSelect) oldSelect.style.display = "none";
-    if (oldButton) oldButton.style.display = "none";
-  });
-};const beforeGroupShare = renderSectorSetup;
-renderSectorSetup = function () {
-  beforeGroupShare();
-  if (document.getElementById("shareSectorGroup")) return;
-
-  const button = document.createElement("button");
-  button.id = "shareSectorGroup";
-  button.className = "green";
-    button.textContent = "📍 שתף גזרה למספר עובדים";
-
-  button.onclick = async () => {
-    const sector = document.getElementById("easySector").value;
-       if (!sector) return alert("בחר גזרה תחילה");
-
-    const point = sectorPosition(sector);
-        if (!point) return alert("בחר תחילה מיקום לגזרה במפה");
-    const manager = sectorConfig(sector).manager || "";
-    const maps = "https://www.google.com/maps/dir/?api=1&destination=" +
-      Number(point[0]) + "," + Number(point[1]);
-    const text = "גזרה " + sector +
-      (manager ? "\nמנהל הגזרה: " + manager : "") +
-      "\nמיקום וניווט:\n" + maps;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({text});
-      } else {
-        location.href = "https://wa.me/?text=" + encodeURIComponent(text);
-      }
-    } catch (error) {
-      if (error.name !== "AbortError") alert("השיתוף נכשל, נסה שוב");
-    }
-  };
-
-  document.getElementById("easySectorShare").append(button);
-};   const namesBeforeDelete = sectorNames;
-function deletedSectorNames() {
-  try {
-    return JSON.parse(
-      localStorage.getItem("deletedSectors:" + ev?.id) || "[]"
-    );
-  } catch {
-    return [];
-  }
-}
-
-sectorNames = function () {
-  const deleted = deletedSectorNames();
-  return namesBeforeDelete().filter(name => !deleted.includes(name));
+window.shareSectorGroup=async function(name){
+ if(!ev)return alert('פתח אירוע קודם');const point=sectorPosition(name);if(!point)return alert('הגדר קודם נקודת גזרה '+name);
+ const manager=sectorConfig(name).manager||'',text='גזרה '+name+(manager?'\nמנהל הגזרה: '+manager:'')+'\nמיקום וניווט:\nhttps://www.google.com/maps/dir/?api=1&destination='+Number(point[0]).toFixed(6)+','+Number(point[1]).toFixed(6);
+ try{if(navigator.share)await navigator.share({text});else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer')}catch(error){if(error.name!=='AbortError')alert('השיתוף נכשל, נסה שוב')}
 };
-
-const pointBeforeDelete = window.setSectorPoint;
-window.setSectorPoint = function (name) {
-  if (!ev) return alert("פתח אירוע קודם");
-  localStorage.setItem(
-    "deletedSectors:" + ev.id,
-    JSON.stringify(deletedSectorNames().filter(x => x !== name))
-  );
-  return pointBeforeDelete(name);
+window.deleteSector=async function(name){
+ if(!ev)return alert('אין אירוע פעיל');
+ if(pendingMap.size||polyKind||mode||lineKind||measureMode||freeDrawing)return alert('סיים את כלי המפה והמתן לשמירה לפני המחיקה');
+ if(workers.some(w=>w.status!=='סיים'&&String(w.sector||'')===String(name)))return alert('יש עובדים בגזרה. העבר אותם לגזרה אחרת לפני מחיקתה.');
+ if(!confirm('למחוק את גזרה '+name+' ואת הסימונים שלה?'))return;
+ const eventId=ev.id,kinds=['sector '+name,'sector-point '+name],button=$('sectorDelete');if(button)button.disabled=true;
+ try{
+  const {error}=await cloud.from('map_items').delete().eq('event_id',eventId).in('data->>kind',kinds);if(error)throw error;if(ev?.id!==eventId)return;
+  localStorage.removeItem('sector:'+eventId+':'+name);
+  localStorage.setItem('sectorNames:'+eventId,JSON.stringify(namesBeforeDelete().filter(x=>x!==name)));
+  localStorage.setItem('deletedSectors:'+eventId,JSON.stringify([...new Set([...deletedSectorNames(),name])]));
+  for(const [id,layer] of mapLayers){if(!kinds.includes(layer._kind))continue;ops.removeLayer(layer);mapLayers.delete(id);stack=stack.filter(x=>x!==layer)}
+  recountMap();renderWorkers();renderSectorSetup();
+ }catch(error){alert('המחיקה נכשלה: '+error.message)}finally{if(button)button.disabled=false}
 };
-
-const renderBeforeDelete = renderSectorSetup;
-renderSectorSetup = function () {
-  renderBeforeDelete();
-  const names = sectorNames();
-
-  document.querySelectorAll("#sectorSetup .worker").forEach((card, i) => {
-    const name = names[i];
-    const button = document.createElement("button");
-    button.className = "red";
-    button.textContent = "🗑 מחק גזרה";
-
-    button.onclick = async () => {
-      if (!ev) return alert("אין אירוע פעיל");
-      if (pendingMap.size || polyKind || mode) {
-        return alert("סיים את כלי המפה והמתן לשמירה לפני המחיקה");
-      }
-      if (!confirm("למחוק את גזרה " + name + " ואת הסימונים שלה?")) return;
-
-      const eventId = ev.id;
-      const kinds = ["sector " + name, "sector-point " + name];
-      button.disabled = true;
-
-      try {
-        const {error} = await cloud.from("map_items")
-          .delete()
-          .eq("event_id", eventId)
-          .in("data->>kind", kinds);
-        if (error) throw error;
-        if (ev?.id !== eventId) return;
-
-        localStorage.removeItem("sector:" + eventId + ":" + name);
-        localStorage.setItem(
-          "sectorNames:" + eventId,
-          JSON.stringify(namesBeforeDelete().filter(x => x !== name))
-        );
-        localStorage.setItem(
-          "deletedSectors:" + eventId,
-          JSON.stringify([...new Set([...deletedSectorNames(), name])])
-        );
-
-        for (const [id, layer] of mapLayers) {
-          if (!kinds.includes(layer._kind)) continue;
-          ops.removeLayer(layer);
-          mapLayers.delete(id);
-          stack = stack.filter(x => x !== layer);
-        }
-
-        recountMap();
-        renderWorkers();
-        renderSectorSetup();
-      } catch (error) {
-        alert("המחיקה נכשלה: " + error.message);
-      } finally {
-        button.disabled = false;
-      }
-    };
-
-    card.append(button);
-  });
-};  })();
+  })();
 </script><script>
 window.addEventListener('DOMContentLoaded',()=>{ document.getElementById('premiumBottom')?.style.setProperty('display','none');
- const q=id=>document.getElementById(id), click=id=>q(id)?.click();
- q('plDraw')?.addEventListener('click',()=>click('freeDraw')); q('plArea')?.addEventListener('click',()=>click('measureArea')); q('plDist')?.addEventListener('click',()=>click('measureDist')); q('plUndo')?.addEventListener('click',()=>click('undo')); q('plErase')?.addEventListener('click',()=>click('erase')); q('plStop')?.addEventListener('click',()=>click('stopDraw')); q('plLocate')?.addEventListener('click',()=>click('locate'));
+
 });
 </script>
 <script id="map-search-fire-trend-script">
@@ -856,6 +728,13 @@ function draw(){
  draw();
 }
 document.addEventListener("hq-weather-updated",refresh);setInterval(refresh,3000);refresh();
+})();
+</script><script id="compact-hq-tabs">
+(()=>{
+const keys=['workers','sectors','requests','more'];
+window.setHQTab=function(key){if(!keys.includes(key))return;for(const item of keys){const on=item===key,tab=document.getElementById('hqTab-'+item),pane=document.getElementById('hqPane-'+item);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;pane.hidden=!on}};
+for(const key of keys){const tab=document.getElementById('hqTab-'+key);tab.addEventListener('click',()=>setHQTab(key));tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();let i=keys.indexOf(key);i=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowLeft'?1:-1)+keys.length)%keys.length;setHQTab(keys[i]);document.getElementById('hqTab-'+keys[i]).focus()})}
+setHQTab('workers');
 })();
 </script></body></html>
 
