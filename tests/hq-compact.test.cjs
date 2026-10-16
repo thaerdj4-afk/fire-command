@@ -42,6 +42,9 @@ console.log('PASS right panel tabs show one pane and preserve controls');
  document.getElementById('sectorWhatsApp').onclick();assert.equal(opened.length,1);const text=new URL(opened[0]).searchParams.get('text');assert(text.includes('גזרה ב'));assert(text.includes('32.200000,35.200000'));
  await document.getElementById('sectorGroupShare').onclick();assert(sent.at(-1)[1].includes('גזרה ב'));
  console.log('PASS WhatsApp and group sharing use selected sector B coordinates');
+ c.prompt=()=> 'צפונית';vm.runInContext(take('window.addCustomSector=','let activeSectorTab='),c);c.addCustomSector();assert.equal(document.querySelector('#sectorSetup [data-sector-name]').getAttribute('data-sector-name'),'צפונית');assert.deepEqual(sent.at(-1),['point','צפונית']);
+ console.log('PASS adding a custom sector opens its own tab before placing its point');
+
  vm.runInContext(take('function areaM2(','function showDist('),c);
  const R=6378137,deg=180/Math.PI,points=[{lat:0,lng:0},{lat:0,lng:100/R*deg},{lat:10/R*deg,lng:100/R*deg},{lat:10/R*deg,lng:0}];c.showArea(points);assert(document.getElementById('measureResult').textContent.includes('1.00 דונם'));assert(Math.abs(c.lastFireAreaM2-1000)<0.01);
  console.log('PASS 1,000 square meters displays 1.00 dunam');
