@@ -2,7 +2,7 @@
   "name": "fire-command-hq-regression",
   "private": true,
   "scripts": {
-    "test": "node hq-compact.test.cjs && node hq-vegetation.test.cjs && node hq-devices.test.cjs && node hq-map-erase.test.cjs && node hq-startup-event.test.cjs"
+    "test": "node hq-compact.test.cjs && node hq-vegetation.test.cjs && node hq-devices.test.cjs && node hq-map-erase.test.cjs && node hq-startup-event.test.cjs && node hq-bulk-sector.test.cjs"
   },
   "devDependencies": {
     "linkedom": "0.18.12"
