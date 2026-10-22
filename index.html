@@ -691,8 +691,8 @@ function validSOSPoint(lat,lng){
 function recentWorkerPoint(worker,now=Date.now()){
  if(worker?.latitude==null||worker?.longitude==null)return null;
  const point=validSOSPoint(worker.latitude,worker.longitude),t=Date.parse(worker.location_updated_at||'');
- if(!point||!Number.isFinite(t)||now-t<0||now-t>180000)return null;
- return {point,ageSeconds:Math.floor((now-t)/1000)};
+ if(!point||!Number.isFinite(t)||now-t < -60000||now-t>180000)return null;
+ return {point,ageSeconds:Math.floor(Math.max(0,now-t)/1000)};
 }
 function sosPosition(request,now=Date.now()){
  if(!request)return null;
@@ -742,7 +742,7 @@ function renderSOS(){
   nearestSOSHelper=closest[0];
   const helper=nearestSOSHelper;
   const distance=helper.meters<1000?Math.round(helper.meters)+' מ׳':(helper.meters/1000).toFixed(2)+' ק״מ';
-  nearLabel.textContent='👥 הקרוב ביותר לפי GPS: '+helper.worker.name+' • '+distance+' בקו אווירי • עודכן לפני '+helper.ageSeconds+' שנ׳'+(closest.length>1?' | נוספים: '+closest.slice(1).map(x=>x.worker.name).join(', '):'')+' • יש לוודא זמינות והכשרה';
+  nearLabel.textContent='👥 הקרוב ביותר לפי GPS: '+helper.worker.name+' • '+distance+' בקו אווירי • סטטוס: '+(helper.worker.status||'לא ידוע')+' • עודכן לפני '+helper.ageSeconds+' שנ׳'+(closest.length>1?' | נוספים: '+closest.slice(1).map(x=>x.worker.name).join(', '):'')+' • יש לוודא זמינות והכשרה';
   const marker=L.divIcon({className:'',html:'<div class="pin">🟢 קרוב ל-SOS: '+esc(helper.worker.name)+'</div>',iconSize:[170,40],iconAnchor:[85,20]});
   L.marker(helper.point,{icon:marker,zIndexOffset:4950}).addTo(sosLayer);
   L.polyline([helper.point,point],{color:'#ffe087',weight:3,dashArray:'6 8',interactive:false}).addTo(sosLayer);
