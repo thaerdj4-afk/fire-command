@@ -292,20 +292,33 @@ main{padding:10px 340px 10px 184px!important;height:calc(100dvh - 142px)!importa
 }
 </style>
 <style id="hq-bulk-sector-style">
-#bulkSectorCard{padding:11px;margin:0 0 14px;border:1px solid #2b6682;border-radius:12px;background:#0b2535}
+#bulkSectorCard{padding:10px;margin:0 0 14px;border:1px solid #2b6682;border-radius:12px;background:#0b2535}
 #bulkSectorCard h3{margin:0 0 7px;font-size:15px}
+#bulkSectorCard>p.small{line-height:1.6;margin:5px 0 7px}
 #bulkSectorTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:9px 0}
 #bulkSectorTabs button{min-height:41px;padding:8px 4px;font-size:12px;min-width:0}
 #bulkSectorTabs button[aria-pressed=true]{border:2px solid #61bbff;background:#123f69}
-#bulkSectorSearch{width:100%;min-height:42px;margin:3px 0 8px}
-#bulkSectorList{max-height:265px;overflow-y:auto;border:1px solid #31556a;border-radius:10px;background:#091d2d}
-.bulkWorkerRow{display:flex;align-items:center;gap:9px;padding:9px;border-bottom:1px solid #244052;cursor:pointer;min-height:52px}
-.bulkWorkerRow:last-child{border-bottom:0}
+#bulkSectorSearch{width:100%;min-height:42px;margin:4px 0 8px}
+.bulkAvailableHeading{display:flex;align-items:center;gap:5px;justify-content:space-between;flex-wrap:wrap;font-size:12px}
+#bulkSectorAvailableCount{color:#b7dcfa}
+#bulkSectorList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-height:220px;overflow-y:auto;border:1px solid #31556a;border-radius:10px;background:#091d2d;padding:5px}
+.bulkWorkerRow{display:flex;min-width:0;align-items:center;gap:6px;padding:7px 5px;border:1px solid #244052;border-radius:7px;cursor:pointer;min-height:48px;background:#103047}
 .bulkWorkerRow:has(input:checked){background:#124d42}
-.bulkWorkerRow input{flex:0 0 22px;width:22px!important;height:22px!important;min-height:22px!important;accent-color:#34d69b}
-.bulkWorkerRow b{font-size:13px;display:block}
-.bulkWorkerRow .small{display:block;line-height:1.5;margin-top:3px}
-#bulkSectorSummary{font-size:12px;line-height:1.7;margin:10px 0;color:#dceefb}
+.bulkWorkerRow input{flex:0 0 18px;width:18px!important;height:18px!important;min-height:18px!important;accent-color:#34d69b}
+.bulkWorkerRow>span{min-width:0;overflow:hidden}
+.bulkWorkerRow b{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bulkWorkerRow .small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;line-height:1.35;margin-top:2px}
+.bulkEmpty{grid-column:1/-1;line-height:1.6;padding:7px;margin:0}
+.bulkGroupTitle{font-size:13px;margin:12px 0 6px;border-top:1px solid #27516c;padding-top:10px}
+#bulkSectorAssigned{display:grid;gap:8px}
+.bulkAssignedSector{background:#102e40;border:1px solid #285271;border-radius:9px;padding:7px}
+.bulkAssignedSector.selected{border-color:#6dbffc}
+.bulkAssignedHeading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;margin-bottom:6px}
+.bulkAssignedMembers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;max-height:172px;overflow-y:auto}
+.bulkAssignedChip{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;padding:4px 5px;background:#0c4c42;border:1px solid #207968;border-radius:6px;font-size:11px}
+.bulkAssignedChip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bulkAssignedChip button{margin:0!important;padding:0 3px!important;flex:0 0 26px;min-height:27px!important;width:26px!important;border-color:#497a78!important;background:#195a51!important;font-size:17px!important;line-height:1}
+#bulkSectorSummary{font-size:12px;line-height:1.6;margin:10px 0;color:#dceefb;white-space:pre-wrap}
 #bulkSectorSave{width:100%;min-height:45px}
 #bulkSectorStatus{font-size:12px;line-height:1.6;min-height:17px;margin-top:7px;white-space:pre-wrap}
 </style>
@@ -329,7 +342,7 @@ main{padding:10px 340px 10px 184px!important;height:calc(100dvh - 142px)!importa
 <div id="premiumBottom" dir="rtl"><div class="pbox"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotos"></div></div><div class="pbox" id="fieldReqMini"><h3>🆘 בקשות מהשטח</h3></div><div class="pbox"><h3>📋 יומן אירוע</h3><div class="eventMini" id="eventMini"><span>🟢 אירוע פעיל</span></div></div></div>
 
 <button id="menu" type="button" aria-controls="panel" aria-expanded="false">☰ ניהול</button><button id="mobileTools" style="display:none" type="button" aria-controls="premiumLeft" aria-expanded="false">🗺 כלים</button><div id="top" style="display:none"><span>🌬 <b id="wd">—</b></span><span>מהירות <b id="ws">—</b></span><span>משבים <b id="wg">—</b></span></div><div id="count">🚒 0 | 👥 0 | 💨 0 | 💧 0</div>
-<div id="panel"><div class="drawerHeading"><b>ניהול האירוע</b><button type="button" id="hqPanelClose" aria-label="סגירת ניהול האירוע">✕</button></div><div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><button id="start" class="green">▶ פתיחת אירוע</button><label id="activeEventPickerWrap" hidden style="margin-top:8px">אירועים פעילים — בחר אירוע<select id="activeEventPicker" aria-label="בחירת אירוע פעיל" style="width:100%;margin-top:5px"></select></label><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div><details class="eventExtra"><summary>🔗 קוד כניסה ושיתוף</summary><div class="worker" id="hqWorkerAccess" style="padding:9px;margin-top:7px"><b>🔐 קוד כניסה לעובדים</b><input id="hqWorkerCode" readonly dir="ltr" autocomplete="off" placeholder="ייפתח עם האירוע" style="width:100%;font-family:monospace;font-size:15px;margin-top:5px"><div class="row" style="margin-top:5px"><button id="hqCopyWorkerCode" type="button" disabled>📋 העתק קוד</button><button id="hqNewWorkerCode" type="button" disabled>↻ קוד חדש</button></div><div id="hqWorkerCodeNote" class="small" role="status" style="margin-top:5px">פתח אירוע פעיל לקבלת קוד</div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div></details><details class="eventExtra"><summary>⋮ פעולות אירוע</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div></details></div><div id="hqPanelTabs" role="tablist" aria-label="ניהול האירוע"><button type="button" role="tab" id="hqTab-workers" data-hq-tab="workers" aria-controls="hqPane-workers" aria-selected="true" tabindex="0">👥 עובדים</button><button type="button" role="tab" id="hqTab-sectors" data-hq-tab="sectors" aria-controls="hqPane-sectors" aria-selected="false" tabindex="-1">📍 גזרות</button><button type="button" role="tab" id="hqTab-requests" data-hq-tab="requests" aria-controls="hqPane-requests" aria-selected="false" tabindex="-1">🆘 בקשות</button><button type="button" role="tab" id="hqTab-more" data-hq-tab="more" aria-controls="hqPane-more" aria-selected="false" tabindex="-1">⋯ עוד</button></div><section id="hqPane-workers" role="tabpanel" aria-labelledby="hqTab-workers"><div class="worker" id="trustedHQCard" style="padding:9px;margin-top:7px"><div class="row"><button id="trustedRosterOpen" type="button" aria-haspopup="dialog">👥 עובדים מאושרים (<span id="trustedRosterCount">…</span>)</button><button id="trustedInviteOpen" type="button" class="green" aria-haspopup="dialog">📣 הזעקת עובדים</button></div><div class="row" style="margin-top:7px"><button id="trustedAcceptedOpen" type="button">✅ משתתפים <b id="trustedAccepted">0</b></button><button id="trustedPendingOpen" type="button">⏳ טרם ענו <b id="trustedPending">0</b></button><button id="trustedDeclinedOpen" type="button">❌ לא זמינים <b id="trustedDeclined">0</b></button></div><div id="trustedHQNote" class="small" role="status" style="margin-top:6px"></div></div><div class="card"><h3>👥 כוחות LIVE</h3><div id="workers" class="small">אין עובדים פעילים.</div></div></section><section id="hqPane-sectors" role="tabpanel" aria-labelledby="hqTab-sectors" hidden><div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="bulkSectorCard"><h3>👥 שיבוץ קבוצתי לגזרות</h3><p class="small">בחר גזרה וסמן ✓ ליד העובדים. אפשר לעבור בין גזרות לפני השמירה; כל עובד יהיה בגזרה אחת בלבד.</p><div id="bulkSectorTabs" aria-label="גזרה לשיבוץ"></div><input id="bulkSectorSearch" placeholder="🔎 חיפוש עובד" aria-label="חיפוש עובדים לשיבוץ"><div id="bulkSectorList" role="group" aria-label="רשימת עובדים לסימון">פתח אירוע להצגת העובדים</div><div id="bulkSectorSummary" aria-live="polite"></div><button id="bulkSectorSave" class="green" type="button" disabled>💾 שמור שיבוץ עובדים</button><div id="bulkSectorStatus" role="status" aria-live="polite"></div></div><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div></section><section id="hqPane-requests" role="tabpanel" aria-labelledby="hqTab-requests" hidden><div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div><div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div></section><section id="hqPane-more" role="tabpanel" aria-labelledby="hqTab-more" hidden><div class="card"><h3>🌬 רוח והתראות</h3><button id="landCoverToggle" type="button" aria-pressed="false">🌿 הצג כיסוי קרקע</button><div id="landCoverInfo" class="small" style="margin:7px 0">סמן מוקד אש לזיהוי כיסוי הקרקע.</div><details class="small" style="margin:7px 0"><summary>מקרא כיסוי הקרקע • 2021</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0"><span><i style="display:inline-block;width:9px;height:9px;background:#006400;margin-left:4px"></i>עצים / חורש</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffbb22;margin-left:4px"></i>שיחים / בתה</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffff4c;margin-left:4px"></i>עשבוני</span><span><i style="display:inline-block;width:9px;height:9px;background:#f096ff;margin-left:4px"></i>חקלאי</span><span><i style="display:inline-block;width:9px;height:9px;background:#fa0000;margin-left:4px"></i>בנוי</span><span><i style="display:inline-block;width:9px;height:9px;background:#b4b4b4;margin-left:4px"></i>חשוף / דליל</span><span><i style="display:inline-block;width:9px;height:9px;background:#0064c8;margin-left:4px"></i>מים</span><span><i style="display:inline-block;width:9px;height:9px;background:#0096a0;margin-left:4px"></i>צמחייה לחה</span></div>מקור לווייני 10 מ׳ • תצוגה כ־100 מ׳ • לא סקר צמחייה עדכני</details><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div><div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></section></div><div id="map"></div>
+<div id="panel"><div class="drawerHeading"><b>ניהול האירוע</b><button type="button" id="hqPanelClose" aria-label="סגירת ניהול האירוע">✕</button></div><div class="card" id="hqEventHub" style="padding:8px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><div class="worker" style="padding:9px"><b>🔐 חיבור חפ״ק</b><div id="auth" class="small">בודק חיבור...</div><button id="hqLogout" type="button" style="padding:4px 8px;margin-top:4px">יציאה</button></div><div class="worker" style="padding:9px;text-align:center"><b># מספר אירוע</b><div id="eventNumber" dir="ltr" style="font-size:22px;font-weight:900">—</div><button id="copyEventNumber" type="button" style="padding:4px 8px">📋</button></div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔥 שם אירוע</b><input id="eventName" placeholder="שם אירוע" style="margin-top:5px"></div><button id="start" class="green">▶ פתיחת אירוע</button><label id="activeEventPickerWrap" hidden style="margin-top:8px">אירועים פעילים — בחר אירוע<select id="activeEventPicker" aria-label="בחירת אירוע פעיל" style="width:100%;margin-top:5px"></select></label><div id="estate" class="small" style="margin-top:5px">אין אירוע פעיל</div><details class="eventExtra"><summary>🔗 קוד כניסה ושיתוף</summary><div class="worker" id="hqWorkerAccess" style="padding:9px;margin-top:7px"><b>🔐 קוד כניסה לעובדים</b><input id="hqWorkerCode" readonly dir="ltr" autocomplete="off" placeholder="ייפתח עם האירוע" style="width:100%;font-family:monospace;font-size:15px;margin-top:5px"><div class="row" style="margin-top:5px"><button id="hqCopyWorkerCode" type="button" disabled>📋 העתק קוד</button><button id="hqNewWorkerCode" type="button" disabled>↻ קוד חדש</button></div><div id="hqWorkerCodeNote" class="small" role="status" style="margin-top:5px">פתח אירוע פעיל לקבלת קוד</div></div><div class="worker" style="padding:9px;margin-top:7px"><b>🔗 קישור עובד</b><div><input id="workerLink" readonly placeholder="ייפתח לאחר פתיחת אירוע"><div class="row" style="margin-top:5px"><button id="copy" type="button">📋 העתק</button><button id="openWorker" type="button">👤 פתח</button></div></div><div id="qr" style="display:none"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button type="button" class="green" onclick="shareWorkerWhatsApp()">💬 WhatsApp</button><button type="button" onclick="sendAppMessageFromHub()">📲 שלח לאפליקציה</button></div></div></details><details class="eventExtra"><summary>⋮ פעולות אירוע</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px"><button id="finish" class="red">⏹ סיום אירוע</button><button id="snapshot">📸 תמונת מצב</button><button id="clear">🧽 נקה מפה</button></div></details></div><div id="hqPanelTabs" role="tablist" aria-label="ניהול האירוע"><button type="button" role="tab" id="hqTab-workers" data-hq-tab="workers" aria-controls="hqPane-workers" aria-selected="true" tabindex="0">👥 עובדים</button><button type="button" role="tab" id="hqTab-sectors" data-hq-tab="sectors" aria-controls="hqPane-sectors" aria-selected="false" tabindex="-1">📍 גזרות</button><button type="button" role="tab" id="hqTab-requests" data-hq-tab="requests" aria-controls="hqPane-requests" aria-selected="false" tabindex="-1">🆘 בקשות</button><button type="button" role="tab" id="hqTab-more" data-hq-tab="more" aria-controls="hqPane-more" aria-selected="false" tabindex="-1">⋯ עוד</button></div><section id="hqPane-workers" role="tabpanel" aria-labelledby="hqTab-workers"><div class="worker" id="trustedHQCard" style="padding:9px;margin-top:7px"><div class="row"><button id="trustedRosterOpen" type="button" aria-haspopup="dialog">👥 עובדים מאושרים (<span id="trustedRosterCount">…</span>)</button><button id="trustedInviteOpen" type="button" class="green" aria-haspopup="dialog">📣 הזעקת עובדים</button></div><div class="row" style="margin-top:7px"><button id="trustedAcceptedOpen" type="button">✅ משתתפים <b id="trustedAccepted">0</b></button><button id="trustedPendingOpen" type="button">⏳ טרם ענו <b id="trustedPending">0</b></button><button id="trustedDeclinedOpen" type="button">❌ לא זמינים <b id="trustedDeclined">0</b></button></div><div id="trustedHQNote" class="small" role="status" style="margin-top:6px"></div></div><div class="card"><h3>👥 כוחות LIVE</h3><div id="workers" class="small">אין עובדים פעילים.</div></div></section><section id="hqPane-sectors" role="tabpanel" aria-labelledby="hqTab-sectors" hidden><div class="card sectorHub" style="padding:10px;border-radius:16px"><h3 style="margin:0 0 10px">📍 גזרות</h3><div id="bulkSectorCard"><h3>👥 שיבוץ קבוצתי לגזרות</h3><p class="small">בחר גזרה וסמן ✓ לעובדים שעדיין לא שובצו. אחרי בחירה הם יעברו לרשימה מתחת לגזרה ולא יופיעו בגזרות אחרות. להסרה לחץ × ליד השם. השמירה מתבצעת רק בלחיצה על הכפתור.</p><div id="bulkSectorTabs" aria-label="גזרה לשיבוץ"></div><input id="bulkSectorSearch" placeholder="🔎 חיפוש עובד" aria-label="חיפוש עובדים לשיבוץ"><div class="bulkAvailableHeading"><b>➕ עובדים שעדיין לא שובצו</b><span id="bulkSectorAvailableCount" class="small"></span></div><div id="bulkSectorList" role="group" aria-label="רשימת עובדים ללא גזרה">פתח אירוע להצגת העובדים</div><h4 class="bulkGroupTitle">👥 עובדים לפי גזרה</h4><div id="bulkSectorAssigned"></div><div id="bulkSectorSummary" aria-live="polite"></div><button id="bulkSectorSave" class="green" type="button" disabled>💾 שמור שיבוץ עובדים</button><div id="bulkSectorStatus" role="status" aria-live="polite"></div></div><div id="sectorTabs" class="row" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:10px"></div><div id="sectorSetup"></div></div></section><section id="hqPane-requests" role="tabpanel" aria-labelledby="hqTab-requests" hidden><div class="card"><h3>🆘 בקשות מהשטח</h3><div id="requests" class="small">אין בקשות.</div></div><div class="card" id="photosPanel"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotosPanel"><div class="small">תמונות עובדים יופיעו כאן בזמן האירוע.</div></div></div></section><section id="hqPane-more" role="tabpanel" aria-labelledby="hqTab-more" hidden><div class="card"><h3>🌬 רוח והתראות</h3><button id="landCoverToggle" type="button" aria-pressed="false">🌿 הצג כיסוי קרקע</button><div id="landCoverInfo" class="small" style="margin:7px 0">סמן מוקד אש לזיהוי כיסוי הקרקע.</div><details class="small" style="margin:7px 0"><summary>מקרא כיסוי הקרקע • 2021</summary><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0"><span><i style="display:inline-block;width:9px;height:9px;background:#006400;margin-left:4px"></i>עצים / חורש</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffbb22;margin-left:4px"></i>שיחים / בתה</span><span><i style="display:inline-block;width:9px;height:9px;background:#ffff4c;margin-left:4px"></i>עשבוני</span><span><i style="display:inline-block;width:9px;height:9px;background:#f096ff;margin-left:4px"></i>חקלאי</span><span><i style="display:inline-block;width:9px;height:9px;background:#fa0000;margin-left:4px"></i>בנוי</span><span><i style="display:inline-block;width:9px;height:9px;background:#b4b4b4;margin-left:4px"></i>חשוף / דליל</span><span><i style="display:inline-block;width:9px;height:9px;background:#0064c8;margin-left:4px"></i>מים</span><span><i style="display:inline-block;width:9px;height:9px;background:#0096a0;margin-left:4px"></i>צמחייה לחה</span></div>מקור לווייני 10 מ׳ • תצוגה כ־100 מ׳ • לא סקר צמחייה עדכני</details><div id="forecast" class="small">סמן מוקד אש לקבלת תחזית.</div><div id="windAlert"></div></div><div class="card"><h3>🗂️ אירועים קודמים</h3><button id="history">טען אירועים</button><div id="past" class="small"></div></div></section></div><div id="map"></div>
 <div id="mapSearchBox" dir="rtl"><form id="mapSearchForm"><input id="mapSearchInput" autocomplete="off" placeholder="🔎 חיפוש מיקום... לדוגמה גמלא"><button type="submit">חפש</button></form><div id="mapSearchResults"></div></div>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -545,52 +558,94 @@ function bulkTargetSector(worker){
  return bulkAssignDraft.has(id)?bulkAssignDraft.get(id):String(worker.sector||'');
 }
 function renderBulkSector(){
- const tabs=$('bulkSectorTabs'),list=$('bulkSectorList'),search=$('bulkSectorSearch'),summary=$('bulkSectorSummary'),save=$('bulkSectorSave'),status=$('bulkSectorStatus');
- if(!tabs||!list||!search||!summary||!save||!status)return;
+ const tabs=$('bulkSectorTabs'),list=$('bulkSectorList'),search=$('bulkSectorSearch'),summary=$('bulkSectorSummary'),save=$('bulkSectorSave'),status=$('bulkSectorStatus'),members=$('bulkSectorAssigned'),availableCounter=$('bulkSectorAvailableCount');
+ if(!tabs||!list||!search||!summary||!save||!status||!members||!availableCounter)return;
  const eventId=String(ev?.id||'');
  if(eventId!==bulkAssignEventId){
   bulkAssignEventId=eventId;bulkAssignDraft.clear();bulkAssignSector='א';bulkAssignMessage='';search.value='';
  }
  const sectors=sectorNames();
  if(!sectors.includes(bulkAssignSector))bulkAssignSector=sectors[0]||'א';
- const available=bulkEligibleWorkers();
+ const available=bulkEligibleWorkers().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'he'));
  const draftChanges=available.filter(w=>bulkTargetSector(w)!==String(w.sector||''));
- const totals=new Map(sectors.map(k=>[k,0]));
- for(const w of available){const target=bulkTargetSector(w);if(totals.has(target))totals.set(target,totals.get(target)+1)}
+ const grouped=new Map(sectors.map(k=>[k,[]]));
+ const unassigned=[];
+ for(const worker of available){
+  const target=bulkTargetSector(worker);
+  if(!target)unassigned.push(worker);
+  else if(grouped.has(target))grouped.get(target).push(worker);
+ }
  tabs.replaceChildren();
  for(const sector of sectors){
-  const b=document.createElement('button');b.type='button';b.textContent='גזרה '+sector+' ('+(totals.get(sector)||0)+')';
-  b.setAttribute('aria-pressed',String(bulkAssignSector===sector));b.disabled=bulkAssignSaving;
-  b.onclick=()=>{bulkAssignSector=sector;list.scrollTop=0;renderBulkSector()};
+  const b=document.createElement('button');b.type='button';
+  b.textContent='גזרה '+sector+' ('+(grouped.get(sector)?.length||0)+')';
+  b.setAttribute('aria-pressed',String(bulkAssignSector===sector));
+  b.disabled=bulkAssignSaving;
+  b.onclick=()=>{bulkAssignSector=sector;search.value='';list.scrollTop=0;renderBulkSector()};
   tabs.append(b);
  }
+ availableCounter.textContent='נשארו '+unassigned.length+' ללא גזרה';
  const scroll=list.scrollTop;
  list.replaceChildren();
  const query=String(search.value||'').trim().toLocaleLowerCase();
- let shown=0;
- for(const worker of available){
-  if(query&&!String(worker.name||'').toLocaleLowerCase().includes(query))continue;
-  shown++;
-  const id=String(worker.id),target=bulkTargetSector(worker),row=document.createElement('label');
+ const visible=unassigned.filter(w=>!query||String(w.name||'').toLocaleLowerCase().includes(query));
+ for(const worker of visible){
+  const id=String(worker.id),row=document.createElement('label');
   row.className='bulkWorkerRow';
   const check=document.createElement('input');check.type='checkbox';check.dataset.workerId=id;
-  check.checked=target===bulkAssignSector;check.disabled=bulkAssignSaving;
+  check.checked=false;check.disabled=bulkAssignSaving;
+  check.setAttribute('aria-label','הוסף '+(worker.name||'עובד')+' לגזרה '+bulkAssignSector);
   const info=document.createElement('span');
   const title=document.createElement('b');title.textContent=worker.name||'עובד';
-  const detail=document.createElement('span');detail.className='small';
-  detail.textContent=target?'משויך לגזרה '+target+(target!==bulkAssignSector?' • סימון יעביר לגזרה הנבחרת':''):'ללא גזרה';
+  const detail=document.createElement('span');detail.className='small';detail.textContent=worker.status||'פעיל';
   info.append(title,detail);row.append(check,info);
   check.onchange=()=>{
-   const next=check.checked?bulkAssignSector:'';
-   if(next===String(worker.sector||''))bulkAssignDraft.delete(id);else bulkAssignDraft.set(id,next);
+   if(!check.checked)return;
+   const next=bulkAssignSector;
+   if(next===String(worker.sector||''))bulkAssignDraft.delete(id);
+   else bulkAssignDraft.set(id,next);
    bulkAssignMessage='';renderBulkSector();
   };
   list.append(row);
  }
- if(!shown){const note=document.createElement('p');note.className='small';note.style.padding='12px';note.textContent=available.length?'לא נמצאו עובדים התואמים לחיפוש.':'אין עובדים רשומים באירוע הזה עדיין.';list.append(note)}
+ if(!visible.length){
+  const note=document.createElement('p');note.className='small bulkEmpty';
+  note.textContent=!ev?'פתח אירוע להצגת העובדים':!available.length?'אין עובדים רשומים באירוע.':!unassigned.length?'✅ כל העובדים שויכו לגזרות. אפשר להסיר שם כדי להעביר עובד.':'לא נמצאו עובדים ללא גזרה לפי החיפוש.';
+  list.append(note);
+ }
  list.scrollTop=scroll;
- const unassigned=available.filter(w=>!bulkTargetSector(w)).length;
- summary.textContent=sectors.map(k=>'גזרה '+k+': '+(totals.get(k)||0)).join(' • ')+' | ללא גזרה: '+unassigned+' | שינויים להמתנה: '+draftChanges.length+'\nאם לא הוגדרה נקודת גזרה, העובד יקבל שם גזרה ללא ניווט.';
+ members.replaceChildren();
+ for(const sector of sectors){
+  const assigned=grouped.get(sector)||[],section=document.createElement('section');
+  section.className='bulkAssignedSector';
+  if(sector===bulkAssignSector)section.className+=' selected';
+  const heading=document.createElement('div');heading.className='bulkAssignedHeading';
+  const name=document.createElement('b');name.textContent='📍 גזרה '+sector;
+  const count=document.createElement('span');count.className='small';count.textContent=assigned.length+' עובדים';
+  heading.append(name,count);section.append(heading);
+  const chips=document.createElement('div');chips.className='bulkAssignedMembers';
+  for(const worker of assigned){
+   const chip=document.createElement('div');chip.className='bulkAssignedChip';
+   const label=document.createElement('span');label.textContent=worker.name||'עובד';
+   const remove=document.createElement('button');remove.type='button';remove.className='bulkRemoveMember';
+   remove.textContent='×';remove.disabled=bulkAssignSaving;
+   remove.title='החזר '+(worker.name||'עובד')+' לרשימת העובדים ללא גזרה';
+   remove.setAttribute('aria-label','הסר '+(worker.name||'עובד')+' מגזרה '+sector);
+   remove.onclick=()=>{
+    const id=String(worker.id),next='';
+    if(next===String(worker.sector||''))bulkAssignDraft.delete(id);
+    else bulkAssignDraft.set(id,next);
+    bulkAssignMessage='';renderBulkSector();
+   };
+   chip.append(label,remove);chips.append(chip);
+  }
+  if(!assigned.length){
+   const empty=document.createElement('span');empty.className='small';empty.textContent='עדיין לא נבחרו עובדים';
+   chips.append(empty);
+  }
+  section.append(chips);members.append(section);
+ }
+ summary.textContent='ללא גזרה: '+unassigned.length+' • שינויים ממתינים: '+draftChanges.length+'\nאם לא הוגדרה נקודת גזרה, העובד יקבל שם גזרה ללא ניווט.';
  save.disabled=!ev||bulkAssignSaving||draftChanges.length===0;
  save.textContent=bulkAssignSaving?'⏳ שומר שיבוצים...':'💾 שמור שיבוץ ('+draftChanges.length+')';
  status.textContent=bulkAssignMessage;
