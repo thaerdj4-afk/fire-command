@@ -309,10 +309,23 @@ main{padding:10px 340px 10px 184px!important;height:calc(100dvh - 142px)!importa
 #bulkSectorSave{width:100%;min-height:45px}
 #bulkSectorStatus{font-size:12px;line-height:1.6;min-height:17px;margin-top:7px;white-space:pre-wrap}
 </style>
+
+<style id="hqSOSResponderCss">
+#dangerBanner{height:auto!important;min-height:95px!important;flex-wrap:wrap!important}
+#dangerBanner .dangerText{flex:1 1 260px;min-width:200px}
+#dangerBanner .dangerText b{font-size:clamp(15px,1.7vw,21px)}
+#dangerClosest{font-size:13px!important;color:#fff1a4!important;line-height:1.5}
+#dangerRescueFeedback{font-size:12px!important;color:#8df9c6!important;line-height:1.5}
+#dangerBanner .dangerActions{display:flex;flex:0 1 auto;gap:6px;flex-wrap:wrap}
+#dangerBanner .dangerActions button{white-space:normal!important;font-size:12px!important;padding:8px 10px!important;min-height:35px}
+#dangerBanner #dangerDispatch:not(:disabled){background:#b42318!important;border-color:#ffe0a0!important}
+#dangerBanner #dangerDispatch:disabled{opacity:.5}
+@media(max-width:760px){#dangerBanner{top:112px!important}#dangerBanner .dangerActions{width:100%}}
+</style>
 </head><body><div id="hqGate"><form class="box" id="hqLoginForm"><h2>🔐 כניסה לחפ״ק</h2><p>כניסה למנהלי החפ״ק בלבד</p><input id="hqEmail" type="email" autocomplete="username" placeholder="אימייל" required><input id="hqPassword" type="password" autocomplete="current-password" placeholder="סיסמה" required><button type="submit">התחבר</button><button type="button" id="hqRegister" style="background:#16405b">הרשמה ובקשת אישור</button><div class="error" id="hqError" role="alert">בודק חיבור...</div></form></div><header><div class="hqTitle"><h1>מערכת ניהול אירועי שריפה</h1><div class="sub">רשות הטבע והגנים • V11 • חדר פיקוד LIVE</div><div class="sub">פותח ועוצב על ידי תאיר אבו זיד • 052-4477147</div></div><div id="headerLiveWeather"><span class="hw timer"><span class="hwValue">⏱ <b id="time">00:00:00</b></span><small>זמן האירוע</small></span><span class="hw vegetation" id="headerFuelBadge" title="סיווג כיסוי קרקע ESA WorldCover 2021; אינו זיהוי מין צמח או עדכון מהשטח"><span class="hwValue">🌿 <b id="headerFuelType" role="status">סמן מוקד אש</b></span><small>סוג צמחייה · 2021</small></span><span class="hw"><span class="hwValue">🧭 <b id="ftDir">—</b></span><small>כיוון רוח</small></span><span class="hw"><span class="hwValue">🌬 <b id="ftWind">—</b></span><small>מהירות רוח</small></span><span class="hw"><span class="hwValue">💨 <b id="ftGust">—</b></span><small>משבי רוח</small></span><span class="hw"><span class="hwValue">💧 <b id="ftHumidity">—</b></span><small>לחות</small></span><span class="hw progress"><span class="hwValue">🔥 <b id="ftProgress">ממתין למוקד</b></span><small>פוטנציאל התפשטות</small></span><b class="liveBadge">LIVE • חפ״ק</b></div></header><div id="desktopWeatherBand" dir="rtl"><div id="fireTrendBox" dir="rtl"><div class="ftHead"><b>📈 תחזית רוח • 24 שעות</b><span id="fireTrendStatus">ממתין למוקד אש</span></div><svg id="fireTrendCanvas" viewBox="0 0 760 120" preserveAspectRatio="none" aria-label="תחזית רוח ל־24 שעות"></svg><div class="ftLegend"><span>מהירות רוח</span><span>משבים</span><span>לחות</span></div></div></div><main>
 <div id="premiumLeft" dir="rtl"><div class="ptitle">כלי חפ״ק <button type="button" class="drawerClose" id="hqToolsClose" aria-label="סגירת כלי מפה">✕</button></div><div class="toolGrid coreTools"><button data-p="fire"><span class="cmdIcon fire"><svg viewbox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"></path></svg></span><span>מוקד אש</span></button><button id="freeDraw">✏️ עט חופשי</button><button id="measureArea">🔥 פוליגון שריפה</button><button data-p="water"><span class="cmdIcon info"><svg viewbox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"></path><path d="M9 15c.4 1.4 1.4 2.1 3 2.3"></path></svg></span><span>מקור מים</span></button><button data-p="hazard" class="danger"><span class="cmdIcon warn"><svg viewbox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 9v5M12 17h.01"></path></svg></span><span>נקודת מפגע</span></button><button id="undo">↩️ בטל</button><button id="erase">🗑️ מחיקה</button><button id="stopDraw">✋ עצור</button><button id="locate">📍 מיקום</button></div><div id="drawmsg" class="small" role="status">בחר כלי והתחל לסמן במפה.</div><div id="measureResult" class="areaReadout" role="status">📐 מדידת שטח בדונם • 1 דונם = 1,000 מ״ר</div><details class="toolGroup"><summary>🗺 כלים נוספים</summary><div class="toolGrid"><button data-l="fire"><span class="cmdIcon fire"><svg viewbox="0 0 24 24"><path d="M12 21c4 0 7-2.7 7-6.5 0-3.2-2.1-5.1-4.3-7.8-.4 2.2-1.6 3.4-2.7 4.2.2-3.4-1.4-5.9-3.3-7.9.1 3.7-3.7 6.1-3.7 11.5C5 18.3 8 21 12 21z"></path><path d="M9.5 17c0-1.9 1.4-3 2.6-4.4.1 1.3.8 2 1.4 2.6.6.6 1 1.2 1 2 0 1.5-1.1 2.8-2.6 2.8s-2.4-1.2-2.4-3z"></path></svg></span><span>קו אש</span></button><button data-l="firebreak"><span class="cmdIcon warn"><svg viewbox="0 0 24 24"><path d="M4 7h16v10H4z"></path><path d="M7 7l3 10M14 7l3 10M3 20h18M7 17v3M17 17v3"></path></svg></span><span>קו הגנה / פס אש</span></button><button data-l="access">🚙 דרך גישה</button><button data-l="escape"><span class="cmdIcon safe"><svg viewbox="0 0 24 24"><circle cx="9" cy="5" r="2"></circle><path d="M8 8l4 3 3-1M11 11l-2 4-4 2M11 12l4 5 4 1"></path></svg></span><span>מסלול בריחה</span></button><button data-a="burned">⬛ שטח שרוף</button><button data-a="danger" class="red">⚠ אזור סכנה</button><button data-p="assembly"><span class="cmdIcon safe"><svg viewbox="0 0 24 24"><circle cx="8" cy="8" r="2.5"></circle><circle cx="16" cy="8" r="2.5"></circle><path d="M3.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6M11.5 19c.4-4 2.1-6 4.5-6s4.1 2 4.5 6"></path></svg></span><span>נקודת כינוס</span></button><button id="measureDist">📏 מדידת מרחק</button></div></details><details class="toolGroup"><summary>🚒 כוחות וציוד</summary><input id="unit" placeholder="שם עובד / צוות / כלי" aria-label="שם הסימון במפה"><div class="toolGrid"><button data-p="person">👤 עובד</button><button data-p="engine"><span class="cmdIcon "><svg viewbox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"></path><circle cx="7" cy="18" r="2"></circle><circle cx="18" cy="18" r="2"></circle><path d="M6 8V5h7v3M17 11V7h2"></path></svg></span><span>כבאית / רכב</span></button><button data-p="blower">💨 מפוח</button><button data-p="backpack">🎒 מנשא</button><button data-p="floatpump">⚙️ משאבה צפה</button><button data-p="subpump">🔧 משאבה טבולה</button><button data-p="hydrant">🚰 הידרנט</button><button data-p="fill">💧 מילוי</button><button data-p="cmd">📍 חפ״ק</button></div></details><details class="toolGroup"><summary>🌐 סוג מפה</summary><select id="base" style="width:auto;max-width:150px"><option value="hybrid">לוויין + שמות</option><option value="sat">לוויין</option><option value="street">רחובות</option><option value="topo">טופוגרפית</option><option value="dark">מבצעית כהה</option></select></details></div>
 
-<div id="dangerBanner" dir="rtl"><div class="dangerIcon">⚠️</div><div class="dangerText"><b id="dangerName">עובד בסכנה</b><small id="dangerMeta">SOS מהשטח • ממתין לטיפול</small></div><div class="dangerActions"><button class="share" id="dangerShare">📍 שלח מיקום</button><button class="done" id="dangerProgress">🟡 בטיפול</button><button class="done" id="dangerDone">✓ טופל</button><button id="dangerDelete">🗑 טופל ומחק דיווח</button></div></div>
+<div id="dangerBanner" dir="rtl"><div class="dangerIcon">⚠️</div><div class="dangerText"><b id="dangerName">עובד בסכנה</b><small id="dangerMeta">SOS מהשטח • ממתין לטיפול</small><small id="dangerClosest" aria-live="polite">מאתר עובדים עם מיקום עדכני...</small><small id="dangerRescueFeedback" role="status"></small></div><div class="dangerActions"><button class="share" id="dangerShare">📍 שלח מיקום</button><button id="dangerDispatch" type="button" disabled>🚨 שלח לעזרה</button><button class="done" id="dangerProgress">🟡 בטיפול</button><button class="done" id="dangerDone">✓ טופל</button><button id="dangerDelete">🗑 טופל ומחק דיווח</button></div></div>
 <div id="premiumBottom" dir="rtl"><div class="pbox"><h3>📸 תמונות מהשטח <span style="color:#ff3340">● LIVE</span></h3><div class="photos" id="fieldPhotos"></div></div><div class="pbox" id="fieldReqMini"><h3>🆘 בקשות מהשטח</h3></div><div class="pbox"><h3>📋 יומן אירוע</h3><div class="eventMini" id="eventMini"><span>🟢 אירוע פעיל</span></div></div></div>
 
 <button id="menu" type="button" aria-controls="panel" aria-expanded="false">☰ ניהול</button><button id="mobileTools" style="display:none" type="button" aria-controls="premiumLeft" aria-expanded="false">🗺 כלים</button><div id="top" style="display:none"><span>🌬 <b id="wd">—</b></span><span>מהירות <b id="ws">—</b></span><span>משבים <b id="wg">—</b></span></div><div id="count">🚒 0 | 👥 0 | 💨 0 | 💧 0</div>
@@ -668,10 +681,110 @@ function reqForEvent(){return ev?requests.filter(x=>String(x.event_id||"")===Str
 function photoParts(x){let d=String(x.details||"");if(!d.startsWith("PHOTO|"))return null;let cut=d.indexOf("|",6);return cut<0?null:{src:d.slice(6,cut),note:d.slice(cut+1)}}
 function renderPhotos(){let ps=reqForEvent().filter(x=>x.request_type==="תמונה מהשטח").slice(0,12);let html=ps.length?ps.map(x=>{let p=photoParts(x);return p?`<div class="photoCard" style="background-image:linear-gradient(0deg,#00111dcc,#00111d11),url('${p.src}');background-size:cover;background-position:center;cursor:pointer" onclick="window.openPhoto('${x.id}')"><span><b>${esc(x.worker_name||"עובד")}</b><br>${new Date(x.created_at).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})}${p.note?" • "+esc(p.note):""}</span></div>`:""}).join(""): '<div class="small">אין תמונות מהשטח עדיין.</div>';let box=$("fieldPhotos");if(box)box.innerHTML=html;let panel=$("fieldPhotosPanel");if(panel)panel.innerHTML=html}
 window.openPhoto=id=>{let x=requests.find(r=>String(r.id)===String(id)),p=x&&photoParts(x);if(!p)return;let w=open("","_blank");w.document.write(`<title>${esc(x.worker_name||'תמונה')}</title><body style="margin:0;background:#000;display:grid;place-items:center;min-height:100vh"><img src="${p.src}" style="max-width:100%;max-height:100vh"></body>`)};
-function coordsFor(x){let w=workers.find(z=>z.name===x.worker_name&&z.latitude!=null&&z.longitude!=null);if(w)return[+w.latitude,+w.longitude];let m=String(x.details||"").match(/LOC\|(-?\d+(?:\.\d+)?)\|(-?\d+(?:\.\d+)?)/);return m?[+m[1],+m[2]]:null}
-function renderSOS(){sosLayer.clearLayers();let all=reqForEvent().filter(x=>["פציעה / רפואי","חירום / סכנה","SOS / סכנה"].includes(x.request_type)&&!["טופל","נמחק"].includes(x.status));activeSOS=all[0]||null;let b=$("dangerBanner");if(!activeSOS){if(b)b.style.display="none";return}let c=coordsFor(activeSOS);b.style.display="flex";$("dangerName").textContent=`🚨 סכנה / חירום — ${activeSOS.worker_name||"עובד"}`;$("dangerMeta").textContent=`${activeSOS.request_type} • ${activeSOS.status||"חדש"}${c?` • ${c[0].toFixed(5)}, ${c[1].toFixed(5)}`:" • מיקום ממתין"}`;if(c){let ic=L.divIcon({className:"",html:`<div class="sosLabel">🆘 ${esc(activeSOS.worker_name||"עובד")}</div><div class="sosPulse"></div>`,iconSize:[120,55],iconAnchor:[60,45]});L.marker(c,{icon:ic,zIndexOffset:5000}).addTo(sosLayer);map.setView(c,16)}}
-async function setSOS(st){if(!activeSOS)return;let r=await cloud.from("worker_requests").update({status:st}).eq("id",activeSOS.id);if(r.error)alert(r.error.message);else live()}
-$("dangerProgress").onclick=()=>setSOS("בטיפול");$("dangerDone").onclick=()=>setSOS("טופל");$("dangerDelete").onclick=()=>setSOS("נמחק");$("dangerShare").onclick=async()=>{if(!activeSOS)return;let c=coordsFor(activeSOS);if(!c)return alert("אין עדיין מיקום לעובד");let maps=`https://www.google.com/maps?q=${c[0]},${c[1]}`,nav=`https://www.google.com/maps/dir/?api=1&destination=${c[0]},${c[1]}`,t=`SOS - ${activeSOS.worker_name||'עובד'}\nמיקום: ${maps}\nניווט: ${nav}`;try{if(navigator.share)await navigator.share({title:'מיקום עובד בסכנה',text:t,url:maps});else{await navigator.clipboard.writeText(t);alert('המיקום הועתק')}}catch{prompt('העתק ושלח:',t)}};
+/* SOS: only current-event positions with recent GPS are eligible as nearby helpers.
+   Straight-line distances are approximate; a responder must be dispatched by a manager. */
+let lastFocusedSOSId=null,nearestSOSHelper=null,sosDispatchBusy=false,sosDispatchInfo='';
+function validSOSPoint(lat,lng){
+ lat=Number(lat);lng=Number(lng);
+ return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&!(lat===0&&lng===0)?[lat,lng]:null;
+}
+function recentWorkerPoint(worker,now=Date.now()){
+ if(worker?.latitude==null||worker?.longitude==null)return null;
+ const point=validSOSPoint(worker.latitude,worker.longitude),t=Date.parse(worker.location_updated_at||'');
+ if(!point||!Number.isFinite(t)||now-t < -60000||now-t>180000)return null;
+ return {point,ageSeconds:Math.floor(Math.max(0,now-t)/1000)};
+}
+function sosPosition(request,now=Date.now()){
+ if(!request)return null;
+ const snapshot=String(request.details||'').match(/(?:^|[|\n])LOC\|(-?\d+(?:\.\d+)?)\|(-?\d+(?:\.\d+)?)/);
+ if(snapshot){const point=validSOSPoint(snapshot[1],snapshot[2]);if(point)return {point,source:'דיווח SOS',ageSeconds:null}}
+ const victim=workers.find(w=>w.event_id===ev?.id&&w.name===request.worker_name&&w.status!=='סיים');
+ const current=recentWorkerPoint(victim,now);
+ return current?{...current,source:'מיקום עובד עדכני'}:null;
+}
+function coordsFor(x){return sosPosition(x)?.point||null}
+function nearestSOSWorkers(request,location,now=Date.now()){
+ if(!request||!location||!ev)return [];
+ const result=[];
+ for(const worker of workers){
+  if(worker.event_id!==ev.id||worker.status==='סיים'||worker.name===request.worker_name)continue;
+  const gps=recentWorkerPoint(worker,now);
+  if(!gps)continue;
+  const meters=map.distance(location.point,gps.point);
+  if(Number.isFinite(meters))result.push({worker,meters,ageSeconds:gps.ageSeconds,point:gps.point});
+ }
+ return result.sort((a,b)=>a.meters-b.meters).slice(0,3);
+}
+function renderSOS(){
+ sosLayer.clearLayers();
+ const all=reqForEvent().filter(x=>['פציעה / רפואי','חירום / סכנה','SOS / סכנה'].includes(x.request_type)&&!['טופל','נמחק'].includes(x.status));
+ activeSOS=all[0]||null;
+ const banner=$('dangerBanner'),dispatch=$('dangerDispatch'),nearLabel=$('dangerClosest'),feedback=$('dangerRescueFeedback');
+ nearestSOSHelper=null;
+ if(!activeSOS){
+  if(banner)banner.style.display='none';
+  dispatch.disabled=true;nearLabel.textContent='';feedback.textContent='';sosDispatchInfo='';
+  lastFocusedSOSId=null;return;
+ }
+ banner.style.display='flex';
+ const position=sosPosition(activeSOS);
+ const point=position?.point;
+ $('dangerName').textContent='🚨 SOS / חירום — '+(activeSOS.worker_name||'עובד');
+ $('dangerMeta').textContent=(activeSOS.request_type||'SOS')+' • '+(activeSOS.status||'חדש')+(point?' • '+point[0].toFixed(5)+', '+point[1].toFixed(5)+' ('+position.source+')':' • ⚠ מיקום לא זמין — יש ליצור קשר עם העובד מיד');
+ for(const request of all){
+  const p=sosPosition(request)?.point;if(!p)continue;
+  const isMain=request.id===activeSOS.id;
+  const icon=L.divIcon({className:'',html:'<div class="sosLabel">'+(isMain?'🆘 ':'🚨 ')+esc(request.worker_name||'עובד')+'</div><div class="sosPulse"></div>',iconSize:[120,55],iconAnchor:[60,45]});
+  L.marker(p,{icon,zIndexOffset:isMain?5000:4900}).addTo(sosLayer);
+ }
+ const closest=nearestSOSWorkers(activeSOS,position);
+ if(closest.length&&point){
+  nearestSOSHelper=closest[0];
+  const helper=nearestSOSHelper;
+  const distance=helper.meters<1000?Math.round(helper.meters)+' מ׳':(helper.meters/1000).toFixed(2)+' ק״מ';
+  nearLabel.textContent='👥 הקרוב ביותר לפי GPS: '+helper.worker.name+' • '+distance+' בקו אווירי • סטטוס: '+(helper.worker.status||'לא ידוע')+' • עודכן לפני '+helper.ageSeconds+' שנ׳'+(closest.length>1?' | נוספים: '+closest.slice(1).map(x=>x.worker.name).join(', '):'')+' • יש לוודא זמינות והכשרה';
+  const marker=L.divIcon({className:'',html:'<div class="pin">🟢 קרוב ל-SOS: '+esc(helper.worker.name)+'</div>',iconSize:[170,40],iconAnchor:[85,20]});
+  L.marker(helper.point,{icon:marker,zIndexOffset:4950}).addTo(sosLayer);
+  L.polyline([helper.point,point],{color:'#ffe087',weight:3,dashArray:'6 8',interactive:false}).addTo(sosLayer);
+ }else nearLabel.textContent=point?'⚠ אין עובדים אחרים עם GPS עדכני ב־3 הדקות האחרונות. יש לאתר כוח חילוץ ידנית.':'⚠ אין מיקום SOS מאומת, אי אפשר לחשב מי הכי קרוב.';
+ dispatch.disabled=!nearestSOSHelper||sosDispatchBusy;
+ feedback.textContent=sosDispatchInfo?.eventId===ev?.id&&sosDispatchInfo?.requestId===activeSOS.id?sosDispatchInfo.message:'';
+ if(point&&lastFocusedSOSId!==activeSOS.id){
+  lastFocusedSOSId=activeSOS.id;map.setView(point,16);
+ }
+}
+async function setSOS(st){
+ if(!activeSOS)return;
+ const r=await cloud.from('worker_requests').update({status:st}).eq('id',activeSOS.id).eq('event_id',ev.id);
+ if(r.error)alert(r.error.message);else await live(true);
+}
+$('dangerProgress').onclick=()=>setSOS('בטיפול');
+$('dangerDone').onclick=()=>setSOS('טופל');
+$('dangerDelete').onclick=()=>setSOS('נמחק');
+$('dangerShare').onclick=async()=>{
+ if(!activeSOS)return;
+ const c=coordsFor(activeSOS);if(!c)return alert('אין עדיין מיקום SOS. פנה לעובד לקבלת מיקום מדויק.');
+ const maps='https://www.google.com/maps?q='+c[0]+','+c[1],nav='https://www.google.com/maps/dir/?api=1&destination='+c[0]+','+c[1];
+ const message='SOS - '+(activeSOS.worker_name||'עובד')+'\nמיקום: '+maps+'\nניווט: '+nav;
+ try{if(navigator.share)await navigator.share({title:'מיקום עובד בסכנה',text:message,url:maps});else{await navigator.clipboard.writeText(message);alert('מיקום SOS הועתק')}}catch{prompt('העתק ושלח:',message)}
+};
+$('dangerDispatch').onclick=async()=>{
+ if(sosDispatchBusy||!ev||!activeSOS)return;
+ const eventId=ev.id,requestId=activeSOS.id,position=sosPosition(activeSOS);
+ const candidate=nearestSOSWorkers(activeSOS,position)[0];
+ if(!candidate||!position)return alert('אין מיקום עדכני מספיק לזיהוי עובד קרוב. פנה לכוח החילוץ ישירות.');
+ const w=candidate.worker,distance=Math.round(candidate.meters);
+ if(!confirm('לשלוח ל'+w.name+' בקשת חילוץ דחופה עבור '+(activeSOS.worker_name||'עובד')+'?\nמרחק אווירי: '+distance+' מטר. ודא זמינות והכשרה — אין אישור שההודעה התקבלה.'))return;
+ sosDispatchBusy=true;$('dangerDispatch').disabled=true;
+ try{
+  if(ev?.id!==eventId||activeSOS?.id!==requestId)throw Error('אירוע SOS השתנה — בדוק שוב');
+  const data={request_id:requestId,person:activeSOS.worker_name,lat:position.point[0],lng:position.point[1],at:new Date().toISOString()};
+  const r=await cloud.from('worker_requests').insert({event_id:eventId,worker_name:w.name,request_type:'הודעה מהחפ״ק',details:'SOS_RESCUE|'+JSON.stringify(data),status:'חדש'});
+  if(r.error)throw r.error;
+  sosDispatchInfo={eventId,requestId,message:'✓ בקשת החילוץ נשמרה עבור '+w.name+' באפליקציה. קבלת ההודעה ויציאה לשטח עדיין לא אושרו — צור קשר ישיר.'};
+ }catch(error){sosDispatchInfo={eventId,requestId,message:'❌ שליחת בקשת חילוץ נכשלה: '+(error.message||'נסה שוב')};}
+ finally{sosDispatchBusy=false;renderSOS();}
+};
 function reqReply(x){let d=String(x.details||"");let m=d.match(/(?:^|\n)HQ_REPLY\|([^\n|]*)\|([^\n]*)/);return m?{text:m[1],time:m[2]}:null}
 function cleanReqDetails(x){return String(x.details||"").replace(/(?:^|\n)HQ_REPLY\|[^\n|]*\|[^\n]*/g,"").trim()}
 window.replyReq=async id=>{let x=requests.find(r=>String(r.id)===String(id));if(!x)return;let t=prompt("הודעה לעובד:","");if(!t||!t.trim())return;let base=cleanReqDetails(x),details=(base?base+"\n":"")+"HQ_REPLY|"+t.trim().replace(/[|\n]/g," ")+"|"+new Date().toISOString();let r=await cloud.from("worker_requests").update({details,status:"בטיפול"}).eq("id",id);if(r.error)alert(r.error.message);else live()}
@@ -695,7 +808,7 @@ async function live(forceAux=false){
   const [equipment,phones,a,b]=await Promise.all(jobs);
   if((ev?.id||null)!==liveEventId)return;
   if(needAux){lastAuxLoad=now;if(equipment&&!equipment.error){workerEquipment=new Map();for(let p of equipment.data||[])if(!workerEquipment.has(p.worker_name))workerEquipment.set(p.worker_name,String(p.details||"").split(",").map(x=>x.trim()).filter(Boolean))}if(phones){phoneLoadError=phones.error?.message||"";if(!phones.error){workerPhones=new Map();for(let p of phones.data||[])if(!workerPhones.has(p.worker_name)&&/^\d{10,15}$/.test(p.details||""))workerPhones.set(p.worker_name,p.details)}}}
-  if(!a.error){const next=a.data||[],sig=next.map(w=>[w.id,w.status,w.sector,w.latitude,w.longitude,w.location_updated_at].join(":")).join("|")+"#"+lastAuxLoad;workers=next;if(sig!==lastWorkersSig){lastWorkersSig=sig;renderWorkers();renderSectorSetup();autoWorkerZones().catch(()=>{})}}
+  if(!a.error){const next=a.data||[],sig=next.map(w=>[w.id,w.status,w.sector,w.latitude,w.longitude,w.location_updated_at].join(":")).join("|")+"#"+lastAuxLoad;workers=next;if(sig!==lastWorkersSig){lastWorkersSig=sig;renderWorkers();renderSectorSetup();renderSOS();autoWorkerZones().catch(()=>{})}}
   if(!b.error){const next=b.data||[],sig=next.map(x=>[x.id,x.status,x.created_at,x.request_type].join(":")).join("|");requests=next;if(sig!==lastRequestsSig){lastRequestsSig=sig;renderReq();renderPhotos();renderSOS()}}
  }finally{liveRunning=false;if(liveQueued){liveQueued=false;setTimeout(()=>live(),0)}}
 }
