@@ -577,7 +577,7 @@ function renderBulkSector(){
  if(!shown){const note=document.createElement('p');note.className='small';note.style.padding='12px';note.textContent=available.length?'לא נמצאו עובדים התואמים לחיפוש.':'אין עובדים רשומים באירוע הזה עדיין.';list.append(note)}
  list.scrollTop=scroll;
  const unassigned=available.filter(w=>!bulkTargetSector(w)).length;
- summary.textContent=sectors.map(k=>'גזרה '+k+': '+(totals.get(k)||0)).join(' • ')+' | ללא גזרה: '+unassigned+' | שינויים להמתנה: '+draftChanges.length;
+ summary.textContent=sectors.map(k=>'גזרה '+k+': '+(totals.get(k)||0)).join(' • ')+' | ללא גזרה: '+unassigned+' | שינויים להמתנה: '+draftChanges.length+'\nאם לא הוגדרה נקודת גזרה, העובד יקבל שם גזרה ללא ניווט.';
  save.disabled=!ev||bulkAssignSaving||draftChanges.length===0;
  save.textContent=bulkAssignSaving?'⏳ שומר שיבוצים...':'💾 שמור שיבוץ ('+draftChanges.length+')';
  status.textContent=bulkAssignMessage;
@@ -621,13 +621,13 @@ async function saveBulkSectorAssignments(){
    return {event_id:eventId,worker_name:w.name,request_type:'שיבוץ לגזרה',
      details:'SECTOR_ASSIGN|'+JSON.stringify({sector:w.sector,manager,lat:point?+point[0]:null,lng:point?+point[1]:null}),status:'חדש'};
   });
-  const messageResult=await cloud.from('worker_requests').insert(notices).catch(error=>({error}));
-  if(messageResult.error)problems.push('השיבוץ נשמר, אך שליחת ההודעות נכשלה: '+(messageResult.error?.message||'שגיאת שרת'));
-  if(bulkAssignEventId===String(eventId))for(const worker of committed)bulkAssignDraft.delete(worker.id);
+  try{const messageResult=await cloud.from('worker_requests').insert(notices);if(messageResult.error)throw messageResult.error;}
+  catch(error){problems.push('השיבוץ נשמר, אך שליחת ההודעות נכשלה: '+(error?.message||'שגיאת שרת'));}
+  if(bulkAssignEventId===String(eventId))for(const change of committed){bulkAssignDraft.delete(change.id);const current=workers.find(w=>String(w.id)===change.id&&String(w.event_id)===String(eventId));if(current)current.sector=change.sector||null;}
  }
  try{if(ev?.id===eventId)await live(true)}catch(error){problems.push('טעינת הרשימה מחדש נכשלה: '+error.message)}
  if(ev?.id===eventId){
-  bulkAssignMessage='✓ נשמר שיבוץ של '+committed.length+' עובדים'+(problems.length?'\n⚠ '+problems.join('\n'):' • העדכונים נשלחו לאפליקציית העובדים');
+  bulkAssignMessage='✓ נשמר שיבוץ של '+committed.length+' עובדים'+(problems.length?'\n⚠ '+problems.join('\n'):' • ההודעות נשמרו עבור העובדים (הגעה למכשיר טרם אומתה)');
  }
  bulkAssignSaving=false;renderBulkSector();
 }
