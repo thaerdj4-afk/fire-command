@@ -627,7 +627,7 @@ async function saveBulkSectorAssignments(){
  }
  try{if(ev?.id===eventId)await live(true)}catch(error){problems.push('טעינת הרשימה מחדש נכשלה: '+error.message)}
  if(ev?.id===eventId){
-  bulkAssignMessage='✓ נשמר שיבוץ של '+committed.length+' עובדים'+(problems.length?'\n⚠ '+problems.join('\n'):' • ההודעות נשמרו עבור העובדים (הגעה למכשיר טרם אומתה)');
+  bulkAssignMessage=(committed.length?'✓ נשמר שיבוץ של '+committed.length+' עובדים':'❌ לא נשמר שיבוץ')+(problems.length?'\n⚠ '+problems.join('\n'):' • ההודעות נשמרו עבור העובדים (הגעה למכשיר טרם אומתה)');
  }
  bulkAssignSaving=false;renderBulkSector();
 }
