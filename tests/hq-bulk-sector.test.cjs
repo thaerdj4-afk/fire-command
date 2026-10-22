@@ -3,7 +3,7 @@ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const st=html.indexOf('/* Multi-sector worker assignment'),end=html.indexOf('function renderSectorSetup(){',st);
 assert(st>=0&&end>st,'bulk sector module must be present');
 const code=html.slice(st,end);
-for(const id of ['bulkSectorTabs','bulkSectorSearch','bulkSectorList','bulkSectorSave','bulkSectorSummary','bulkSectorStatus'])assert(html.includes('id="'+id+'"'),'Missing '+id);
+for(const id of ['bulkSectorTabs','bulkSectorSearch','bulkSectorList','bulkSectorAssigned','bulkSectorAvailableCount','bulkSectorSave','bulkSectorSummary','bulkSectorStatus'])assert(html.includes('id="'+id+'"'),'Missing '+id);
 class Element{
  constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.dataset={};this.attributes={};this.style={};this.textContent='';this.value='';this.scrollTop=0;this.disabled=false;this.checked=false}
  append(...children){this.children.push(...children)}
@@ -11,7 +11,7 @@ class Element{
  setAttribute(name,value){this.attributes[name]=String(value)}
 }
 const elements={};const $=id=>elements[id]||(elements[id]=new Element());
-const db=Array.from({length:21},(_,i)=>({id:'w'+(i+1),name:'Worker '+(i+1),event_id:'fire-1',sector:null,status:'בדרך'}));
+const db=Array.from({length:50},(_,i)=>({id:'w'+(i+1),name:'Worker '+(i+1),event_id:'fire-1',sector:null,status:'בדרך'}));
 let notices=[],writes=0;
 const cloud={from(table){
  if(table==='worker_requests')return {insert:async rows=>{notices.push(...rows);return {error:null}}};
@@ -31,49 +31,87 @@ const cloud={from(table){
 const c={document:{createElement:tag=>new Element(tag)},$,ev:{id:'fire-1'},workers:db.map(x=>({...x})),sectorNames:()=>['א','ב','ג'],sectorPosition:()=>null,sectorConfig:()=>({manager:''}),cloud,live:async()=>{},confirm:()=>true,alert:msg=>{throw Error(msg)}};
 vm.createContext(c);
 const handlers=vm.runInContext(code+'\n({renderBulkSector,saveBulkSectorAssignments})',c);
-function setSector(k,ids){
- const tab=elements.bulkSectorTabs.children.find(x=>x.textContent.startsWith('גזרה '+k+' ('));assert(tab,'missing tab '+k);tab.onclick();
+function rowFor(id){return elements.bulkSectorList.children.find(x=>x.children?.[0]?.dataset?.workerId===id)}
+function zoneChip(zone,id){
+ const sector=elements.bulkSectorAssigned.children.find(x=>x.children[0].children[0].textContent==='📍 גזרה '+zone);
+ assert(sector,'missing sector '+zone);
+ return sector.children[1].children.find(x=>x.children?.[0]?.textContent===db.find(w=>w.id===id)?.name);
+}
+function selectZone(zone){
+ const tab=elements.bulkSectorTabs.children.find(x=>x.textContent.startsWith('גזרה '+zone+' ('));
+ assert(tab,'missing zone tab '+zone);tab.onclick();
+}
+function selectWorkers(zone,ids){
+ selectZone(zone);
  for(const id of ids){
-  const row=elements.bulkSectorList.children.find(x=>x.children?.[0]?.dataset?.workerId===id);assert(row,'worker '+id+' missing');
-  row.children[0].checked=true;row.children[0].onchange();
+  const row=rowFor(id);assert(row,'worker '+id+' unavailable while assigning zone '+zone);
+  const check=row.children[0];check.checked=true;check.onchange();
+  assert.equal(rowFor(id),undefined,'selected worker should disappear from available list');
  }
+}
+function removeFromZone(zone,id){
+ const chip=zoneChip(zone,id);assert(chip,'worker '+id+' missing under sector '+zone);
+ chip.children[1].onclick();
+}
+function zoneCount(zone,n){
+ const button=elements.bulkSectorTabs.children.find(x=>x.textContent.startsWith('גזרה '+zone+' ('));
+ assert(button?.textContent.includes('('+n+')'),'count for '+zone+' is not '+n);
 }
 (async()=>{
  handlers.renderBulkSector();
- setSector('א',db.slice(0,10).map(x=>x.id));
- setSector('ב',db.slice(10,13).map(x=>x.id));
- setSector('ג',db.slice(13,21).map(x=>x.id));
- handlers.renderBulkSector(); // Realtime render must not clear unsaved checkboxes.
- for(const [sector,n] of [['א',10],['ב',3],['ג',8]])assert(elements.bulkSectorSummary.textContent.includes('גזרה '+sector+': '+n),sector+' count');
- await handlers.saveBulkSectorAssignments();
- assert.equal(writes,3,'group one DB update per sector');
- assert.equal(notices.length,21,'one notification per worker');
- for(const [sector,n] of [['א',10],['ב',3],['ג',8]])assert.equal(db.filter(w=>w.sector===sector).length,n);
- assert.equal(elements.bulkSectorSave.disabled,true,'nothing left to save');
- console.log('PASS 10 workers in A, 3 in B, 8 in C; only 3 grouped updates and 21 worker messages');
+ assert.equal(elements.bulkSectorList.children.length,50,'initial 50 unassigned workers');
+ selectWorkers('א',db.slice(0,10).map(w=>w.id));
+ zoneCount('א',10);
+ selectZone('ב');
+ for(const w of db.slice(0,10))assert.equal(rowFor(w.id),undefined,'A worker must be hidden in B');
+ assert.equal(zoneChip('א','w1').children[0].textContent,'Worker 1');
+ selectWorkers('ב',db.slice(10,13).map(w=>w.id));
+ selectWorkers('ג',db.slice(13,21).map(w=>w.id));
+ handlers.renderBulkSector(); // Realtime re-render must not clear drafts.
+ for(const [zone,n] of [['א',10],['ב',3],['ג',8]])zoneCount(zone,n);
+ assert.equal(elements.bulkSectorList.children.length,29,'remaining 29 unassigned workers');
+ assert.match(elements.bulkSectorAvailableCount.textContent,/29/);
+ assert.equal(elements.bulkSectorAssigned.children.length,3,'lists for all sectors');
+ assert.equal(elements.bulkSectorSave.disabled,false);
+ console.log('PASS 50 workers: 10 in A, 3 in B, 8 in C; only 29 remain selectable and each zone displays its own names');
 
- // Change one worker from A to B; no double sector assignment.
- setSector('ב',['w1']);
- assert(elements.bulkSectorSummary.textContent.includes('גזרה א: 9'));
- assert(elements.bulkSectorSummary.textContent.includes('גזרה ב: 4'));
+ // Search only unassigned workers: even exact name of allocated worker is not shown.
+ elements.bulkSectorSearch.value='Worker 1';
+ elements.bulkSectorSearch.oninput();
+ assert.equal(rowFor('w1'),undefined,'allocated member appeared in search results');
+ elements.bulkSectorSearch.value='';elements.bulkSectorSearch.oninput();
+ await handlers.saveBulkSectorAssignments();
+ assert.equal(writes,3,'group one update per sector');
+ assert.equal(notices.length,21,'notify each chosen worker');
+ for(const [sector,n] of [['א',10],['ב',3],['ג',8]])assert.equal(db.filter(w=>w.sector===sector).length,n);
+ assert.equal(elements.bulkSectorSave.disabled,true);
+ console.log('PASS grouped save preserved 10 / 3 / 8 and sends 21 in-app messages');
+
+ // To move A -> B, remove from A chip first; then choose from currently-unassigned list in B.
+ selectZone('ב');
+ assert.equal(rowFor('w1'),undefined,'assigned worker must remain hidden in B');
+ removeFromZone('א','w1');
+ assert(rowFor('w1'),'removed A worker should become available');
+ selectWorkers('ב',['w1']);
+ zoneCount('א',9);zoneCount('ב',4);
  await handlers.saveBulkSectorAssignments();
  assert.equal(db.find(w=>w.id==='w1').sector,'ב');
  assert.equal(notices.length,22);
- console.log('PASS worker can be moved between sectors without duplicate assignment');
+ console.log('PASS remove from A list, reassign to B, never place worker in two sectors');
 
- // Uncheck a worker and save an unassignment notification.
- const row=elements.bulkSectorList.children.find(x=>x.children?.[0]?.dataset?.workerId==='w1');
- row.children[0].checked=false;row.children[0].onchange();
+ // Click X in B, then save unassignment.
+ removeFromZone('ב','w1');
+ assert(rowFor('w1'),'removed worker should return to unassigned list');
  await handlers.saveBulkSectorAssignments();
  assert.equal(db.find(w=>w.id==='w1').sector,null);
  assert.equal(notices.at(-1).request_type,'שיבוץ לגזרה');
  assert.equal(JSON.parse(notices.at(-1).details.slice(14)).sector,'');
- console.log('PASS removing a worker from a sector clears saved assignment and notifies worker');
+ console.log('PASS remove from zone list and save unassignment safely');
 
  const workerSource=fs.readFileSync(path.join(__dirname,'../worker.html'),'utf8');
- assert(workerSource.includes("typeof a.sector==='string'"),'worker app should accept assignment without coordinates');
- assert(workerSource.includes("'השיבוץ לגזרה בוטל'"),'worker app should show unassignment');
- assert(workerSource.includes("assignment.lat!=null&&assignment.lng!=null"),'worker navigation should require coordinates');
+ assert(workerSource.includes("typeof a.sector==='string'"));
+ assert(workerSource.includes("'השיבוץ לגזרה בוטל'"));
+ assert(workerSource.includes("assignment.lat!=null&&assignment.lng!=null"));
  for(const doc of [html,workerSource])for(const m of doc.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g))new vm.Script(m[1]);
- console.log('PASS both HQ and worker scripts compile; optional navigation and unassignment remain supported');
+ console.log('PASS HQ and worker scripts compile');
 })().catch(e=>{console.error(e);process.exitCode=1});
