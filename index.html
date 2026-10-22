@@ -373,6 +373,32 @@ try{trustedWorkers=window.createHQTrustedWorkers?.(cloud)}catch(e){console.warn(
 const map=L.map("map",{doubleClickZoom:false}).setView([32.9,35.65],10),ops=L.featureGroup().addTo(map),wl=L.layerGroup().addTo(map);window.__hqMap=map;
 const tiles={street:L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}),sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),hybrid:L.layerGroup([L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}),L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19})]),topo:L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17}),dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:20})};let bt=tiles.hybrid;bt.addTo(map);
 let ev=null,started=null,mode=null,lineKind=null,linePts=[],polyKind=null,polyPts=[],preview=null,eraseMode=false,stack=[],workers=[],requests=[],chan=null,lastWind=null,freeDrawing=false,freePts=[],measureMode=null,measurePts=[],counts={engine:0,person:0,blower:0,water:0},lastFireAreaM2=0;
+
+/* Event helpers: keep event UI and worker access in sync with the stored event. */
+function workerUrl(){
+ return ev?.id ? `${location.origin}${location.pathname.replace(/[^/]*$/,"")}worker.html?event=${encodeURIComponent(ev.id)}` : "";
+}
+function showLivePanels(on){
+ const bottom=$("premiumBottom");if(bottom)bottom.style.display=on?"grid":"none";
+ if(!on){
+  const photos=$("fieldPhotos");if(photos)photos.replaceChildren();
+  const requestsMini=$("fieldReqMini");if(requestsMini)requestsMini.innerHTML="<h3>🆘 בקשות מהשטח</h3>";
+  const danger=$("dangerBanner");if(danger)danger.style.display="none";
+ }
+}
+function link(){
+ $("eventNumber").textContent=ev?.event_number??"—";
+ const url=workerUrl();
+ $("workerLink").value=url;
+ const qr=$("qr");
+ if(qr){qr.replaceChildren();if(url&&window.QRCode)try{new QRCode(qr,{text:url,width:128,height:128})}catch(error){console.warn("Event QR unavailable",error)}}
+ try{void workerCodes?.sync(ev)?.catch(error=>console.warn("Worker event code unavailable",error))}catch(error){console.warn("Worker event code unavailable",error)}
+ try{trustedWorkers?.sync(ev)}catch(error){console.warn("Worker event roster unavailable",error)}
+}
+function counter(){
+ $("count").textContent=`🚒 ${counts.engine} | 👥 ${workers.filter(w=>w.status!=="סיים").length+counts.person} | 💨 ${counts.blower} | 💧 ${counts.water}`;
+}
+
 const markerSvg={person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M6 21v-3c0-4 2-6 6-6s6 2 6 6v3"/></svg>',engine:'<svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',water:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/></svg>',assembly:'<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5"/><circle cx="16" cy="8" r="2.5"/><path d="M3 19c.5-4 2.2-6 5-6s4.5 2 5 6M11 19c.5-4 2.2-6 5-6s4.5 2 5 6"/></svg>',hazard:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5M12 17h.01"/></svg>',cmd:'<svg viewBox="0 0 24 24"><path d="M4 20V8l8-5 8 5v12z"/><path d="M8 20v-7h8v7M12 3v5"/></svg>',blower:'<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 10h8v4h-8M4 12H2"/></svg>',backpack:'<svg viewBox="0 0 24 24"><path d="M7 8V6c0-2 2-3 5-3s5 1 5 3v2M5 8h14v13H5zM8 12h8"/></svg>',floatpump:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>',subpump:'<svg viewBox="0 0 24 24"><rect x="7" y="5" width="10" height="14" rx="2"/><path d="M10 2h4v3M12 19v3M9 11h6"/></svg>',hydrant:'<svg viewBox="0 0 24 24"><path d="M8 21V9h8v12M6 9h12M9 5h6v4M4 13h4M16 13h4"/></svg>',fill:'<svg viewBox="0 0 24 24"><path d="M12 3s6 6.7 6 11a6 6 0 01-12 0c0-4.3 6-11 6-11z"/><path d="M12 9v6M9 12h6"/></svg>'};function markerHtml(k){if(k==='fire')return '<div class="compactFireOrigin" style="font-size:28px;line-height:40px;text-align:center;filter:drop-shadow(0 1px 3px #411)">🔥</div>';let c=k==='hazard'?' danger':(k==='water'||k==='fill'||k==='hydrant')?' water':k==='assembly'?' safe':'';return `<div class="mapSvgMarker${c}">${markerSvg[k]||markerSvg.cmd}</div>`}const esc=s=>String(s??"").replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
 function style(k){return k==="escape"?{color:"#38d878",weight:5,dashArray:"10 7"}:k==="access"?{color:"#4ea5ff",weight:5}:k==="firebreak"?{color:"#ff9d32",weight:6,dashArray:"10 7"}:{color:"#ff4242",weight:5}}
 const mapLayers=new Map(),pendingMap=new Set();
