@@ -528,6 +528,28 @@ freehandSurface.addEventListener('pointerup',e=>{
 },{capture:true,passive:false});
 for(const kind of ['pointercancel','lostpointercapture'])freehandSurface.addEventListener(kind,e=>{if(e.pointerId===freePointerId)cancelFreeStroke()});
 
+// Recheck server-side HQ membership while the command center remains open.
+let hqAccessCheckBusy=false;
+async function verifyHQAccess(){
+ if(hqAccessCheckBusy||!document.documentElement.classList.contains("hq-authorized"))return;
+ hqAccessCheckBusy=true;
+ try{
+  const {data:{session},error:sessionError}=await cloud.auth.getSession();
+  if(sessionError||!session?.user)throw Error("session expired");
+  const {data,error}=await cloud.from("hq_managers").select("user_id").eq("user_id",session.user.id).maybeSingle();
+  if(error)throw error; // Transient network problems must not be mistaken for a revocation.
+  if(!data){
+   document.documentElement.classList.remove("hq-authorized");
+   $("hqError").textContent="⛔ הרשאת הכניסה לחפ״ק בוטלה על ידי המנהל.";
+   try{await cloud.auth.signOut()}catch(e){console.warn("HQ signout",e)}
+   location.reload();
+  }
+ }catch(e){console.warn("HQ access check unavailable",e)}
+ finally{hqAccessCheckBusy=false}
+}
+setInterval(verifyHQAccess,5000);
+window.addEventListener("focus",verifyHQAccess);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)verifyHQAccess()});
 async function enterHQ(session){if(!session?.user)throw Error("נדרשת כניסה");let {data:role,error}=await cloud.from("hq_managers").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error)throw error;if(!role){let current=await cloud.from("hq_access_requests").select("status").eq("user_id",session.user.id).maybeSingle();if(current.error)throw current.error;if(current.data?.status==="rejected"||current.data?.status==="blocked")throw Error("הגישה נדחתה או נחסמה. פנה לתאיר ישירות.");if(!current.data){let req=await cloud.from("hq_access_requests").insert({user_id:session.user.id,email:session.user.email});if(req.error)throw req.error;}let {error:mailError}=await cloud.functions.invoke("hq-approval",{body:{}});if(mailError)console.warn("HQ approval email failed",mailError);throw Error("בקשת הגישה נשמרה וממתינה לאישור תאיר. הכניסה תיפתח רק לאחר אישורו.")}document.documentElement.classList.add("hq-authorized");workerCodes?.reset();trustedWorkers?.reset();$("auth").textContent="✅ מחובר: "+session.user.email;setTimeout(()=>map.invalidateSize(),100);try{await restore()}catch(e){console.error("HQ restore failed",e);$("estate").textContent="⚠️ שגיאה בטעינת האירוע: "+(e?.message||"שגיאה לא ידועה")}try{await live()}catch(e){console.error("HQ live failed",e)}try{rt()}catch(e){console.error("HQ realtime failed",e)}}
 async function login(){let em=$("hqEmail").value.trim(),pw=$("hqPassword").value;$("hqError").textContent="מתחבר...";try{let {data,error}=await cloud.auth.signInWithPassword({email:em,password:pw});if(error)throw error;await enterHQ(data.session)}catch(e){document.documentElement.classList.remove("hq-authorized");$("hqError").textContent="❌ "+e.message}}
 $("hqLoginForm").addEventListener("submit",e=>{e.preventDefault();login()});
