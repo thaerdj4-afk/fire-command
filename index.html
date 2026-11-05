@@ -732,8 +732,8 @@ function renderSectorSetup(){
  tabs.querySelector('[data-sector-add]').onclick=()=>addCustomSector();if($('sectorChoose'))$('sectorChoose').onchange=e=>{activeSectorTab=e.target.value;renderSectorSetup()};
  if(!activeSectorTab){box.innerHTML='<p>אין גזרות. לחץ על הוספת גזרה ליצירת גזרה חדשה.</p>';return}
  const k=activeSectorTab,c=sectorConfig(k),point=sectorPosition(k),ws=workers.filter(w=>w.status!=='סיים'&&String(w.sector||'')===String(k));
- box.innerHTML=`<div class="worker" data-sector-name="${esc(k)}"><h3>📍 גזרה ${esc(k)}</h3><p class="small">👤 ${esc(c.manager||'ללא מנהל')} • 👥 ${ws.length} עובדים</p><p class="small">${point?'✅ נקודת גזרה: '+Number(point[0]).toFixed(5)+', '+Number(point[1]).toFixed(5):'⚠ יש להגדיר נקודת גזרה'}<br>${ws.length?ws.map(w=>esc(w.name)).join(', '):'אין עובדים משויכים'}</p><div class="sectorShare"><h4>📤 שליחה לעובד</h4><select id="sectorWorkerPick" aria-label="בחירת עובד לשיבוץ או שיתוף"><option value="">בחר עובד</option>${workers.filter(w=>w.status!=='סיים').map(w=>`<option value="${esc(String(w.id))}">${esc(w.name)}${w.sector?' • גזרה '+esc(w.sector):''}</option>`).join('')}</select><div class="sectorActions"><button id="sectorSend" class="green">📲 שיבוץ לאפליקציה</button><button id="sectorWhatsApp">💬 WhatsApp לעובד</button></div></div></div>`;
- $('sectorSend').onclick=()=>sendSelectedWorkerToSector(k);$('sectorWhatsApp').onclick=()=>shareSectorWhatsApp(k);
+ box.innerHTML=`<div class="worker" data-sector-name="${esc(k)}"><h3>📍 גזרה ${esc(k)}</h3><p class="small">👤 ${esc(c.manager||'ללא מנהל')} • 👥 ${ws.length} עובדים</p><p class="small">${point?'✅ נקודת גזרה: '+Number(point[0]).toFixed(5)+', '+Number(point[1]).toFixed(5):'⚠ יש להגדיר נקודת גזרה'}<br>${ws.length?ws.map(w=>esc(w.name)).join(', '):'אין עובדים משויכים'}</p><div class="sectorShare"><h4>📤 בחירת עובדים ושיתוף</h4><div id="sectorWorkerPick" role="group" aria-label="בחירת עובדים" style="max-height:220px;overflow:auto;border:1px solid #35566c;border-radius:10px;padding:8px">${workers.filter(w=>w.status!=='סיים'&&(!w.sector||String(w.sector)===String(k))).map(w=>`<label style="display:flex;align-items:center;gap:9px;padding:8px"><input type="checkbox" value="${esc(String(w.id))}" ${String(w.sector||'')===String(k)?'checked':''}> ${esc(w.name)}</label>`).join('')||'<span class="small">אין עובדים פנויים</span>'}</div><div class="sectorActions"><button id="sectorSend" class="green">📲 שיבוץ לאפליקציה</button><button id="sectorWhatsApp">💬 WhatsApp לעובדים</button></div></div></div>`;
+ $('sectorSend').onclick=()=>sendSelectedWorkersToSector(k);$('sectorWhatsApp').onclick=()=>shareSectorWhatsApp(k);
 }
 window.setSectorManager=k=>{if(!ev)return alert("פתח אירוע קודם");let v=prompt("שם מנהל גזרה "+k+":",sectorConfig(k).manager||"");if(v===null)return;let c=sectorConfig(k);c.manager=v.trim();localStorage.setItem("sector:"+ev.id+":"+k,JSON.stringify(c));let old=sectorMarker(k);if(old){let ll=old.getLatLng();removeMapLayer(old);let mark=L.marker(ll,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+k+'</div>',className:"",iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager;add(mark,"sector-point "+k)}renderSectorSetup()};
 window.setSectorPoint=k=>{
@@ -742,6 +742,12 @@ window.setSectorPoint=k=>{
  $('panel').classList.remove('open');$('premiumLeft').classList.remove('mobileOpen');$('drawmsg').textContent='גע פעם אחת במפה כדי לקבוע נקודת מפגש לגזרה '+k;map.getContainer().style.cursor='crosshair';setTimeout(()=>map.invalidateSize(),100);
  sectorPointHandler=e=>{sectorPointHandler=null;if(ev?.id!==eventId)return;let old=sectorMarker(k);if(old)removeMapLayer(old);let c=sectorConfig(k);c.lat=e.latlng.lat;c.lng=e.latlng.lng;localStorage.setItem('sector:'+eventId+':'+k,JSON.stringify(c));let mark=L.marker(e.latlng,{icon:L.divIcon({html:'<div class="pin">📍 גזרה '+esc(k)+'</div>',className:'',iconSize:[85,30],iconAnchor:[42,15]})});mark._label=c.manager||'';add(mark,'sector-point '+k);renderSectorSetup();$('drawmsg').textContent='נקודת גזרה '+k+' נשמרה';map.getContainer().style.cursor=''};
  map.once('click',sectorPointHandler);
+};
+window.selectedSectorWorkers=()=>[...document.querySelectorAll('#sectorWorkerPick input:checked')].map(input=>workers.find(w=>String(w.id)===input.value)).filter(Boolean);
+window.sendSelectedWorkersToSector=async k=>{
+ const chosen=selectedSectorWorkers();if(!chosen.length)return alert('בחר עובד אחד לפחות');
+ const b=$('sectorSend');if(b)b.disabled=true;let ok=0,failed=[];
+ try{for(const w of chosen){if(w.sector&&String(w.sector)!==String(k)){failed.push(w.name);continue}try{await assignSector(w.id,k);ok++}catch(e){failed.push(w.name)}}await live();renderSectorSetup();alert('נשלחו '+ok+' עובדים'+(failed.length?' • יש לבדוק: '+failed.join(', '):''))}finally{if(b)b.disabled=false}
 };
 window.sendSelectedWorkerToSector=async k=>{let s=$("sectorWorkerPick");if(!s||!s.value)return alert("בחר עובד קודם");await window.assignSector(s.value,k)};window.assignSector=async(id,k)=>{let w=workers.find(x=>String(x.id)===String(id));if(!ev||!w)return;let p=sectorPosition(k),c=sectorConfig(k);if(!p)return alert("הגדר קודם מיקום לגזרה "+k);let manager=c.manager||"";let r=await cloud.from("workers").update({sector:k}).eq("id",w.id).eq("event_id",ev.id);if(r.error)return alert("❌ "+r.error.message);let details="SECTOR_ASSIGN|"+JSON.stringify({sector:k,manager,lat:+p[0],lng:+p[1]});let m=await cloud.from("worker_requests").insert({event_id:ev.id,worker_name:w.name,request_type:"שיבוץ לגזרה",details,status:"חדש"});if(m.error)return alert("הגזרה נשמרה, אבל ההודעה לא נשלחה: "+m.error.message);await live();alert("✓ נשלח ל"+w.name+": גזרה "+k)};
 window.workerWhatsApp=id=>{let w=workers.find(x=>String(x.id)===String(id));if(!w||!ev)return;let digits=workerPhones.get(w.name);if(!digits)return alert("העובד צריך להזין מספר WhatsApp ולאשר קבלת הודעות באפליקציה");let sector=w.sector||"",pos=sector?sectorPosition(sector):null,mgr=sector?sectorConfig(sector).manager:"",message="שלום "+w.name+",\nאירוע: "+(ev.name||"שריפה")+(sector?"\nשובצת לגזרה "+sector:"")+(mgr?"\nמנהל הגזרה: "+mgr:"")+(pos?"\nניווט לגזרה: https://www.google.com/maps/dir/?api=1&destination="+(+pos[0]).toFixed(6)+","+(+pos[1]).toFixed(6):"")+"\nקישור עובד: "+workerUrl();let typed=prompt("הודעת WhatsApp ל"+w.name+" — אפשר לערוך:",message);if(typed===null||!typed.trim())return;open("https://wa.me/"+digits+"?text="+encodeURIComponent(typed),"_blank")};
@@ -1069,15 +1075,12 @@ window.workerWhatsApp = id => {
 const namesBeforeDelete = sectorNames;
 function deletedSectorNames(){try{return JSON.parse(localStorage.getItem('deletedSectors:'+ev?.id)||'[]')}catch{return []}}
 sectorNames=function(){const deleted=deletedSectorNames();return namesBeforeDelete().filter(name=>!deleted.includes(name))};
-window.shareSectorWhatsApp=function(name){
- const selected=$('sectorWorkerPick')?.value,worker=workers.find(w=>String(w.id)===selected);
- if(!ev||!worker)return alert('בחר עובד קודם');
- const phone=workerPhones.get(worker.name),point=sectorPosition(name);
- if(!phone)return alert('העובד צריך לשמור מספר WhatsApp באפליקציה');
- if(!point)return alert('הגדר קודם נקודת גזרה '+name);
+window.shareSectorWhatsApp=async function(name){
+ const chosen=selectedSectorWorkers();if(!ev||!chosen.length)return alert('בחר עובד אחד לפחות');
+ const point=sectorPosition(name);if(!point)return alert('הגדר קודם נקודת גזרה '+name);
  const manager=sectorConfig(name).manager||'';
- const text='שלום '+worker.name+', גזרה '+name+(manager?'\nמנהל הגזרה: '+manager:'')+'\nמיקום וניווט:\nhttps://www.google.com/maps/dir/?api=1&destination='+Number(point[0]).toFixed(6)+','+Number(point[1]).toFixed(6);
- window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
+ const text='שיבוץ לגזרה '+name+'\\nעובדים: '+chosen.map(w=>w.name).join(', ')+(manager?'\\nמנהל הגזרה: '+manager:'')+'\\nניווט: https://www.google.com/maps/dir/?api=1&destination='+Number(point[0]).toFixed(6)+','+Number(point[1]).toFixed(6);
+ try{if(navigator.share)await navigator.share({text});else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer')}catch(e){if(e.name!=='AbortError')alert('שיתוף נכשל: '+e.message)}
 };
 window.shareSectorGroup=async function(name){
  if(!ev)return alert('פתח אירוע קודם');const point=sectorPosition(name);if(!point)return alert('הגדר קודם נקודת גזרה '+name);
